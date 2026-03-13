@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "jest"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -20,5 +21,12 @@
     "pdfkit": "^0.17.2",
     "sql.js": "^1.11.0",
     "xlsx": "^0.18.5"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"]
+  },
+  "devDependencies": {
+    "jest": "^30.3.0"
   }
 }

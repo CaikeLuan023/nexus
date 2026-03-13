@@ -1,76 +1,15 @@
 // ==================== DASHBOARD ====================
+// Constantes carregadas de DashboardUtils (dashboard-utils.js)
 
-const CORES = [
-    '#f59e0b', '#3a0ca3', '#7209b7', '#f72585', '#4cc9f0',
-    '#2ec4b6', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3',
-    '#6c5ce7', '#00b894', '#e17055', '#0984e3', '#fdcb6e'
-];
-
-const CORES_CATEGORIA = {
-    usuario: '#f59e0b',
-    app: '#f72585',
-    integracao: '#feca57',
-    canal: '#ff6b6b',
-    troca_senha: '#7209b7',
-    email_ativacao: '#3a0ca3',
-    outro: '#a0a0a0'
-};
-
-const LABELS_MODELO = {
-    bundle: 'Bundle',
-    hardbundle: 'Hardbundle',
-    reseller: 'Reseller',
-    hospitality: 'Hospitality',
-    empresas: 'Empresas',
-    'Não definido': 'Não definido'
-};
-
-const LABELS_ERP = {
-    ixc: 'IXC',
-    hubsoft: 'Hubsoft',
-    sgp: 'SGP',
-    atlaz: 'Atlaz',
-    ispfy: 'ISPfy',
-    mycore: 'Mycore',
-    mk_auth: 'MK-Auth',
-    radius_net: 'Radius Net',
-    voalle: 'Voalle',
-    proprio: 'Próprio',
-    'Não definido': 'Não definido'
-};
-
-const LABELS_PLANO = {
-    zapping_lite_plus: 'Zapping Lite Plus',
-    zapping_full: 'Zapping Full',
-    liteplus_full: 'Lite Plus + Full',
-    'Não definido': 'Não definido'
-};
-
-const LABELS_STATUS_TREIN = {
-    agendado: 'Agendado',
-    realizado: 'Realizado',
-    cancelado: 'Cancelado'
-};
-
-const LABELS_STATUS_PROJ = {
-    em_andamento: 'Em Andamento',
-    pausado: 'Pausado',
-    concluido: 'Concluído',
-    cancelado: 'Cancelado'
-};
-
-const CORES_STATUS_TREIN = {
-    agendado: '#feca57',
-    realizado: '#2ec4b6',
-    cancelado: '#ff6b6b'
-};
-
-const CORES_STATUS_PROJ = {
-    em_andamento: '#f59e0b',
-    pausado: '#feca57',
-    concluido: '#2ec4b6',
-    cancelado: '#ff6b6b'
-};
+const CORES = DashboardUtils.CORES;
+const CORES_CATEGORIA = DashboardUtils.CORES_CATEGORIA;
+const LABELS_MODELO = DashboardUtils.LABELS_MODELO;
+const LABELS_ERP = DashboardUtils.LABELS_ERP;
+const LABELS_PLANO = DashboardUtils.LABELS_PLANO;
+const LABELS_STATUS_TREIN = DashboardUtils.LABELS_STATUS_TREIN;
+const LABELS_STATUS_PROJ = DashboardUtils.LABELS_STATUS_PROJ;
+const CORES_STATUS_TREIN = DashboardUtils.CORES_STATUS_TREIN;
+const CORES_STATUS_PROJ = DashboardUtils.CORES_STATUS_PROJ;
 
 // Dados armazenados para exportação
 let dashData = {};
