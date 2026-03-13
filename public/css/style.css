@@ -66,6 +66,12 @@ body {
     color: var(--primary-color);
 }
 
+.sidebar-logo {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
 .sidebar-brand h5 {
     color: #fff;
     margin: 0;

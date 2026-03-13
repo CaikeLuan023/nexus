@@ -297,7 +297,39 @@ function gerarSidebar(permissoes) {
 
     sidebar.innerHTML = `
         <div class="sidebar-brand">
-            <i class="bi bi-clipboard-data"></i>
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" class="sidebar-logo">
+                <defs>
+                    <linearGradient id="sGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#ff2d78"/>
+                        <stop offset="100%" style="stop-color:#0d6efd"/>
+                    </linearGradient>
+                    <linearGradient id="sGrad2" x1="0%" y1="100%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#ff2d78;stop-opacity:0.6"/>
+                        <stop offset="100%" style="stop-color:#0d6efd;stop-opacity:0.6"/>
+                    </linearGradient>
+                    <filter id="sGlow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                </defs>
+                <circle cx="60" cy="60" r="56" fill="none" stroke="url(#sGrad2)" stroke-width="1" opacity="0.3"/>
+                <g stroke="url(#sGrad2)" stroke-width="1" opacity="0.5">
+                    <line x1="30" y1="28" x2="55" y2="45"/><line x1="55" y1="45" x2="90" y2="28"/>
+                    <line x1="55" y1="45" x2="65" y2="75"/><line x1="65" y1="75" x2="90" y2="92"/>
+                    <line x1="30" y1="92" x2="65" y2="75"/><line x1="30" y1="28" x2="18" y2="55"/>
+                    <line x1="18" y1="55" x2="30" y2="92"/><line x1="90" y1="28" x2="102" y2="55"/>
+                    <line x1="102" y1="55" x2="90" y2="92"/><line x1="55" y1="45" x2="18" y2="55"/>
+                    <line x1="65" y1="75" x2="102" y2="55"/>
+                </g>
+                <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-weight="800" font-size="48" fill="url(#sGrad1)" filter="url(#sGlow)">N</text>
+                <g filter="url(#sGlow)">
+                    <circle cx="30" cy="28" r="4" fill="#ff2d78"/><circle cx="90" cy="28" r="4" fill="#ff2d78"/>
+                    <circle cx="55" cy="45" r="3.5" fill="#e91e63"/><circle cx="65" cy="75" r="3.5" fill="#0d6efd"/>
+                    <circle cx="30" cy="92" r="4" fill="#0d6efd"/><circle cx="90" cy="92" r="4" fill="#0d6efd"/>
+                    <circle cx="18" cy="55" r="3" fill="#ff2d78" opacity="0.7"/><circle cx="102" cy="55" r="3" fill="#0d6efd" opacity="0.7"/>
+                </g>
+                <circle cx="42" cy="35" r="1.5" fill="#ff2d78" opacity="0.4"/>
+                <circle cx="78" cy="35" r="1.5" fill="#ff2d78" opacity="0.4"/>
+                <circle cx="48" cy="82" r="1.5" fill="#0d6efd" opacity="0.4"/>
+                <circle cx="78" cy="82" r="1.5" fill="#0d6efd" opacity="0.4"/>
+            </svg>
             <h5>Nexus</h5>
         </div>
         <ul class="nav flex-column mt-2">
