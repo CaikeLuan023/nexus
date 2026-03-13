@@ -6,44 +6,73 @@ let selectedNodeId = null;
 
 const NODE_CONFIGS = {
     inicio: {
-        inputs: 0, outputs: 1,
+        inputs: 0,
+        outputs: 1,
         data: {},
-        label: 'Inicio', icon: 'bi-play-circle text-success', desc: 'Ponto de entrada'
+        label: 'Inicio',
+        icon: 'bi-play-circle text-success',
+        desc: 'Ponto de entrada'
     },
     mensagem: {
-        inputs: 1, outputs: 1,
+        inputs: 1,
+        outputs: 1,
         data: { texto: '' },
-        label: 'Mensagem', icon: 'bi-chat-left-text text-primary', desc: 'Enviar texto'
+        label: 'Mensagem',
+        icon: 'bi-chat-left-text text-primary',
+        desc: 'Enviar texto'
     },
     menu: {
-        inputs: 1, outputs: 10,
-        data: { titulo: 'Selecione uma opcao:', opcoes: [{ texto: 'Opcao 1' }, { texto: 'Opcao 2' }, { texto: 'Opcao 3' }], tentativas: 3, msg_erro: 'Opcao invalida. Tente novamente.' },
-        label: 'Menu', icon: 'bi-list-ol text-warning', desc: 'Menu de opcoes'
+        inputs: 1,
+        outputs: 10,
+        data: {
+            titulo: 'Selecione uma opcao:',
+            opcoes: [{ texto: 'Opcao 1' }, { texto: 'Opcao 2' }, { texto: 'Opcao 3' }],
+            tentativas: 3,
+            msg_erro: 'Opcao invalida. Tente novamente.'
+        },
+        label: 'Menu',
+        icon: 'bi-list-ol text-warning',
+        desc: 'Menu de opcoes'
     },
     condicao: {
-        inputs: 1, outputs: 2,
+        inputs: 1,
+        outputs: 2,
         data: { campo: '', operador: '==', valor: '' },
-        label: 'Condicao', icon: 'bi-signpost-split text-info', desc: 'Se/Senao'
+        label: 'Condicao',
+        icon: 'bi-signpost-split text-info',
+        desc: 'Se/Senao'
     },
     entrada: {
-        inputs: 1, outputs: 1,
+        inputs: 1,
+        outputs: 1,
         data: { prompt: 'Digite:', variavel: 'resposta' },
-        label: 'Entrada', icon: 'bi-input-cursor-text', desc: 'Aguardar input'
+        label: 'Entrada',
+        icon: 'bi-input-cursor-text',
+        desc: 'Aguardar input'
     },
     integracao: {
-        inputs: 1, outputs: 2,
+        inputs: 1,
+        outputs: 2,
         data: { url: '', metodo: 'GET', body: '', variavel_resultado: '' },
-        label: 'Integracao', icon: 'bi-plug', desc: 'Chamar API'
+        label: 'Integracao',
+        icon: 'bi-plug',
+        desc: 'Chamar API'
     },
     transferir: {
-        inputs: 1, outputs: 0,
+        inputs: 1,
+        outputs: 0,
         data: { mensagem: 'Voce sera transferido para um atendente.' },
-        label: 'Transferir', icon: 'bi-headset', desc: 'Para atendente'
+        label: 'Transferir',
+        icon: 'bi-headset',
+        desc: 'Para atendente'
     },
     fim: {
-        inputs: 1, outputs: 0,
+        inputs: 1,
+        outputs: 0,
         data: { mensagem: '' },
-        label: 'Fim', icon: 'bi-stop-circle text-danger', desc: 'Encerrar fluxo'
+        label: 'Fim',
+        icon: 'bi-stop-circle text-danger',
+        desc: 'Encerrar fluxo'
     }
 };
 
@@ -60,10 +89,13 @@ async function carregarListaFluxos() {
         const fluxos = await api('/api/whatsapp/flows');
         const tbody = document.getElementById('tabelaFluxos');
         if (!fluxos.length) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-diagram-3 me-1"></i>Nenhum fluxo criado. Clique em "Novo Fluxo" para comecar.</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-diagram-3 me-1"></i>Nenhum fluxo criado. Clique em "Novo Fluxo" para comecar.</td></tr>';
             return;
         }
-        tbody.innerHTML = fluxos.map(f => `
+        tbody.innerHTML = fluxos
+            .map(
+                (f) => `
             <tr>
                 <td><strong>${escapeHtmlGlobal(f.nome)}</strong></td>
                 <td class="text-muted">${escapeHtmlGlobal(f.descricao || '-')}</td>
@@ -88,7 +120,9 @@ async function carregarListaFluxos() {
                     </div>
                 </td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('');
     } catch (err) {
         mostrarToast(err.message, 'error');
     }
@@ -98,7 +132,9 @@ async function novoFluxo() {
     try {
         const flow = await api('/api/whatsapp/flows', { method: 'POST', body: { nome: 'Novo Fluxo' } });
         await editarFluxo(flow.id);
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function excluirFluxo(id) {
@@ -107,7 +143,9 @@ async function excluirFluxo(id) {
         await api(`/api/whatsapp/flows/${id}`, { method: 'DELETE' });
         mostrarToast('Fluxo excluido');
         carregarListaFluxos();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function toggleAtivo(id, ativo) {
@@ -115,7 +153,9 @@ async function toggleAtivo(id, ativo) {
         await api(`/api/whatsapp/flows/${id}/ativar`, { method: 'PUT', body: { ativo } });
         mostrarToast(ativo ? 'Fluxo ativado' : 'Fluxo desativado');
         carregarListaFluxos();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function duplicarFluxo(id) {
@@ -127,7 +167,9 @@ async function duplicarFluxo(id) {
         });
         mostrarToast('Fluxo duplicado');
         carregarListaFluxos();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 // ==================== EDITOR DRAWFLOW ====================
@@ -157,7 +199,7 @@ function initEditor() {
 }
 
 function setupDragDrop() {
-    document.querySelectorAll('.flow-palette-node').forEach(el => {
+    document.querySelectorAll('.flow-palette-node').forEach((el) => {
         el.addEventListener('dragstart', (e) => {
             e.dataTransfer.setData('node-type', el.dataset.node);
         });
@@ -202,8 +244,12 @@ function addNode(type, clientX, clientY) {
     if (!cfg) return;
 
     const editorBounds = document.getElementById('drawflow').getBoundingClientRect();
-    const posX = (clientX - editorBounds.left) / (editor.zoom || 1) - (editor.precanvas?.getBoundingClientRect().left - editorBounds.left || 0) / (editor.zoom || 1);
-    const posY = (clientY - editorBounds.top) / (editor.zoom || 1) - (editor.precanvas?.getBoundingClientRect().top - editorBounds.top || 0) / (editor.zoom || 1);
+    const posX =
+        (clientX - editorBounds.left) / (editor.zoom || 1) -
+        (editor.precanvas?.getBoundingClientRect().left - editorBounds.left || 0) / (editor.zoom || 1);
+    const posY =
+        (clientY - editorBounds.top) / (editor.zoom || 1) -
+        (editor.precanvas?.getBoundingClientRect().top - editorBounds.top || 0) / (editor.zoom || 1);
 
     const data = JSON.parse(JSON.stringify(cfg.data));
     const html = buildNodeHtml(type, data);
@@ -230,7 +276,8 @@ function mostrarConfigNode(nodeId) {
 
     switch (nodeInfo.name) {
         case 'inicio':
-            html = '<p class="text-muted small mb-0">Ponto de entrada do fluxo. Conecte a saida ao proximo no. Cada fluxo deve ter um no Inicio.</p>';
+            html =
+                '<p class="text-muted small mb-0">Ponto de entrada do fluxo. Conecte a saida ao proximo no. Cada fluxo deve ter um no Inicio.</p>';
             break;
         case 'mensagem':
             html = `<div class="mb-2">
@@ -248,14 +295,18 @@ function mostrarConfigNode(nodeId) {
             </div>
             <label class="form-label small fw-semibold">Opcoes (cada saida = 1 opcao)</label>
             <div id="menuOpcoes">
-                ${(data.opcoes || []).map((op, i) => `
+                ${(data.opcoes || [])
+                    .map(
+                        (op, i) => `
                     <div class="input-group input-group-sm mb-1">
                         <span class="input-group-text" style="min-width:28px;justify-content:center">${i + 1}</span>
                         <input type="text" class="form-control" value="${escapeHtmlGlobal(op.texto)}"
                             oninput="atualizarOpcaoMenu(${nodeId}, ${i}, this.value)">
-                        ${(data.opcoes.length > 2) ? `<button class="btn btn-outline-danger" onclick="removerOpcaoMenu(${nodeId}, ${i})"><i class="bi bi-x"></i></button>` : ''}
+                        ${data.opcoes.length > 2 ? `<button class="btn btn-outline-danger" onclick="removerOpcaoMenu(${nodeId}, ${i})"><i class="bi bi-x"></i></button>` : ''}
                     </div>
-                `).join('')}
+                `
+                    )
+                    .join('')}
             </div>
             <button class="btn btn-sm btn-outline-primary mt-1 w-100" onclick="adicionarOpcaoMenu(${nodeId})">
                 <i class="bi bi-plus me-1"></i>Adicionar opcao
@@ -368,10 +419,18 @@ function atualizarDadosNode(nodeId, campo, valor) {
     if (nodeEl) {
         let desc = '';
         switch (nodeData.name) {
-            case 'mensagem': desc = (nodeData.data.texto || '').substring(0, 25) + (nodeData.data.texto?.length > 25 ? '...' : ''); break;
-            case 'condicao': desc = `${nodeData.data.campo || ''} ${nodeData.data.operador || ''} ${nodeData.data.valor || ''}`; break;
-            case 'entrada': desc = nodeData.data.variavel ? `→ ${nodeData.data.variavel}` : 'Aguardar input'; break;
-            case 'integracao': desc = (nodeData.data.url || '').substring(0, 25) || 'Chamar API'; break;
+            case 'mensagem':
+                desc = (nodeData.data.texto || '').substring(0, 25) + (nodeData.data.texto?.length > 25 ? '...' : '');
+                break;
+            case 'condicao':
+                desc = `${nodeData.data.campo || ''} ${nodeData.data.operador || ''} ${nodeData.data.valor || ''}`;
+                break;
+            case 'entrada':
+                desc = nodeData.data.variavel ? `→ ${nodeData.data.variavel}` : 'Aguardar input';
+                break;
+            case 'integracao':
+                desc = (nodeData.data.url || '').substring(0, 25) || 'Chamar API';
+                break;
         }
         if (desc) nodeEl.textContent = desc;
     }
@@ -435,7 +494,9 @@ async function editarFluxo(id) {
                 mostrarToast('Erro ao carregar canvas do fluxo', 'error');
             }
         }
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function salvarFluxo() {
@@ -449,7 +510,9 @@ async function salvarFluxo() {
             body: { nome, descricao, dados_flow }
         });
         mostrarToast('Fluxo salvo com sucesso!');
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 function voltarLista() {

@@ -1,6 +1,8 @@
 // ==================== AGENDA / CALENDARIO ====================
 
-let _agendaAno, _agendaMes, _agendaEventos = [];
+let _agendaAno,
+    _agendaMes,
+    _agendaEventos = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     const hoje = new Date();
@@ -11,23 +13,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function mudarMes(delta) {
     _agendaMes += delta;
-    if (_agendaMes < 0) { _agendaMes = 11; _agendaAno--; }
-    if (_agendaMes > 11) { _agendaMes = 0; _agendaAno++; }
+    if (_agendaMes < 0) {
+        _agendaMes = 11;
+        _agendaAno--;
+    }
+    if (_agendaMes > 11) {
+        _agendaMes = 0;
+        _agendaAno++;
+    }
     renderCalendario();
 }
 
 async function renderCalendario() {
-    const meses = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const meses = [
+        'Janeiro',
+        'Fevereiro',
+        'Marco',
+        'Abril',
+        'Maio',
+        'Junho',
+        'Julho',
+        'Agosto',
+        'Setembro',
+        'Outubro',
+        'Novembro',
+        'Dezembro'
+    ];
     document.getElementById('agendaMesAno').textContent = `${meses[_agendaMes]} ${_agendaAno}`;
 
     // Carregar eventos do mes
     try {
         _agendaEventos = await api(`/api/agenda/eventos?mes=${_agendaMes + 1}&ano=${_agendaAno}`);
-    } catch { _agendaEventos = []; }
+    } catch {
+        _agendaEventos = [];
+    }
 
     const grid = document.getElementById('calendarGrid');
-    const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
-    let html = dias.map(d => `<div class="calendar-header">${d}</div>`).join('');
+    const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+    let html = dias.map((d) => `<div class="calendar-header">${d}</div>`).join('');
 
     const primeiroDia = new Date(_agendaAno, _agendaMes, 1);
     const ultimoDia = new Date(_agendaAno, _agendaMes + 1, 0);
@@ -46,11 +69,17 @@ async function renderCalendario() {
     for (let d = 1; d <= ultimoDia.getDate(); d++) {
         const dateStr = `${_agendaAno}-${String(_agendaMes + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const isToday = dateStr === hojeStr;
-        const eventosHoje = _agendaEventos.filter(e => (e.data_inicio || '').startsWith(dateStr));
+        const eventosHoje = _agendaEventos.filter((e) => (e.data_inicio || '').startsWith(dateStr));
 
         html += `<div class="calendar-day${isToday ? ' today' : ''}" onclick="selecionarDia('${dateStr}')">
             <div class="day-number">${d}</div>
-            ${eventosHoje.slice(0, 3).map(e => `<span class="event-dot" style="background:${e.cor || '#007bff'}" onclick="event.stopPropagation();editarEvento(${e.id})">${e.titulo}</span>`).join('')}
+            ${eventosHoje
+                .slice(0, 3)
+                .map(
+                    (e) =>
+                        `<span class="event-dot" style="background:${e.cor || '#007bff'}" onclick="event.stopPropagation();editarEvento(${e.id})">${e.titulo}</span>`
+                )
+                .join('')}
             ${eventosHoje.length > 3 ? `<small class="text-muted">+${eventosHoje.length - 3} mais</small>` : ''}
         </div>`;
     }
@@ -66,7 +95,7 @@ async function renderCalendario() {
 }
 
 function selecionarDia(dateStr) {
-    const eventos = _agendaEventos.filter(e => (e.data_inicio || '').startsWith(dateStr));
+    const eventos = _agendaEventos.filter((e) => (e.data_inicio || '').startsWith(dateStr));
     const container = document.getElementById('eventosDia');
     const titulo = document.getElementById('eventosDiaTitulo');
     const lista = document.getElementById('eventosDiaLista');
@@ -75,7 +104,9 @@ function selecionarDia(dateStr) {
     if (!eventos.length) {
         lista.innerHTML = '<div class="text-muted">Nenhum evento neste dia</div>';
     } else {
-        lista.innerHTML = eventos.map(e => `
+        lista.innerHTML = eventos
+            .map(
+                (e) => `
             <div class="d-flex align-items-center gap-2 py-2 border-bottom">
                 <span style="width:12px;height:12px;border-radius:50%;background:${e.cor || '#007bff'}"></span>
                 <div class="flex-grow-1">
@@ -84,7 +115,9 @@ function selecionarDia(dateStr) {
                 </div>
                 <button class="btn btn-sm btn-outline-primary" onclick="editarEvento(${e.id})"><i class="bi bi-pencil"></i></button>
             </div>
-        `).join('');
+        `
+            )
+            .join('');
     }
     container.style.display = '';
 }
@@ -115,7 +148,9 @@ async function editarEvento(id) {
         document.getElementById('btnExcluirEvento').style.display = '';
         document.getElementById('modalEventoTitulo').textContent = 'Editar Evento';
         new bootstrap.Modal(document.getElementById('modalEvento')).show();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function salvarEvento() {
@@ -125,10 +160,15 @@ async function salvarEvento() {
         tipo: document.getElementById('eventoTipo').value,
         cor: document.getElementById('eventoCor').value,
         data_inicio: document.getElementById('eventoInicio').value.replace('T', ' '),
-        data_fim: document.getElementById('eventoFim').value ? document.getElementById('eventoFim').value.replace('T', ' ') : null,
+        data_fim: document.getElementById('eventoFim').value
+            ? document.getElementById('eventoFim').value.replace('T', ' ')
+            : null,
         descricao: document.getElementById('eventoDescricao').value.trim()
     };
-    if (!data.titulo || !data.data_inicio) { mostrarToast('Titulo e data inicio obrigatorios', 'warning'); return; }
+    if (!data.titulo || !data.data_inicio) {
+        mostrarToast('Titulo e data inicio obrigatorios', 'warning');
+        return;
+    }
 
     try {
         if (id) {
@@ -140,7 +180,9 @@ async function salvarEvento() {
         }
         bootstrap.Modal.getInstance(document.getElementById('modalEvento')).hide();
         renderCalendario();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function excluirEvento() {
@@ -151,5 +193,7 @@ async function excluirEvento() {
         mostrarToast('Evento excluido!');
         bootstrap.Modal.getInstance(document.getElementById('modalEvento')).hide();
         renderCalendario();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }

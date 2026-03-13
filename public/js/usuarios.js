@@ -21,22 +21,23 @@ function renderTabela(usuarios) {
         return;
     }
 
-    tbody.innerHTML = usuarios.map(u => {
-        const perfilBadges = {
-            admin: '<span class="badge bg-danger">Administrador</span>',
-            analista: '<span class="badge bg-primary">Analista</span>',
-            vendedor: '<span class="badge bg-info">Vendedor</span>',
-            gestor_atendimento: '<span class="badge bg-success">Gestor Atendimento</span>',
-            gerente_noc: '<span class="badge bg-warning text-dark">Gerente NOC</span>',
-            financeiro: '<span class="badge bg-secondary">Financeiro</span>',
-            atendente: '<span class="badge bg-primary">Atendente</span>'
-        };
-        const perfilBadge = perfilBadges[u.perfil] || `<span class="badge bg-secondary">${u.perfil}</span>`;
-        const statusBadge = u.ativo
-            ? '<span class="badge bg-success">Ativo</span>'
-            : '<span class="badge bg-secondary">Inativo</span>';
+    tbody.innerHTML = usuarios
+        .map((u) => {
+            const perfilBadges = {
+                admin: '<span class="badge bg-danger">Administrador</span>',
+                analista: '<span class="badge bg-primary">Analista</span>',
+                vendedor: '<span class="badge bg-info">Vendedor</span>',
+                gestor_atendimento: '<span class="badge bg-success">Gestor Atendimento</span>',
+                gerente_noc: '<span class="badge bg-warning text-dark">Gerente NOC</span>',
+                financeiro: '<span class="badge bg-secondary">Financeiro</span>',
+                atendente: '<span class="badge bg-primary">Atendente</span>'
+            };
+            const perfilBadge = perfilBadges[u.perfil] || `<span class="badge bg-secondary">${u.perfil}</span>`;
+            const statusBadge = u.ativo
+                ? '<span class="badge bg-success">Ativo</span>'
+                : '<span class="badge bg-secondary">Inativo</span>';
 
-        return `
+            return `
             <tr class="${!u.ativo ? 'table-secondary' : ''}">
                 <td class="text-muted">${u.id}</td>
                 <td class="fw-medium">${u.nome}</td>
@@ -56,7 +57,8 @@ function renderTabela(usuarios) {
                 </td>
             </tr>
         `;
-    }).join('');
+        })
+        .join('');
 }
 
 function abrirModalUsuario() {
@@ -75,7 +77,7 @@ function abrirModalUsuario() {
 async function editarUsuario(id) {
     try {
         const usuarios = await api('/api/usuarios');
-        const u = usuarios.find(usr => usr.id === id);
+        const u = usuarios.find((usr) => usr.id === id);
         if (!u) return;
 
         document.getElementById('usuarioId').value = u.id;
@@ -131,7 +133,7 @@ async function salvarUsuario() {
 
 async function toggleAtivo(id, ativo) {
     const acao = ativo ? 'ativar' : 'desativar';
-    if (!await confirmar(`Tem certeza que deseja ${acao} este usuario?`)) return;
+    if (!(await confirmar(`Tem certeza que deseja ${acao} este usuario?`))) return;
 
     try {
         await api(`/api/usuarios/${id}/ativo`, {
@@ -192,13 +194,14 @@ function renderPermissoes(perms) {
         matrix[p.modulo][p.perfil] = !!p.ativo;
     }
 
-    tbody.innerHTML = modulos.map(modulo => {
-        const icon = moduloIcons[modulo] || 'bi-circle';
-        const label = moduloLabels[modulo] || modulo;
-        const analistaChecked = matrix[modulo]?.analista ? 'checked' : '';
-        const vendedorChecked = matrix[modulo]?.vendedor ? 'checked' : '';
+    tbody.innerHTML = modulos
+        .map((modulo) => {
+            const icon = moduloIcons[modulo] || 'bi-circle';
+            const label = moduloLabels[modulo] || modulo;
+            const analistaChecked = matrix[modulo]?.analista ? 'checked' : '';
+            const vendedorChecked = matrix[modulo]?.vendedor ? 'checked' : '';
 
-        return `
+            return `
             <tr>
                 <td>
                     <i class="bi ${icon} me-2 text-primary"></i>
@@ -224,14 +227,15 @@ function renderPermissoes(perms) {
                 </td>
             </tr>
         `;
-    }).join('');
+        })
+        .join('');
 }
 
 async function salvarPermissoes() {
     const checkboxes = document.querySelectorAll('.perm-checkbox');
     const perfis = { analista: {}, vendedor: {} };
 
-    checkboxes.forEach(cb => {
+    checkboxes.forEach((cb) => {
         const perfil = cb.dataset.perfil;
         const modulo = cb.dataset.modulo;
         perfis[perfil][modulo] = cb.checked;

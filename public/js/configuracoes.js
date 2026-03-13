@@ -87,11 +87,14 @@ async function carregarBackups() {
         const tbody = document.getElementById('tabelaBackups');
 
         if (!backups.length) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Nenhum backup encontrado</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="7" class="text-center text-muted py-4">Nenhum backup encontrado</td></tr>';
             return;
         }
 
-        tbody.innerHTML = backups.map(b => `
+        tbody.innerHTML = backups
+            .map(
+                (b) => `
             <tr>
                 <td>${b.id}</td>
                 <td><i class="bi bi-file-earmark-zip me-1"></i>${b.nome_arquivo}</td>
@@ -110,7 +113,9 @@ async function carregarBackups() {
                     </div>
                 </td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('');
     } catch (err) {
         mostrarToast('Erro ao carregar backups: ' + err.message, 'error');
     }
@@ -151,7 +156,7 @@ async function carregarUsuariosAtiv() {
     try {
         const users = await api('/api/usuarios/lista');
         const select = document.getElementById('filtroUsuarioAtiv');
-        users.forEach(u => {
+        users.forEach((u) => {
             const opt = document.createElement('option');
             opt.value = u.id;
             opt.textContent = u.nome;
@@ -182,7 +187,8 @@ async function carregarAtividades(append) {
         if (!append) tbody.innerHTML = '';
 
         if (!atividades.length && !append) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Nenhuma atividade encontrada</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="6" class="text-center text-muted py-4">Nenhuma atividade encontrada</td></tr>';
             document.getElementById('btnMaisAtividades').style.display = 'none';
             return;
         }
@@ -207,13 +213,19 @@ async function carregarAtividades(append) {
             configuracoes: 'bi-gear'
         };
 
-        tbody.innerHTML += atividades.map(a => {
-            let detalhes = a.detalhes || '';
-            try { const d = JSON.parse(detalhes); detalhes = Object.entries(d).map(([k, v]) => `${k}: ${v}`).join(', '); } catch {}
-            if (detalhes.length > 100) detalhes = detalhes.substring(0, 100) + '...';
-            const iconModulo = moduloIcons[a.modulo] || 'bi-circle';
+        tbody.innerHTML += atividades
+            .map((a) => {
+                let detalhes = a.detalhes || '';
+                try {
+                    const d = JSON.parse(detalhes);
+                    detalhes = Object.entries(d)
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join(', ');
+                } catch {}
+                if (detalhes.length > 100) detalhes = detalhes.substring(0, 100) + '...';
+                const iconModulo = moduloIcons[a.modulo] || 'bi-circle';
 
-            return `<tr>
+                return `<tr>
                 <td class="text-nowrap"><small>${formatarDataHora(a.criado_em)}</small></td>
                 <td>${a.usuario_nome || 'Sistema'}</td>
                 <td>${acaoIcons[a.acao] || `<span class="badge bg-secondary">${a.acao}</span>`}</td>
@@ -221,9 +233,11 @@ async function carregarAtividades(append) {
                 <td><small>${detalhes}</small></td>
                 <td><small class="text-muted">${a.ip || '-'}</small></td>
             </tr>`;
-        }).join('');
+            })
+            .join('');
 
-        document.getElementById('btnMaisAtividades').style.display = atividades.length >= _ativLimit ? 'inline-block' : 'none';
+        document.getElementById('btnMaisAtividades').style.display =
+            atividades.length >= _ativLimit ? 'inline-block' : 'none';
     } catch (err) {
         mostrarToast('Erro ao carregar atividades: ' + err.message, 'error');
     }
@@ -248,18 +262,33 @@ async function carregarRegras() {
     try {
         const regras = await api('/api/regras-automaticas');
         const tbody = document.getElementById('tabelaRegras');
-        if (!regras.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Nenhuma regra cadastrada</td></tr>'; return; }
-        const gatilhos = { chamado_pendente_dias: 'Chamado Pendente X dias', projeto_atrasado: 'Projeto Atrasado', tarefa_vencida: 'Tarefa Vencida', negocio_parado: 'Negocio Parado' };
+        if (!regras.length) {
+            tbody.innerHTML =
+                '<tr><td colspan="7" class="text-center text-muted py-4">Nenhuma regra cadastrada</td></tr>';
+            return;
+        }
+        const gatilhos = {
+            chamado_pendente_dias: 'Chamado Pendente X dias',
+            projeto_atrasado: 'Projeto Atrasado',
+            tarefa_vencida: 'Tarefa Vencida',
+            negocio_parado: 'Negocio Parado'
+        };
         const acoes = { notificar: 'Notificar', alterar_status: 'Alterar Status', criar_tarefa: 'Criar Tarefa' };
-        tbody.innerHTML = regras.map(r => `<tr>
+        tbody.innerHTML = regras
+            .map(
+                (r) => `<tr>
             <td>${r.id}</td><td>${r.nome}</td>
             <td><small>${gatilhos[r.tipo_gatilho] || r.tipo_gatilho}</small></td>
             <td><small>${acoes[r.acao] || r.acao}</small></td>
             <td><span class="badge bg-${r.ativo ? 'success' : 'secondary'}">${r.ativo ? 'Ativo' : 'Inativo'}</span></td>
             <td><small>${r.ultima_execucao ? formatarDataHora(r.ultima_execucao) : '-'}</small></td>
             <td><button class="btn btn-sm btn-outline-danger" onclick="excluirRegra(${r.id})"><i class="bi bi-trash"></i></button></td>
-        </tr>`).join('');
-    } catch (err) { mostrarToast('Erro: ' + err.message, 'error'); }
+        </tr>`
+            )
+            .join('');
+    } catch (err) {
+        mostrarToast('Erro: ' + err.message, 'error');
+    }
 }
 
 async function abrirModalRegra() {
@@ -269,15 +298,25 @@ async function abrirModalRegra() {
     const acao = prompt('Acao (notificar / alterar_status):') || 'notificar';
     const dias = prompt('Dias (para chamado_pendente_dias):') || '3';
     try {
-        await api('/api/regras-automaticas', { method: 'POST', body: { nome, tipo_gatilho, condicao_valor: { dias: parseInt(dias) }, acao } });
+        await api('/api/regras-automaticas', {
+            method: 'POST',
+            body: { nome, tipo_gatilho, condicao_valor: { dias: parseInt(dias) }, acao }
+        });
         mostrarToast('Regra criada!');
         carregarRegras();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function excluirRegra(id) {
     if (!confirm('Excluir esta regra?')) return;
-    try { await api('/api/regras-automaticas/' + id, { method: 'DELETE' }); carregarRegras(); } catch (err) { mostrarToast(err.message, 'error'); }
+    try {
+        await api('/api/regras-automaticas/' + id, { method: 'DELETE' });
+        carregarRegras();
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 // ==================== TAREFAS RECORRENTES ====================
@@ -286,16 +325,26 @@ async function carregarRecorrentes() {
     try {
         const tarefas = await api('/api/tarefas-recorrentes');
         const tbody = document.getElementById('tabelaRecorrentes');
-        if (!tarefas.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Nenhuma tarefa recorrente</td></tr>'; return; }
+        if (!tarefas.length) {
+            tbody.innerHTML =
+                '<tr><td colspan="7" class="text-center text-muted py-4">Nenhuma tarefa recorrente</td></tr>';
+            return;
+        }
         const freqs = { diario: 'Diario', semanal: 'Semanal', quinzenal: 'Quinzenal', mensal: 'Mensal' };
-        tbody.innerHTML = tarefas.map(t => `<tr>
+        tbody.innerHTML = tarefas
+            .map(
+                (t) => `<tr>
             <td>${t.id}</td><td>${t.titulo}</td><td>${t.modulo}</td>
             <td>${freqs[t.frequencia] || t.frequencia}</td>
             <td><span class="badge bg-${t.ativo ? 'success' : 'secondary'}">${t.ativo ? 'Ativo' : 'Inativo'}</span></td>
             <td><small>${t.proxima_execucao ? formatarDataHora(t.proxima_execucao) : '-'}</small></td>
             <td><button class="btn btn-sm btn-outline-danger" onclick="excluirRecorrente(${t.id})"><i class="bi bi-trash"></i></button></td>
-        </tr>`).join('');
-    } catch (err) { mostrarToast('Erro: ' + err.message, 'error'); }
+        </tr>`
+            )
+            .join('');
+    } catch (err) {
+        mostrarToast('Erro: ' + err.message, 'error');
+    }
 }
 
 async function abrirModalRecorrente() {
@@ -307,12 +356,19 @@ async function abrirModalRecorrente() {
         await api('/api/tarefas-recorrentes', { method: 'POST', body: { titulo, modulo, frequencia } });
         mostrarToast('Tarefa recorrente criada!');
         carregarRecorrentes();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function excluirRecorrente(id) {
     if (!confirm('Excluir esta tarefa recorrente?')) return;
-    try { await api('/api/tarefas-recorrentes/' + id, { method: 'DELETE' }); carregarRecorrentes(); } catch (err) { mostrarToast(err.message, 'error'); }
+    try {
+        await api('/api/tarefas-recorrentes/' + id, { method: 'DELETE' });
+        carregarRecorrentes();
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 // ==================== INTEGRACOES ====================
@@ -321,15 +377,24 @@ async function carregarTokens() {
     try {
         const tokens = await api('/api/config/api-tokens');
         const tbody = document.getElementById('tabelaTokens');
-        if (!tokens.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum token</td></tr>'; return; }
-        tbody.innerHTML = tokens.map(t => `<tr>
+        if (!tokens.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum token</td></tr>';
+            return;
+        }
+        tbody.innerHTML = tokens
+            .map(
+                (t) => `<tr>
             <td>${t.nome}</td>
             <td><code class="small">${t.token.substring(0, 20)}...</code></td>
             <td><span class="badge bg-${t.ativo ? 'success' : 'secondary'}" style="cursor:pointer" onclick="toggleToken(${t.id})">${t.ativo ? 'Ativo' : 'Inativo'}</span></td>
             <td><small>${t.ultimo_uso ? formatarDataHora(t.ultimo_uso) : 'Nunca'}</small></td>
             <td><button class="btn btn-sm btn-outline-danger" onclick="excluirToken(${t.id})"><i class="bi bi-trash"></i></button></td>
-        </tr>`).join('');
-    } catch (err) { mostrarToast('Erro: ' + err.message, 'error'); }
+        </tr>`
+            )
+            .join('');
+    } catch (err) {
+        mostrarToast('Erro: ' + err.message, 'error');
+    }
 }
 
 async function criarApiToken() {
@@ -339,34 +404,55 @@ async function criarApiToken() {
         const result = await api('/api/config/api-tokens', { method: 'POST', body: { nome } });
         mostrarToast('Token criado! Copie: ' + result.token);
         carregarTokens();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function toggleToken(id) {
-    try { await api('/api/config/api-tokens/' + id + '/toggle', { method: 'PATCH' }); carregarTokens(); } catch (err) { mostrarToast(err.message, 'error'); }
+    try {
+        await api('/api/config/api-tokens/' + id + '/toggle', { method: 'PATCH' });
+        carregarTokens();
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function excluirToken(id) {
     if (!confirm('Excluir este token?')) return;
-    try { await api('/api/config/api-tokens/' + id, { method: 'DELETE' }); carregarTokens(); } catch (err) { mostrarToast(err.message, 'error'); }
+    try {
+        await api('/api/config/api-tokens/' + id, { method: 'DELETE' });
+        carregarTokens();
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function carregarWebhooks() {
     try {
         const webhooks = await api('/api/config/webhooks');
         const tbody = document.getElementById('tabelaWebhooks');
-        if (!webhooks.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum webhook</td></tr>'; return; }
-        tbody.innerHTML = webhooks.map(w => {
-            let eventos = w.eventos;
-            try { eventos = JSON.parse(eventos).join(', '); } catch {}
-            return `<tr>
+        if (!webhooks.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum webhook</td></tr>';
+            return;
+        }
+        tbody.innerHTML = webhooks
+            .map((w) => {
+                let eventos = w.eventos;
+                try {
+                    eventos = JSON.parse(eventos).join(', ');
+                } catch {}
+                return `<tr>
                 <td>${w.nome}</td><td><small>${w.url}</small></td>
                 <td><small>${eventos}</small></td>
                 <td><span class="badge bg-${w.ativo ? 'success' : 'secondary'}">${w.ativo ? 'Ativo' : 'Inativo'}</span></td>
                 <td><button class="btn btn-sm btn-outline-danger" onclick="excluirWebhook(${w.id})"><i class="bi bi-trash"></i></button></td>
             </tr>`;
-        }).join('');
-    } catch (err) { mostrarToast('Erro: ' + err.message, 'error'); }
+            })
+            .join('');
+    } catch (err) {
+        mostrarToast('Erro: ' + err.message, 'error');
+    }
 }
 
 async function criarWebhook() {
@@ -374,17 +460,28 @@ async function criarWebhook() {
     if (!nome) return;
     const url = prompt('URL do webhook:');
     if (!url) return;
-    const eventosStr = prompt('Eventos (separados por virgula): chamado.criado, chamado.editado, projeto.criado') || 'chamado.criado';
+    const eventosStr =
+        prompt('Eventos (separados por virgula): chamado.criado, chamado.editado, projeto.criado') || 'chamado.criado';
     try {
-        await api('/api/config/webhooks', { method: 'POST', body: { nome, url, eventos: eventosStr.split(',').map(e => e.trim()) } });
+        await api('/api/config/webhooks', {
+            method: 'POST',
+            body: { nome, url, eventos: eventosStr.split(',').map((e) => e.trim()) }
+        });
         mostrarToast('Webhook criado!');
         carregarWebhooks();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function excluirWebhook(id) {
     if (!confirm('Excluir este webhook?')) return;
-    try { await api('/api/config/webhooks/' + id, { method: 'DELETE' }); carregarWebhooks(); } catch (err) { mostrarToast(err.message, 'error'); }
+    try {
+        await api('/api/config/webhooks/' + id, { method: 'DELETE' });
+        carregarWebhooks();
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 // ==================== INTEGRACOES ERP ====================
@@ -392,10 +489,31 @@ async function excluirWebhook(id) {
 let _erpSelecionado = null;
 
 const ERP_UI_CONFIG = {
-    ixc: { label: 'IXC Provedor', icon: 'bi-server', color: '#007bff', urlPlaceholder: 'https://seudominio.ixcsoft.com.br/webservice/v1', urlHint: 'Formato: https://dominio/webservice/v1', showToken: true, extraFields: [] },
-    ispfy: { label: 'ISPFY', icon: 'bi-hdd-network', color: '#6f42c1', urlPlaceholder: 'https://seuhost:8043', urlHint: 'HTTPS porta 8043 ou HTTP porta 8020', showToken: true, extraFields: [] },
+    ixc: {
+        label: 'IXC Provedor',
+        icon: 'bi-server',
+        color: '#007bff',
+        urlPlaceholder: 'https://seudominio.ixcsoft.com.br/webservice/v1',
+        urlHint: 'Formato: https://dominio/webservice/v1',
+        showToken: true,
+        extraFields: []
+    },
+    ispfy: {
+        label: 'ISPFY',
+        icon: 'bi-hdd-network',
+        color: '#6f42c1',
+        urlPlaceholder: 'https://seuhost:8043',
+        urlHint: 'HTTPS porta 8043 ou HTTP porta 8020',
+        showToken: true,
+        extraFields: []
+    },
     hubsoft: {
-        label: 'Hubsoft', icon: 'bi-cloud', color: '#28a745', urlPlaceholder: 'https://seudominio.hubsoft.com.br', urlHint: 'URL base da instalacao Hubsoft', showToken: false,
+        label: 'Hubsoft',
+        icon: 'bi-cloud',
+        color: '#28a745',
+        urlPlaceholder: 'https://seudominio.hubsoft.com.br',
+        urlHint: 'URL base da instalacao Hubsoft',
+        showToken: false,
         extraFields: [
             { key: 'client_id', label: 'Client ID', type: 'text' },
             { key: 'client_secret', label: 'Client Secret', type: 'password' },
@@ -404,15 +522,36 @@ const ERP_UI_CONFIG = {
         ]
     },
     sgp: {
-        label: 'SGP', icon: 'bi-diagram-3', color: '#fd7e14', urlPlaceholder: 'https://seudominio.sgp.net.br', urlHint: 'URL base da API SGP', showToken: true,
+        label: 'SGP',
+        icon: 'bi-diagram-3',
+        color: '#fd7e14',
+        urlPlaceholder: 'https://seudominio.sgp.net.br',
+        urlHint: 'URL base da API SGP',
+        showToken: true,
         extraFields: [
             { key: 'app', label: 'App ID', type: 'text' },
-            { key: 'auth_mode', label: 'Modo de Autenticacao', type: 'select', options: [{ value: 'token_body', label: 'Token + App no Body' }, { value: 'basic', label: 'Basic Auth' }] },
+            {
+                key: 'auth_mode',
+                label: 'Modo de Autenticacao',
+                type: 'select',
+                options: [
+                    { value: 'token_body', label: 'Token + App no Body' },
+                    { value: 'basic', label: 'Basic Auth' }
+                ]
+            },
             { key: 'basic_user', label: 'Usuario (Basic Auth)', type: 'text', showWhen: { auth_mode: 'basic' } },
             { key: 'basic_pass', label: 'Senha (Basic Auth)', type: 'password', showWhen: { auth_mode: 'basic' } }
         ]
     },
-    atlaz: { label: 'Atlaz', icon: 'bi-globe2', color: '#17a2b8', urlPlaceholder: 'https://api.atlaz.com.br', urlHint: 'URL base da API Atlaz', showToken: true, extraFields: [] }
+    atlaz: {
+        label: 'Atlaz',
+        icon: 'bi-globe2',
+        color: '#17a2b8',
+        urlPlaceholder: 'https://api.atlaz.com.br',
+        urlHint: 'URL base da API Atlaz',
+        showToken: true,
+        extraFields: []
+    }
 };
 
 async function carregarErpStatus() {
@@ -420,15 +559,20 @@ async function carregarErpStatus() {
         const erps = await api('/api/erp/todos');
         const container = document.getElementById('erpStatusCards');
         if (!container) return;
-        container.innerHTML = erps.map(erp => {
-            const ui = ERP_UI_CONFIG[erp.tipo] || {};
-            const statusBadge = erp.configurado
-                ? (erp.ativo ? '<span class="badge bg-success">Configurado</span>' : '<span class="badge bg-warning text-dark">Inativo</span>')
-                : '<span class="badge bg-secondary">Nao configurado</span>';
-            const syncText = erp.ultimo_sync
-                ? '<small class="text-muted">Sync: ' + new Date(erp.ultimo_sync).toLocaleString('pt-BR') + '</small>'
-                : '<small class="text-muted">Nunca sincronizado</small>';
-            return `<div class="col-6 col-md-4 col-lg">
+        container.innerHTML = erps
+            .map((erp) => {
+                const ui = ERP_UI_CONFIG[erp.tipo] || {};
+                const statusBadge = erp.configurado
+                    ? erp.ativo
+                        ? '<span class="badge bg-success">Configurado</span>'
+                        : '<span class="badge bg-warning text-dark">Inativo</span>'
+                    : '<span class="badge bg-secondary">Nao configurado</span>';
+                const syncText = erp.ultimo_sync
+                    ? '<small class="text-muted">Sync: ' +
+                      new Date(erp.ultimo_sync).toLocaleString('pt-BR') +
+                      '</small>'
+                    : '<small class="text-muted">Nunca sincronizado</small>';
+                return `<div class="col-6 col-md-4 col-lg">
                 <div class="card h-100 text-center" style="cursor:pointer;border-left:3px solid ${ui.color || '#6c757d'}" onclick="selecionarErp('${erp.tipo}')">
                     <div class="card-body py-3">
                         <i class="bi ${ui.icon || 'bi-cloud'} mb-1" style="font-size:1.5rem;color:${ui.color || '#6c757d'}"></i>
@@ -438,7 +582,8 @@ async function carregarErpStatus() {
                     </div>
                 </div>
             </div>`;
-        }).join('');
+            })
+            .join('');
     } catch (err) {
         const container = document.getElementById('erpStatusCards');
         if (container) container.innerHTML = '<div class="text-danger">Erro ao carregar: ' + err.message + '</div>';
@@ -451,7 +596,8 @@ async function selecionarErp(tipo) {
     if (!ui) return;
 
     document.getElementById('erpConfigPanel').style.display = '';
-    document.getElementById('erpConfigTitle').innerHTML = '<i class="bi ' + ui.icon + ' me-2" style="color:' + ui.color + '"></i>Configuracao ' + ui.label;
+    document.getElementById('erpConfigTitle').innerHTML =
+        '<i class="bi ' + ui.icon + ' me-2" style="color:' + ui.color + '"></i>Configuracao ' + ui.label;
     document.getElementById('erpUrlBase').placeholder = ui.urlPlaceholder;
     document.getElementById('erpUrlHint').textContent = ui.urlHint;
     document.getElementById('erpTokenGroup').style.display = ui.showToken ? '' : 'none';
@@ -461,16 +607,41 @@ async function selecionarErp(tipo) {
     // Render extra fields
     const extraContainer = document.getElementById('erpExtraFields');
     if (ui.extraFields.length > 0) {
-        extraContainer.innerHTML = '<div class="row g-3">' + ui.extraFields.map(f => {
-            if (f.type === 'select') {
-                return '<div class="col-md-6" id="erpExtra_' + f.key + '_wrap"><label class="form-label fw-bold">' + f.label + '</label>' +
-                    '<select class="form-select" id="erpExtra_' + f.key + '" onchange="erpExtraFieldChanged()">' +
-                    f.options.map(o => '<option value="' + o.value + '">' + o.label + '</option>').join('') +
-                    '</select></div>';
-            }
-            return '<div class="col-md-6" id="erpExtra_' + f.key + '_wrap"><label class="form-label fw-bold">' + f.label + '</label>' +
-                '<input type="' + (f.type || 'text') + '" class="form-control" id="erpExtra_' + f.key + '" placeholder="' + f.label + '"></div>';
-        }).join('') + '</div>';
+        extraContainer.innerHTML =
+            '<div class="row g-3">' +
+            ui.extraFields
+                .map((f) => {
+                    if (f.type === 'select') {
+                        return (
+                            '<div class="col-md-6" id="erpExtra_' +
+                            f.key +
+                            '_wrap"><label class="form-label fw-bold">' +
+                            f.label +
+                            '</label>' +
+                            '<select class="form-select" id="erpExtra_' +
+                            f.key +
+                            '" onchange="erpExtraFieldChanged()">' +
+                            f.options.map((o) => '<option value="' + o.value + '">' + o.label + '</option>').join('') +
+                            '</select></div>'
+                        );
+                    }
+                    return (
+                        '<div class="col-md-6" id="erpExtra_' +
+                        f.key +
+                        '_wrap"><label class="form-label fw-bold">' +
+                        f.label +
+                        '</label>' +
+                        '<input type="' +
+                        (f.type || 'text') +
+                        '" class="form-control" id="erpExtra_' +
+                        f.key +
+                        '" placeholder="' +
+                        f.label +
+                        '"></div>'
+                    );
+                })
+                .join('') +
+            '</div>';
     } else {
         extraContainer.innerHTML = '';
     }
@@ -484,7 +655,8 @@ async function selecionarErp(tipo) {
                 ? '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Configurado</span>'
                 : '<span class="badge bg-warning text-dark">Inativo</span>';
             if (config.ultimo_sync) {
-                document.getElementById('erpUltimoSync').textContent = 'Ultima sincronizacao: ' + new Date(config.ultimo_sync).toLocaleString('pt-BR');
+                document.getElementById('erpUltimoSync').textContent =
+                    'Ultima sincronizacao: ' + new Date(config.ultimo_sync).toLocaleString('pt-BR');
             }
             if (config.extras_parsed) {
                 for (const [key, val] of Object.entries(config.extras_parsed)) {
@@ -551,7 +723,9 @@ async function salvarErpConfig() {
         mostrarToast('Configuracao ' + ui.label + ' salva!');
         carregarErpStatus();
         selecionarErp(_erpSelecionado);
-    } catch (err) { mostrarToast('Erro: ' + err.message, 'error'); }
+    } catch (err) {
+        mostrarToast('Erro: ' + err.message, 'error');
+    }
 }
 
 async function testarErpConexao() {
@@ -561,21 +735,33 @@ async function testarErpConexao() {
     try {
         const r = await api('/api/erp/' + _erpSelecionado + '/testar');
         if (r.ok) {
-            resultado.innerHTML = '<div class="alert alert-success mt-2"><i class="bi bi-check-circle me-1"></i>Conexao bem sucedida! Status HTTP: ' + r.status + '</div>';
+            resultado.innerHTML =
+                '<div class="alert alert-success mt-2"><i class="bi bi-check-circle me-1"></i>Conexao bem sucedida! Status HTTP: ' +
+                r.status +
+                '</div>';
             carregarErpStatus();
         } else {
-            resultado.innerHTML = '<div class="alert alert-danger mt-2"><i class="bi bi-x-circle me-1"></i>Falha: ' + (r.erro || 'Erro desconhecido') + '</div>';
+            resultado.innerHTML =
+                '<div class="alert alert-danger mt-2"><i class="bi bi-x-circle me-1"></i>Falha: ' +
+                (r.erro || 'Erro desconhecido') +
+                '</div>';
         }
     } catch (err) {
-        resultado.innerHTML = '<div class="alert alert-danger mt-2"><i class="bi bi-x-circle me-1"></i>Erro: ' + err.message + '</div>';
+        resultado.innerHTML =
+            '<div class="alert alert-danger mt-2"><i class="bi bi-x-circle me-1"></i>Erro: ' + err.message + '</div>';
     }
 }
 
 function toggleErpToken() {
     const input = document.getElementById('erpToken');
     const icon = document.getElementById('erpTokenIcon');
-    if (input.type === 'password') { input.type = 'text'; icon.className = 'bi bi-eye-slash'; }
-    else { input.type = 'password'; icon.className = 'bi bi-eye'; }
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
 }
 
 // ==================== SLA ====================
@@ -586,11 +772,14 @@ async function carregarSLA() {
         const tbody = document.getElementById('tabelaSLA');
         if (!tbody) return;
         if (!regras.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Nenhuma regra SLA configurada</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="6" class="text-center text-muted py-3">Nenhuma regra SLA configurada</td></tr>';
             return;
         }
         const prioMap = { baixa: 'secondary', normal: 'info', alta: 'warning', critica: 'danger' };
-        tbody.innerHTML = regras.map(r => `
+        tbody.innerHTML = regras
+            .map(
+                (r) => `
             <tr>
                 <td class="fw-medium text-capitalize">${r.categoria}</td>
                 <td><span class="badge bg-${prioMap[r.prioridade] || 'info'}">${r.prioridade}</span></td>
@@ -607,7 +796,9 @@ async function carregarSLA() {
                     </div>
                 </td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('');
     } catch (err) {
         console.error('Erro ao carregar SLA:', err);
     }
@@ -616,7 +807,7 @@ async function carregarSLA() {
 async function carregarSLADashboard() {
     try {
         const d = await api('/api/sla/dashboard');
-        const el = id => document.getElementById(id);
+        const el = (id) => document.getElementById(id);
         if (el('slaTotalAbertos')) el('slaTotalAbertos').textContent = d.total_abertos || 0;
         if (el('slaDentro')) el('slaDentro').textContent = d.sla_dentro || 0;
         if (el('slaCriticos')) el('slaCriticos').textContent = d.sla_criticos || 0;
@@ -639,7 +830,7 @@ function abrirModalSLA() {
 async function editarSLA(id) {
     try {
         const regras = await api('/api/sla/config');
-        const r = regras.find(x => x.id === id);
+        const r = regras.find((x) => x.id === id);
         if (!r) return;
         document.getElementById('slaId').value = r.id;
         document.getElementById('slaCategoria').value = r.categoria;
@@ -684,7 +875,7 @@ async function salvarSLA() {
 async function toggleSLA(id, novoStatus) {
     try {
         const regras = await api('/api/sla/config');
-        const r = regras.find(x => x.id === id);
+        const r = regras.find((x) => x.id === id);
         if (!r) return;
         await api(`/api/sla/config/${id}`, { method: 'PUT', body: { ...r, ativo: novoStatus } });
         mostrarToast(novoStatus ? 'Regra ativada' : 'Regra desativada');
@@ -745,8 +936,13 @@ async function salvarWhatsAppIA(e) {
 function toggleIAKey() {
     const input = document.getElementById('iaApiKey');
     const icon = document.getElementById('iaKeyIcon');
-    if (input.type === 'password') { input.type = 'text'; icon.className = 'bi bi-eye-slash'; }
-    else { input.type = 'password'; icon.className = 'bi bi-eye'; }
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
 }
 
 async function carregarIAHistorico() {
@@ -758,7 +954,10 @@ async function carregarIAHistorico() {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Nenhum registro</td></tr>';
             return;
         }
-        tbody.innerHTML = historico.slice(0, 50).map(h => `
+        tbody.innerHTML = historico
+            .slice(0, 50)
+            .map(
+                (h) => `
             <tr>
                 <td><small>${formatarDataHora(h.criado_em)}</small></td>
                 <td><small>${h.chat_id || '-'}</small></td>
@@ -767,7 +966,9 @@ async function carregarIAHistorico() {
                 <td><span class="badge bg-info">${h.classificacao || '-'}</span></td>
                 <td>${h.aprovado ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-dash-circle text-muted"></i>'}</td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('');
     } catch {}
 }
 
@@ -792,44 +993,107 @@ async function consultarTitular() {
         const dados = await api('/api/lgpd/dados-titular?' + params.toString());
         const total = (dados.provedores?.length || 0) + (dados.chamados?.length || 0) + (dados.negocios?.length || 0);
         if (!total) {
-            container.innerHTML = '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-1"></i>Nenhum dado encontrado na base local. Tente "Consultar ERP" para buscar diretamente no sistema do provedor.</div>';
+            container.innerHTML =
+                '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-1"></i>Nenhum dado encontrado na base local. Tente "Consultar ERP" para buscar diretamente no sistema do provedor.</div>';
             return;
         }
-        let html = '<div class="alert alert-success mb-2"><i class="bi bi-check-circle me-1"></i><strong>' + total + ' registro(s) encontrado(s) na base local</strong></div>';
+        let html =
+            '<div class="alert alert-success mb-2"><i class="bi bi-check-circle me-1"></i><strong>' +
+            total +
+            ' registro(s) encontrado(s) na base local</strong></div>';
         if (dados.provedores?.length) {
-            html += '<div class="card p-2 mb-2"><h6 class="mb-2"><i class="bi bi-building me-1"></i>Provedores (' + dados.provedores.length + ')</h6>';
-            html += '<div class="table-responsive"><table class="table table-sm table-bordered mb-0"><thead><tr><th>ID</th><th>Nome</th><th>CNPJ</th><th>Email</th><th>Telefone</th><th>Acoes</th></tr></thead><tbody>';
-            dados.provedores.forEach(p => {
-                html += '<tr><td>' + p.id + '</td><td>' + escapeHtmlGlobal(p.nome || '') + '</td><td>' + escapeHtmlGlobal(p.cnpj || '-') + '</td><td>' + escapeHtmlGlobal(p.email || '-') + '</td><td>' + escapeHtmlGlobal(p.telefone || '-') + '</td>';
-                html += '<td><button class="btn btn-xs btn-outline-danger" onclick="anonimizarTitular(' + p.id + ',\'' + escapeHtmlGlobal(p.nome || '').replace(/'/g, "\\'") + '\')" title="Anonimizar dados"><i class="bi bi-shield-x"></i></button></td></tr>';
+            html +=
+                '<div class="card p-2 mb-2"><h6 class="mb-2"><i class="bi bi-building me-1"></i>Provedores (' +
+                dados.provedores.length +
+                ')</h6>';
+            html +=
+                '<div class="table-responsive"><table class="table table-sm table-bordered mb-0"><thead><tr><th>ID</th><th>Nome</th><th>CNPJ</th><th>Email</th><th>Telefone</th><th>Acoes</th></tr></thead><tbody>';
+            dados.provedores.forEach((p) => {
+                html +=
+                    '<tr><td>' +
+                    p.id +
+                    '</td><td>' +
+                    escapeHtmlGlobal(p.nome || '') +
+                    '</td><td>' +
+                    escapeHtmlGlobal(p.cnpj || '-') +
+                    '</td><td>' +
+                    escapeHtmlGlobal(p.email || '-') +
+                    '</td><td>' +
+                    escapeHtmlGlobal(p.telefone || '-') +
+                    '</td>';
+                html +=
+                    '<td><button class="btn btn-xs btn-outline-danger" onclick="anonimizarTitular(' +
+                    p.id +
+                    ",'" +
+                    escapeHtmlGlobal(p.nome || '').replace(/'/g, "\\'") +
+                    '\')" title="Anonimizar dados"><i class="bi bi-shield-x"></i></button></td></tr>';
             });
             html += '</tbody></table></div></div>';
         }
         if (dados.chamados?.length) {
-            html += '<div class="card p-2 mb-2"><h6 class="mb-2"><i class="bi bi-ticket me-1"></i>Chamados (' + dados.chamados.length + ')</h6>';
-            html += '<div class="table-responsive"><table class="table table-sm table-bordered mb-0"><thead><tr><th>ID</th><th>Titulo</th><th>Status</th><th>Prioridade</th><th>Criado em</th></tr></thead><tbody>';
-            dados.chamados.forEach(c => {
-                html += '<tr><td>' + c.id + '</td><td>' + escapeHtmlGlobal(c.titulo || '') + '</td><td>' + escapeHtmlGlobal(c.status || '') + '</td><td>' + escapeHtmlGlobal(c.prioridade || '') + '</td><td>' + (c.criado_em || '') + '</td></tr>';
+            html +=
+                '<div class="card p-2 mb-2"><h6 class="mb-2"><i class="bi bi-ticket me-1"></i>Chamados (' +
+                dados.chamados.length +
+                ')</h6>';
+            html +=
+                '<div class="table-responsive"><table class="table table-sm table-bordered mb-0"><thead><tr><th>ID</th><th>Titulo</th><th>Status</th><th>Prioridade</th><th>Criado em</th></tr></thead><tbody>';
+            dados.chamados.forEach((c) => {
+                html +=
+                    '<tr><td>' +
+                    c.id +
+                    '</td><td>' +
+                    escapeHtmlGlobal(c.titulo || '') +
+                    '</td><td>' +
+                    escapeHtmlGlobal(c.status || '') +
+                    '</td><td>' +
+                    escapeHtmlGlobal(c.prioridade || '') +
+                    '</td><td>' +
+                    (c.criado_em || '') +
+                    '</td></tr>';
             });
             html += '</tbody></table></div></div>';
         }
         if (dados.negocios?.length) {
-            html += '<div class="card p-2 mb-2"><h6 class="mb-2"><i class="bi bi-briefcase me-1"></i>Negocios (' + dados.negocios.length + ')</h6>';
-            html += '<div class="table-responsive"><table class="table table-sm table-bordered mb-0"><thead><tr><th>Lead</th><th>Estagio</th><th>Plano</th><th>Valor</th></tr></thead><tbody>';
-            dados.negocios.forEach(n => {
-                html += '<tr><td>' + escapeHtmlGlobal(n.provedor_nome_lead || '') + '</td><td>' + escapeHtmlGlobal(n.estagio || '') + '</td><td>' + escapeHtmlGlobal(n.plano_interesse || '') + '</td><td>' + (n.valor_estimado || '-') + '</td></tr>';
+            html +=
+                '<div class="card p-2 mb-2"><h6 class="mb-2"><i class="bi bi-briefcase me-1"></i>Negocios (' +
+                dados.negocios.length +
+                ')</h6>';
+            html +=
+                '<div class="table-responsive"><table class="table table-sm table-bordered mb-0"><thead><tr><th>Lead</th><th>Estagio</th><th>Plano</th><th>Valor</th></tr></thead><tbody>';
+            dados.negocios.forEach((n) => {
+                html +=
+                    '<tr><td>' +
+                    escapeHtmlGlobal(n.provedor_nome_lead || '') +
+                    '</td><td>' +
+                    escapeHtmlGlobal(n.estagio || '') +
+                    '</td><td>' +
+                    escapeHtmlGlobal(n.plano_interesse || '') +
+                    '</td><td>' +
+                    (n.valor_estimado || '-') +
+                    '</td></tr>';
             });
             html += '</tbody></table></div></div>';
         }
         if (dados.consentimentos?.length) {
-            html += '<div class="card p-2 mb-2"><h6 class="mb-2"><i class="bi bi-clipboard-check me-1"></i>Consentimentos (' + dados.consentimentos.length + ')</h6><ul class="mb-0">';
-            dados.consentimentos.forEach(c => {
-                html += '<li>' + escapeHtmlGlobal(c.tipo_consentimento) + ': <span class="badge bg-' + (c.consentido ? 'success">Concedido' : 'danger">Revogado') + '</span> - ' + (c.data_consentimento || '') + '</li>';
+            html +=
+                '<div class="card p-2 mb-2"><h6 class="mb-2"><i class="bi bi-clipboard-check me-1"></i>Consentimentos (' +
+                dados.consentimentos.length +
+                ')</h6><ul class="mb-0">';
+            dados.consentimentos.forEach((c) => {
+                html +=
+                    '<li>' +
+                    escapeHtmlGlobal(c.tipo_consentimento) +
+                    ': <span class="badge bg-' +
+                    (c.consentido ? 'success">Concedido' : 'danger">Revogado') +
+                    '</span> - ' +
+                    (c.data_consentimento || '') +
+                    '</li>';
             });
             html += '</ul></div>';
         }
         html += '<div class="d-flex gap-2 mt-2">';
-        html += '<button class="btn btn-sm btn-outline-primary" onclick="exportarDadosTitular()"><i class="bi bi-download me-1"></i>Exportar Dados (JSON)</button>';
+        html +=
+            '<button class="btn btn-sm btn-outline-primary" onclick="exportarDadosTitular()"><i class="bi bi-download me-1"></i>Exportar Dados (JSON)</button>';
         html += '</div>';
         container.innerHTML = html;
     } catch (err) {
@@ -842,36 +1106,76 @@ async function consultarTitularERP() {
     if (!params.toString()) return mostrarToast('Informe documento ou nome', 'warning');
     const container = document.getElementById('lgpdResultadoTitular');
     container.style.display = '';
-    container.innerHTML = '<div class="spinner-border spinner-border-sm"></div> Consultando ERPs em tempo real (pode demorar)...';
+    container.innerHTML =
+        '<div class="spinner-border spinner-border-sm"></div> Consultando ERPs em tempo real (pode demorar)...';
     try {
         const dados = await api('/api/lgpd/consulta-erp?' + params.toString());
         if (!dados.erps?.length) {
-            container.innerHTML = '<div class="alert alert-warning"><i class="bi bi-cloud-slash me-1"></i>' + escapeHtmlGlobal(dados.mensagem || 'Nenhum resultado encontrado nos ERPs.') + '</div>';
+            container.innerHTML =
+                '<div class="alert alert-warning"><i class="bi bi-cloud-slash me-1"></i>' +
+                escapeHtmlGlobal(dados.mensagem || 'Nenhum resultado encontrado nos ERPs.') +
+                '</div>';
             return;
         }
         let html = '';
         let temResultado = false;
         for (const erp of dados.erps) {
             if (erp.erro) {
-                html += '<div class="alert alert-danger mb-2"><strong>' + escapeHtmlGlobal(erp.erp_label) + ':</strong> ' + escapeHtmlGlobal(erp.erro) + '</div>';
+                html +=
+                    '<div class="alert alert-danger mb-2"><strong>' +
+                    escapeHtmlGlobal(erp.erp_label) +
+                    ':</strong> ' +
+                    escapeHtmlGlobal(erp.erro) +
+                    '</div>';
                 continue;
             }
             if (!erp.clientes?.length) continue;
             temResultado = true;
-            html += '<div class="card p-2 mb-2"><h6 class="mb-2"><i class="bi bi-cloud-check me-1 text-info"></i>' + escapeHtmlGlobal(erp.erp_label) + ' (' + erp.clientes.length + ' encontrado(s))</h6>';
-            html += '<div class="table-responsive"><table class="table table-sm table-bordered mb-0"><thead><tr><th>Nome</th><th>Documento</th><th>Email</th><th>Telefone</th><th>Status</th><th>Contratos</th></tr></thead><tbody>';
+            html +=
+                '<div class="card p-2 mb-2"><h6 class="mb-2"><i class="bi bi-cloud-check me-1 text-info"></i>' +
+                escapeHtmlGlobal(erp.erp_label) +
+                ' (' +
+                erp.clientes.length +
+                ' encontrado(s))</h6>';
+            html +=
+                '<div class="table-responsive"><table class="table table-sm table-bordered mb-0"><thead><tr><th>Nome</th><th>Documento</th><th>Email</th><th>Telefone</th><th>Status</th><th>Contratos</th></tr></thead><tbody>';
             for (const c of erp.clientes) {
-                const contratos = c.contratos?.length ? c.contratos.map(ct => escapeHtmlGlobal(ct.plano || '-') + ' (' + escapeHtmlGlobal(ct.status || '-') + ')').join(', ') : '-';
-                html += '<tr><td>' + escapeHtmlGlobal(c.nome || '') + '</td><td>' + escapeHtmlGlobal(c.documento || '') + '</td><td>' + escapeHtmlGlobal(c.email || '') + '</td><td>' + escapeHtmlGlobal(c.telefone || '') + '</td><td>' + escapeHtmlGlobal(c.status || '') + '</td><td class="small">' + contratos + '</td></tr>';
+                const contratos = c.contratos?.length
+                    ? c.contratos
+                          .map(
+                              (ct) =>
+                                  escapeHtmlGlobal(ct.plano || '-') + ' (' + escapeHtmlGlobal(ct.status || '-') + ')'
+                          )
+                          .join(', ')
+                    : '-';
+                html +=
+                    '<tr><td>' +
+                    escapeHtmlGlobal(c.nome || '') +
+                    '</td><td>' +
+                    escapeHtmlGlobal(c.documento || '') +
+                    '</td><td>' +
+                    escapeHtmlGlobal(c.email || '') +
+                    '</td><td>' +
+                    escapeHtmlGlobal(c.telefone || '') +
+                    '</td><td>' +
+                    escapeHtmlGlobal(c.status || '') +
+                    '</td><td class="small">' +
+                    contratos +
+                    '</td></tr>';
             }
             html += '</tbody></table></div></div>';
         }
         if (!temResultado && !html) html = '<div class="alert alert-warning">Nenhum titular encontrado nos ERPs.</div>';
-        else html = '<div class="alert alert-info mb-2"><i class="bi bi-cloud-check me-1"></i><strong>Dados obtidos em tempo real dos ERPs</strong></div>' + html;
-        html += '<div class="d-flex gap-2 mt-2"><button class="btn btn-sm btn-outline-primary" onclick="exportarDadosTitular()"><i class="bi bi-download me-1"></i>Exportar Todos os Dados (JSON)</button></div>';
+        else
+            html =
+                '<div class="alert alert-info mb-2"><i class="bi bi-cloud-check me-1"></i><strong>Dados obtidos em tempo real dos ERPs</strong></div>' +
+                html;
+        html +=
+            '<div class="d-flex gap-2 mt-2"><button class="btn btn-sm btn-outline-primary" onclick="exportarDadosTitular()"><i class="bi bi-download me-1"></i>Exportar Todos os Dados (JSON)</button></div>';
         container.innerHTML = html;
     } catch (err) {
-        container.innerHTML = '<div class="alert alert-danger">Erro ao consultar ERP: ' + escapeHtmlGlobal(err.message) + '</div>';
+        container.innerHTML =
+            '<div class="alert alert-danger">Erro ao consultar ERP: ' + escapeHtmlGlobal(err.message) + '</div>';
     }
 }
 
@@ -897,7 +1201,14 @@ async function exportarDadosTitular() {
 }
 
 async function anonimizarTitular(provedorId, nome) {
-    if (!confirm('ATENCAO: Esta acao e IRREVERSIVEL!\n\nTodos os dados pessoais de "' + nome + '" serao anonimizados conforme Art. 18 da LGPD.\n\nDeseja continuar?')) return;
+    if (
+        !confirm(
+            'ATENCAO: Esta acao e IRREVERSIVEL!\n\nTodos os dados pessoais de "' +
+                nome +
+                '" serao anonimizados conforme Art. 18 da LGPD.\n\nDeseja continuar?'
+        )
+    )
+        return;
     if (!confirm('Confirme novamente: Anonimizar TODOS os dados de "' + nome + '"?')) return;
     try {
         await api('/api/lgpd/anonimizar', { method: 'POST', body: { provedor_id: provedorId, escopo: 'completo' } });
@@ -914,11 +1225,14 @@ async function carregarRetencao() {
         const tbody = document.getElementById('tabelaRetencao');
         if (!tbody) return;
         if (!regras.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Nenhuma regra de retencao</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="6" class="text-center text-muted py-3">Nenhuma regra de retencao</td></tr>';
             return;
         }
         const acaoMap = { anonimizar: 'warning', excluir: 'danger', arquivar: 'info' };
-        tbody.innerHTML = regras.map(r => `
+        tbody.innerHTML = regras
+            .map(
+                (r) => `
             <tr>
                 <td class="fw-medium">${r.tabela}</td>
                 <td>${r.campo || '<em class="text-muted">Todos</em>'}</td>
@@ -927,7 +1241,9 @@ async function carregarRetencao() {
                 <td>${r.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>'}</td>
                 <td><button class="btn btn-sm btn-outline-danger" onclick="excluirRetencao(${r.id})"><i class="bi bi-trash"></i></button></td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('');
     } catch {}
 }
 
@@ -975,18 +1291,41 @@ async function gerarRelatorioLGPD() {
     try {
         const rel = await api('/api/lgpd/relatorio');
         let html = '<div class="row g-3 mb-3">';
-        html += '<div class="col-md-3"><div class="card text-center p-3"><div class="fs-4 fw-bold text-primary">' + (rel.tabelas?.reduce((s, t) => s + (t.registros || 0), 0) || 0) + '</div><small class="text-muted">Registros Totais</small></div></div>';
-        html += '<div class="col-md-3"><div class="card text-center p-3"><div class="fs-4 fw-bold text-success">' + (rel.total_consentimentos || 0) + '</div><small class="text-muted">Consentimentos</small></div></div>';
-        html += '<div class="col-md-3"><div class="card text-center p-3"><div class="fs-4 fw-bold text-warning">' + (rel.tabelas?.filter(t => t.retencao).length || 0) + '</div><small class="text-muted">Regras Retencao</small></div></div>';
-        html += '<div class="col-md-3"><div class="card text-center p-3"><div class="fs-4 fw-bold text-danger">' + (rel.total_anonimizados || 0) + '</div><small class="text-muted">Anonimizados</small></div></div>';
+        html +=
+            '<div class="col-md-3"><div class="card text-center p-3"><div class="fs-4 fw-bold text-primary">' +
+            (rel.tabelas?.reduce((s, t) => s + (t.registros || 0), 0) || 0) +
+            '</div><small class="text-muted">Registros Totais</small></div></div>';
+        html +=
+            '<div class="col-md-3"><div class="card text-center p-3"><div class="fs-4 fw-bold text-success">' +
+            (rel.total_consentimentos || 0) +
+            '</div><small class="text-muted">Consentimentos</small></div></div>';
+        html +=
+            '<div class="col-md-3"><div class="card text-center p-3"><div class="fs-4 fw-bold text-warning">' +
+            (rel.tabelas?.filter((t) => t.retencao).length || 0) +
+            '</div><small class="text-muted">Regras Retencao</small></div></div>';
+        html +=
+            '<div class="col-md-3"><div class="card text-center p-3"><div class="fs-4 fw-bold text-danger">' +
+            (rel.total_anonimizados || 0) +
+            '</div><small class="text-muted">Anonimizados</small></div></div>';
         html += '</div>';
         if (rel.tabelas?.length) {
-            html += '<div class="table-responsive mt-2"><table class="table table-sm table-bordered"><thead><tr><th>Tabela</th><th>Registros</th><th>Retencao</th><th>Status</th></tr></thead><tbody>';
-            rel.tabelas.forEach(t => {
+            html +=
+                '<div class="table-responsive mt-2"><table class="table table-sm table-bordered"><thead><tr><th>Tabela</th><th>Registros</th><th>Retencao</th><th>Status</th></tr></thead><tbody>';
+            rel.tabelas.forEach((t) => {
                 const ret = t.retencao;
                 html += '<tr><td class="fw-medium">' + escapeHtmlGlobal(t.tabela) + '</td><td>' + t.registros + '</td>';
-                html += '<td>' + (ret ? ret.tempo_retencao_dias + ' dias (' + escapeHtmlGlobal(ret.acao) + ')' : '<span class="text-muted">Sem regra</span>') + '</td>';
-                html += '<td>' + (ret ? '<span class="badge bg-success">Configurado</span>' : '<span class="badge bg-warning">Pendente</span>') + '</td></tr>';
+                html +=
+                    '<td>' +
+                    (ret
+                        ? ret.tempo_retencao_dias + ' dias (' + escapeHtmlGlobal(ret.acao) + ')'
+                        : '<span class="text-muted">Sem regra</span>') +
+                    '</td>';
+                html +=
+                    '<td>' +
+                    (ret
+                        ? '<span class="badge bg-success">Configurado</span>'
+                        : '<span class="badge bg-warning">Pendente</span>') +
+                    '</td></tr>';
             });
             html += '</tbody></table></div>';
         }
@@ -1013,14 +1352,18 @@ async function carregarIntegExternas() {
         const container = document.getElementById('integExternasCards');
         if (!container) return;
         if (!integs.length) {
-            container.innerHTML = '<div class="col-12 text-center text-muted py-3">Nenhuma integracao externa configurada</div>';
+            container.innerHTML =
+                '<div class="col-12 text-center text-muted py-3">Nenhuma integracao externa configurada</div>';
             return;
         }
-        container.innerHTML = integs.map(i => {
-            const ui = INTEG_EXT_UI[i.tipo] || { label: i.tipo, icon: 'bi-plug', color: '#6c757d' };
-            let configParsed = {};
-            try { configParsed = JSON.parse(i.config || '{}'); } catch {}
-            return `<div class="col-md-4">
+        container.innerHTML = integs
+            .map((i) => {
+                const ui = INTEG_EXT_UI[i.tipo] || { label: i.tipo, icon: 'bi-plug', color: '#6c757d' };
+                let configParsed = {};
+                try {
+                    configParsed = JSON.parse(i.config || '{}');
+                } catch {}
+                return `<div class="col-md-4">
                 <div class="card h-100" style="border-left:3px solid ${ui.color}">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start">
@@ -1042,10 +1385,13 @@ async function carregarIntegExternas() {
                     </div>
                 </div>
             </div>`;
-        }).join('');
+            })
+            .join('');
     } catch {
         const container = document.getElementById('integExternasCards');
-        if (container) container.innerHTML = '<div class="col-12 text-center text-muted py-3">Nenhuma integracao externa configurada</div>';
+        if (container)
+            container.innerHTML =
+                '<div class="col-12 text-center text-muted py-3">Nenhuma integracao externa configurada</div>';
     }
 }
 
@@ -1062,10 +1408,12 @@ function abrirModalIntegExt() {
 async function editarIntegExt(id) {
     try {
         const integs = await api('/api/integracoes-externas');
-        const i = integs.find(x => x.id === id);
+        const i = integs.find((x) => x.id === id);
         if (!i) return;
         let configParsed = {};
-        try { configParsed = JSON.parse(i.config || '{}'); } catch {}
+        try {
+            configParsed = JSON.parse(i.config || '{}');
+        } catch {}
         document.getElementById('integExtId').value = i.id;
         document.getElementById('integExtTipo').value = i.tipo;
         document.getElementById('integExtNome').value = i.nome || '';
@@ -1107,7 +1455,7 @@ async function salvarIntegExt() {
 async function toggleIntegExt(id, novoStatus) {
     try {
         const integs = await api('/api/integracoes-externas');
-        const i = integs.find(x => x.id === id);
+        const i = integs.find((x) => x.id === id);
         if (!i) return;
         await api('/api/integracoes-externas/' + id, { method: 'PUT', body: { ...i, ativo: novoStatus } });
         mostrarToast(novoStatus ? 'Integracao ativada' : 'Integracao desativada');

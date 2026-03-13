@@ -3,11 +3,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     carregarFila();
     // Range sliders update
-    ['Prioridade', 'SLA', 'Tempo', 'Reaberturas'].forEach(nome => {
+    ['Prioridade', 'SLA', 'Tempo', 'Reaberturas'].forEach((nome) => {
         const input = document.getElementById('peso' + nome);
         const val = document.getElementById('peso' + nome + 'Val');
         if (input && val) {
-            input.addEventListener('input', () => { val.textContent = parseFloat(input.value).toFixed(1); });
+            input.addEventListener('input', () => {
+                val.textContent = parseFloat(input.value).toFixed(1);
+            });
         }
     });
     // Auto-refresh a cada 30s
@@ -50,7 +52,8 @@ function renderResumo(resumo) {
 function renderFila(chamados) {
     const tbody = document.getElementById('tabelaFila');
     if (!chamados || !chamados.length) {
-        tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4"><i class="bi bi-check-circle fs-3 d-block mb-2 text-success"></i>Fila vazia! Todos os chamados estao em dia.</td></tr>';
+        tbody.innerHTML =
+            '<tr><td colspan="10" class="text-center text-muted py-4"><i class="bi bi-check-circle fs-3 d-block mb-2 text-success"></i>Fila vazia! Todos os chamados estao em dia.</td></tr>';
         return;
     }
 
@@ -61,33 +64,42 @@ function renderFila(chamados) {
         baixa: '<span class="badge bg-secondary">Baixa</span>'
     };
 
-    tbody.innerHTML = chamados.map((ch, i) => {
-        const scoreCor = ch.score_prioridade >= 20 ? 'text-danger fw-bold' :
-                         ch.score_prioridade >= 10 ? 'text-warning fw-bold' : 'text-muted';
+    tbody.innerHTML = chamados
+        .map((ch, i) => {
+            const scoreCor =
+                ch.score_prioridade >= 20
+                    ? 'text-danger fw-bold'
+                    : ch.score_prioridade >= 10
+                      ? 'text-warning fw-bold'
+                      : 'text-muted';
 
-        const slaStatus = ch.sla_vencido ?
-            '<span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Vencido</span>' :
-            ch.horas_restantes_sla < 4 ?
-                `<span class="badge bg-warning text-dark">${Math.round(ch.horas_restantes_sla)}h restantes</span>` :
-            ch.horas_restantes_sla < 999 ?
-                `<span class="badge bg-success">${Math.round(ch.horas_restantes_sla)}h</span>` :
-                '<span class="badge bg-light text-dark">Sem SLA</span>';
+            const slaStatus = ch.sla_vencido
+                ? '<span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Vencido</span>'
+                : ch.horas_restantes_sla < 4
+                  ? `<span class="badge bg-warning text-dark">${Math.round(ch.horas_restantes_sla)}h restantes</span>`
+                  : ch.horas_restantes_sla < 999
+                    ? `<span class="badge bg-success">${Math.round(ch.horas_restantes_sla)}h</span>`
+                    : '<span class="badge bg-light text-dark">Sem SLA</span>';
 
-        const diasAberto = Math.round((ch.dias_aberto || 0) * 10) / 10;
-        const tempoCor = diasAberto > 7 ? 'text-danger' : diasAberto > 3 ? 'text-warning' : '';
+            const diasAberto = Math.round((ch.dias_aberto || 0) * 10) / 10;
+            const tempoCor = diasAberto > 7 ? 'text-danger' : diasAberto > 3 ? 'text-warning' : '';
 
-        const responsavel = ch.responsavel_nome ?
-            `<span class="badge bg-info text-dark">${escapeHtml(ch.responsavel_nome)}</span>` :
-            '<span class="text-danger"><i class="bi bi-person-x"></i> Sem resp.</span>';
+            const responsavel = ch.responsavel_nome
+                ? `<span class="badge bg-info text-dark">${escapeHtml(ch.responsavel_nome)}</span>`
+                : '<span class="text-danger"><i class="bi bi-person-x"></i> Sem resp.</span>';
 
-        const posIcon = i === 0 ? '<i class="bi bi-1-circle-fill text-danger"></i>' :
-                        i === 1 ? '<i class="bi bi-2-circle-fill text-warning"></i>' :
-                        i === 2 ? '<i class="bi bi-3-circle-fill text-primary"></i>' :
-                        `<span class="text-muted">${i + 1}</span>`;
+            const posIcon =
+                i === 0
+                    ? '<i class="bi bi-1-circle-fill text-danger"></i>'
+                    : i === 1
+                      ? '<i class="bi bi-2-circle-fill text-warning"></i>'
+                      : i === 2
+                        ? '<i class="bi bi-3-circle-fill text-primary"></i>'
+                        : `<span class="text-muted">${i + 1}</span>`;
 
-        const rowClass = ch.sla_vencido ? 'table-danger' : ch.prioridade === 'critica' ? 'table-warning' : '';
+            const rowClass = ch.sla_vencido ? 'table-danger' : ch.prioridade === 'critica' ? 'table-warning' : '';
 
-        return `
+            return `
             <tr class="${rowClass}">
                 <td class="text-center">${posIcon}</td>
                 <td class="${scoreCor}">${ch.score_prioridade}</td>
@@ -110,7 +122,8 @@ function renderFila(chamados) {
                 </td>
             </tr>
         `;
-    }).join('');
+        })
+        .join('');
 }
 
 function escapeHtml(str) {

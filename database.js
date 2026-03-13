@@ -182,8 +182,13 @@ async function initDB() {
     if (adminCount === 0) {
         const tempPassword = require('crypto').randomBytes(8).toString('hex');
         const senhaHash = bcrypt.hashSync(tempPassword, 10);
-        db.run("INSERT INTO usuarios (nome, usuario, senha, perfil, ativo) VALUES (?, ?, ?, ?, ?)",
-            ['Caike Luan', 'caike.luan', senhaHash, 'admin', 1]);
+        db.run('INSERT INTO usuarios (nome, usuario, senha, perfil, ativo) VALUES (?, ?, ?, ?, ?)', [
+            'Caike Luan',
+            'caike.luan',
+            senhaHash,
+            'admin',
+            1
+        ]);
         console.log('==============================================');
         console.log('  Admin criado: caike.luan');
         console.log(`  Senha temporaria: ${tempPassword}`);
@@ -192,8 +197,8 @@ async function initDB() {
     }
 
     // Migração: novas colunas na tabela provedores
-    const colunas = db.exec("PRAGMA table_info(provedores)");
-    const nomesColunas = colunas.length > 0 ? colunas[0].values.map(c => c[1]) : [];
+    const colunas = db.exec('PRAGMA table_info(provedores)');
+    const nomesColunas = colunas.length > 0 ? colunas[0].values.map((c) => c[1]) : [];
 
     if (!nomesColunas.includes('plano')) {
         db.run('ALTER TABLE provedores ADD COLUMN plano TEXT');
@@ -215,8 +220,8 @@ async function initDB() {
     }
 
     // Migração: colunas status e hora na tabela treinamentos
-    const colTreinamentos = db.exec("PRAGMA table_info(treinamentos)");
-    const nomeColTreinamentos = colTreinamentos.length > 0 ? colTreinamentos[0].values.map(c => c[1]) : [];
+    const colTreinamentos = db.exec('PRAGMA table_info(treinamentos)');
+    const nomeColTreinamentos = colTreinamentos.length > 0 ? colTreinamentos[0].values.map((c) => c[1]) : [];
     if (!nomeColTreinamentos.includes('status')) {
         db.run("ALTER TABLE treinamentos ADD COLUMN status TEXT DEFAULT 'agendado'");
     }
@@ -227,8 +232,8 @@ async function initDB() {
     db.run("UPDATE treinamentos SET status = 'agendado' WHERE status IS NULL");
 
     // Migração: coluna provedor_manual na tabela projetos
-    const colProjetos = db.exec("PRAGMA table_info(projetos)");
-    const nomeColProjetos = colProjetos.length > 0 ? colProjetos[0].values.map(c => c[1]) : [];
+    const colProjetos = db.exec('PRAGMA table_info(projetos)');
+    const nomeColProjetos = colProjetos.length > 0 ? colProjetos[0].values.map((c) => c[1]) : [];
     if (!nomeColProjetos.includes('provedor_manual')) {
         db.run('ALTER TABLE projetos ADD COLUMN provedor_manual TEXT');
     }
@@ -408,7 +413,9 @@ async function initDB() {
     db.run('CREATE INDEX IF NOT EXISTS idx_formularios_token ON formularios_cadastro(token)');
 
     // Migracao: pdf_token em vendas_propostas
-    try { db.run('ALTER TABLE vendas_propostas ADD COLUMN pdf_token TEXT'); } catch {}
+    try {
+        db.run('ALTER TABLE vendas_propostas ADD COLUMN pdf_token TEXT');
+    } catch {}
     db.run('CREATE INDEX IF NOT EXISTS idx_propostas_pdf_token ON vendas_propostas(pdf_token)');
 
     // ==================== TEMPLATES DE PROPOSTA ====================
@@ -491,15 +498,23 @@ async function initDB() {
     `);
 
     // Seed follow-up configs
-    const fupCount = db.exec("SELECT COUNT(*) FROM vendas_followup_config");
+    const fupCount = db.exec('SELECT COUNT(*) FROM vendas_followup_config');
     if (fupCount.length > 0 && fupCount[0].values[0][0] === 0) {
-        db.run("INSERT INTO vendas_followup_config (tipo, dias_apos, ativo, mensagem) VALUES ('proposta_sem_resposta', 3, 1, 'Follow-up: proposta enviada há {dias} dias sem resposta')");
-        db.run("INSERT INTO vendas_followup_config (tipo, dias_apos, ativo, mensagem) VALUES ('proposta_expirando', 5, 1, 'Alerta: proposta expira em {dias} dias')");
-        db.run("INSERT INTO vendas_followup_config (tipo, dias_apos, ativo, mensagem) VALUES ('formulario_preenchido', 0, 1, 'Formulário preenchido por {provedor}')");
+        db.run(
+            "INSERT INTO vendas_followup_config (tipo, dias_apos, ativo, mensagem) VALUES ('proposta_sem_resposta', 3, 1, 'Follow-up: proposta enviada há {dias} dias sem resposta')"
+        );
+        db.run(
+            "INSERT INTO vendas_followup_config (tipo, dias_apos, ativo, mensagem) VALUES ('proposta_expirando', 5, 1, 'Alerta: proposta expira em {dias} dias')"
+        );
+        db.run(
+            "INSERT INTO vendas_followup_config (tipo, dias_apos, ativo, mensagem) VALUES ('formulario_preenchido', 0, 1, 'Formulário preenchido por {provedor}')"
+        );
     }
 
     // Migracao: visualizacoes em vendas_propostas
-    try { db.run('ALTER TABLE vendas_propostas ADD COLUMN visualizacoes INTEGER DEFAULT 0'); } catch {}
+    try {
+        db.run('ALTER TABLE vendas_propostas ADD COLUMN visualizacoes INTEGER DEFAULT 0');
+    } catch {}
 
     // ==================== PERMISSOES POR PERFIL ====================
 
@@ -515,21 +530,130 @@ async function initDB() {
     `);
 
     // Seed: permissoes padrao por perfil
-    const modulos = ['dashboard', 'provedores', 'vendas', 'dashboard_vendedor', 'chamados', 'treinamentos', 'projetos', 'historico', 'whatsapp', 'relatorios', 'conhecimento', 'agenda', 'financeiro', 'usuarios', 'configuracoes', 'ponto'];
+    const modulos = [
+        'dashboard',
+        'provedores',
+        'vendas',
+        'dashboard_vendedor',
+        'chamados',
+        'treinamentos',
+        'projetos',
+        'historico',
+        'whatsapp',
+        'relatorios',
+        'conhecimento',
+        'agenda',
+        'financeiro',
+        'usuarios',
+        'configuracoes',
+        'ponto'
+    ];
     const perfilDefaults = {
         admin: modulos.reduce((acc, m) => ({ ...acc, [m]: 1 }), {}),
-        analista: modulos.reduce((acc, m) => ({ ...acc, [m]: ['vendas', 'dashboard_vendedor', 'configuracoes'].includes(m) ? 0 : 1 }), {}),
-        vendedor: { dashboard: 1, provedores: 1, vendas: 1, dashboard_vendedor: 1, chamados: 0, treinamentos: 0, projetos: 0, historico: 0, whatsapp: 0, relatorios: 0, conhecimento: 0, agenda: 0, financeiro: 0, usuarios: 0, configuracoes: 0, ponto: 0 },
-        gestor_atendimento: { dashboard: 1, provedores: 0, vendas: 0, dashboard_vendedor: 0, chamados: 1, treinamentos: 0, projetos: 0, historico: 1, whatsapp: 1, relatorios: 1, conhecimento: 1, agenda: 1, financeiro: 0, usuarios: 1, configuracoes: 0, ponto: 1 },
-        gerente_noc: { dashboard: 1, provedores: 0, vendas: 0, dashboard_vendedor: 0, chamados: 1, treinamentos: 0, projetos: 1, historico: 1, whatsapp: 0, relatorios: 1, conhecimento: 1, agenda: 1, financeiro: 0, usuarios: 0, configuracoes: 0, ponto: 1 },
-        financeiro: { dashboard: 1, provedores: 0, vendas: 1, dashboard_vendedor: 0, chamados: 0, treinamentos: 0, projetos: 0, historico: 0, whatsapp: 0, relatorios: 1, conhecimento: 0, agenda: 0, financeiro: 1, usuarios: 0, configuracoes: 0, ponto: 1 },
-        atendente: { dashboard: 1, provedores: 0, vendas: 0, dashboard_vendedor: 0, chamados: 1, treinamentos: 0, projetos: 0, historico: 0, whatsapp: 1, relatorios: 0, conhecimento: 1, agenda: 0, financeiro: 0, usuarios: 0, configuracoes: 0, ponto: 1 }
+        analista: modulos.reduce(
+            (acc, m) => ({ ...acc, [m]: ['vendas', 'dashboard_vendedor', 'configuracoes'].includes(m) ? 0 : 1 }),
+            {}
+        ),
+        vendedor: {
+            dashboard: 1,
+            provedores: 1,
+            vendas: 1,
+            dashboard_vendedor: 1,
+            chamados: 0,
+            treinamentos: 0,
+            projetos: 0,
+            historico: 0,
+            whatsapp: 0,
+            relatorios: 0,
+            conhecimento: 0,
+            agenda: 0,
+            financeiro: 0,
+            usuarios: 0,
+            configuracoes: 0,
+            ponto: 0
+        },
+        gestor_atendimento: {
+            dashboard: 1,
+            provedores: 0,
+            vendas: 0,
+            dashboard_vendedor: 0,
+            chamados: 1,
+            treinamentos: 0,
+            projetos: 0,
+            historico: 1,
+            whatsapp: 1,
+            relatorios: 1,
+            conhecimento: 1,
+            agenda: 1,
+            financeiro: 0,
+            usuarios: 1,
+            configuracoes: 0,
+            ponto: 1
+        },
+        gerente_noc: {
+            dashboard: 1,
+            provedores: 0,
+            vendas: 0,
+            dashboard_vendedor: 0,
+            chamados: 1,
+            treinamentos: 0,
+            projetos: 1,
+            historico: 1,
+            whatsapp: 0,
+            relatorios: 1,
+            conhecimento: 1,
+            agenda: 1,
+            financeiro: 0,
+            usuarios: 0,
+            configuracoes: 0,
+            ponto: 1
+        },
+        financeiro: {
+            dashboard: 1,
+            provedores: 0,
+            vendas: 1,
+            dashboard_vendedor: 0,
+            chamados: 0,
+            treinamentos: 0,
+            projetos: 0,
+            historico: 0,
+            whatsapp: 0,
+            relatorios: 1,
+            conhecimento: 0,
+            agenda: 0,
+            financeiro: 1,
+            usuarios: 0,
+            configuracoes: 0,
+            ponto: 1
+        },
+        atendente: {
+            dashboard: 1,
+            provedores: 0,
+            vendas: 0,
+            dashboard_vendedor: 0,
+            chamados: 1,
+            treinamentos: 0,
+            projetos: 0,
+            historico: 0,
+            whatsapp: 1,
+            relatorios: 0,
+            conhecimento: 1,
+            agenda: 0,
+            financeiro: 0,
+            usuarios: 0,
+            configuracoes: 0,
+            ponto: 1
+        }
     };
-    const permCount = db.exec("SELECT COUNT(*) FROM permissoes_modulos");
+    const permCount = db.exec('SELECT COUNT(*) FROM permissoes_modulos');
     if (permCount.length > 0 && permCount[0].values[0][0] === 0) {
         for (const [perfil, mods] of Object.entries(perfilDefaults)) {
             for (const [modulo, ativo] of Object.entries(mods)) {
-                db.run("INSERT INTO permissoes_modulos (perfil, modulo, ativo) VALUES (?, ?, ?)", [perfil, modulo, ativo]);
+                db.run('INSERT INTO permissoes_modulos (perfil, modulo, ativo) VALUES (?, ?, ?)', [
+                    perfil,
+                    modulo,
+                    ativo
+                ]);
             }
         }
     }
@@ -539,10 +663,16 @@ async function initDB() {
     for (const perfil of perfis) {
         const defaults = perfilDefaults[perfil] || {};
         for (const modulo of modulos) {
-            const exists = db.exec(`SELECT COUNT(*) FROM permissoes_modulos WHERE perfil = '${perfil}' AND modulo = '${modulo}'`);
+            const exists = db.exec(
+                `SELECT COUNT(*) FROM permissoes_modulos WHERE perfil = '${perfil}' AND modulo = '${modulo}'`
+            );
             if (exists.length > 0 && exists[0].values[0][0] === 0) {
-                const ativo = defaults[modulo] !== undefined ? defaults[modulo] : (perfil === 'admin' ? 1 : 0);
-                db.run("INSERT INTO permissoes_modulos (perfil, modulo, ativo) VALUES (?, ?, ?)", [perfil, modulo, ativo]);
+                const ativo = defaults[modulo] !== undefined ? defaults[modulo] : perfil === 'admin' ? 1 : 0;
+                db.run('INSERT INTO permissoes_modulos (perfil, modulo, ativo) VALUES (?, ?, ?)', [
+                    perfil,
+                    modulo,
+                    ativo
+                ]);
             }
         }
     }
@@ -578,7 +708,7 @@ async function initDB() {
     `);
 
     // Seed config_geral
-    const cfgCount = db.exec("SELECT COUNT(*) FROM config_geral");
+    const cfgCount = db.exec('SELECT COUNT(*) FROM config_geral');
     if (cfgCount.length > 0 && cfgCount[0].values[0][0] === 0) {
         db.run("INSERT INTO config_geral (chave, valor) VALUES ('nome_sistema', 'Nexus')");
         db.run("INSERT INTO config_geral (chave, valor) VALUES ('logo_url', '')");
@@ -651,8 +781,12 @@ async function initDB() {
     // ==================== MIGRACOES LOTE 1 ====================
 
     // Atribuicao de responsavel
-    try { db.run('ALTER TABLE chamados ADD COLUMN responsavel_id INTEGER'); } catch {}
-    try { db.run('ALTER TABLE projetos ADD COLUMN responsavel_id INTEGER'); } catch {}
+    try {
+        db.run('ALTER TABLE chamados ADD COLUMN responsavel_id INTEGER');
+    } catch {}
+    try {
+        db.run('ALTER TABLE projetos ADD COLUMN responsavel_id INTEGER');
+    } catch {}
 
     // ==================== BACKUPS LOG ====================
 
@@ -669,9 +803,15 @@ async function initDB() {
 
     // ==================== 2FA ====================
 
-    try { db.run('ALTER TABLE usuarios ADD COLUMN totp_secret TEXT'); } catch {}
-    try { db.run('ALTER TABLE usuarios ADD COLUMN totp_ativo INTEGER DEFAULT 0'); } catch {}
-    try { db.run('ALTER TABLE usuarios ADD COLUMN foto_url TEXT'); } catch {}
+    try {
+        db.run('ALTER TABLE usuarios ADD COLUMN totp_secret TEXT');
+    } catch {}
+    try {
+        db.run('ALTER TABLE usuarios ADD COLUMN totp_ativo INTEGER DEFAULT 0');
+    } catch {}
+    try {
+        db.run('ALTER TABLE usuarios ADD COLUMN foto_url TEXT');
+    } catch {}
 
     // ==================== CHAT INTERNO ====================
 
@@ -754,16 +894,22 @@ async function initDB() {
 
     // Migracao: copiar config_ixc existente para config_erp
     try {
-        const ixcExiste = db.exec("SELECT id, url_base, token, ativo, ultimo_sync FROM config_ixc ORDER BY id DESC LIMIT 1");
+        const ixcExiste = db.exec(
+            'SELECT id, url_base, token, ativo, ultimo_sync FROM config_ixc ORDER BY id DESC LIMIT 1'
+        );
         if (ixcExiste.length > 0 && ixcExiste[0].values.length > 0) {
             const jaTemIxc = db.exec("SELECT id FROM config_erp WHERE tipo = 'ixc'");
             if (jaTemIxc.length === 0 || jaTemIxc[0].values.length === 0) {
                 const row = ixcExiste[0].values[0];
-                db.run("INSERT OR IGNORE INTO config_erp (tipo, url_base, token, ativo, ultimo_sync) VALUES ('ixc', ?, ?, ?, ?)",
-                    [row[1], row[2], row[3], row[4]]);
+                db.run(
+                    "INSERT OR IGNORE INTO config_erp (tipo, url_base, token, ativo, ultimo_sync) VALUES ('ixc', ?, ?, ?, ?)",
+                    [row[1], row[2], row[3], row[4]]
+                );
             }
         }
-    } catch (e) { /* config_ixc pode nao existir ainda */ }
+    } catch (e) {
+        /* config_ixc pode nao existir ainda */
+    }
 
     // ==================== REGRAS AUTOMATICAS ====================
 
@@ -848,39 +994,69 @@ async function initDB() {
     `);
 
     // Seed: config email desativado
-    const emailCfg = db.exec("SELECT COUNT(*) FROM config_email");
+    const emailCfg = db.exec('SELECT COUNT(*) FROM config_email');
     if (emailCfg.length > 0 && emailCfg[0].values[0][0] === 0) {
-        db.run("INSERT INTO config_email (smtp_host, smtp_port, nome_remetente, ativo) VALUES ('smtp.gmail.com', 587, 'Nexus', 0)");
+        db.run(
+            "INSERT INTO config_email (smtp_host, smtp_port, nome_remetente, ativo) VALUES ('smtp.gmail.com', 587, 'Nexus', 0)"
+        );
     }
 
     // Seed: templates padrao
-    const tplCount = db.exec("SELECT COUNT(*) FROM whatsapp_templates");
+    const tplCount = db.exec('SELECT COUNT(*) FROM whatsapp_templates');
     if (tplCount.length > 0 && tplCount[0].values[0][0] === 0) {
         const templates = [
-            ['Chamado aberto', 'Olá! Informamos que o chamado #{id} - "{titulo}" foi aberto para {provedor}. Categoria: {categoria}.', 'chamados'],
-            ['Chamado resolvido', 'Olá! O chamado #{id} - "{titulo}" foi resolvido. Resolução: {resolucao}', 'chamados'],
-            ['Treinamento agendado', 'Olá! Um treinamento foi agendado: "{titulo}" para {provedor} em {data} às {hora}.', 'treinamentos'],
-            ['Lembrete de treinamento', 'Lembrete: O treinamento "{titulo}" para {provedor} acontece amanhã às {hora}. Não esqueça!', 'treinamentos'],
+            [
+                'Chamado aberto',
+                'Olá! Informamos que o chamado #{id} - "{titulo}" foi aberto para {provedor}. Categoria: {categoria}.',
+                'chamados'
+            ],
+            [
+                'Chamado resolvido',
+                'Olá! O chamado #{id} - "{titulo}" foi resolvido. Resolução: {resolucao}',
+                'chamados'
+            ],
+            [
+                'Treinamento agendado',
+                'Olá! Um treinamento foi agendado: "{titulo}" para {provedor} em {data} às {hora}.',
+                'treinamentos'
+            ],
+            [
+                'Lembrete de treinamento',
+                'Lembrete: O treinamento "{titulo}" para {provedor} acontece amanhã às {hora}. Não esqueça!',
+                'treinamentos'
+            ],
             ['Projeto atualizado', 'Olá! O projeto "{titulo}" teve seu status alterado para: {status}.', 'projetos'],
             ['Saudação', 'Olá! Obrigado por entrar em contato com a Nexus. Como posso ajudar?', 'geral'],
-            ['Encerramento', 'Obrigado pelo contato! Caso precise de algo mais, estamos à disposição.', 'geral'],
+            ['Encerramento', 'Obrigado pelo contato! Caso precise de algo mais, estamos à disposição.', 'geral']
         ];
         for (const [nome, texto, cat] of templates) {
-            db.run("INSERT INTO whatsapp_templates (nome, texto, categoria) VALUES (?, ?, ?)", [nome, texto, cat]);
+            db.run('INSERT INTO whatsapp_templates (nome, texto, categoria) VALUES (?, ?, ?)', [nome, texto, cat]);
         }
     }
 
     // Seed: notificacoes padrao
-    const notifCount = db.exec("SELECT COUNT(*) FROM whatsapp_notificacoes");
+    const notifCount = db.exec('SELECT COUNT(*) FROM whatsapp_notificacoes');
     if (notifCount.length > 0 && notifCount[0].values[0][0] === 0) {
-        db.run("INSERT INTO whatsapp_notificacoes (tipo, ativo, mensagem_template) VALUES (?, ?, ?)",
-            ['chamado_aberto', 0, 'Chamado #{id} aberto: {titulo} ({categoria}) - {provedor}']);
-        db.run("INSERT INTO whatsapp_notificacoes (tipo, ativo, mensagem_template) VALUES (?, ?, ?)",
-            ['chamado_resolvido', 0, 'Chamado #{id} resolvido: {titulo} - {resolucao}']);
-        db.run("INSERT INTO whatsapp_notificacoes (tipo, ativo, mensagem_template) VALUES (?, ?, ?)",
-            ['treinamento_agendado', 0, 'Treinamento agendado: {titulo} para {provedor} em {data} às {hora}']);
-        db.run("INSERT INTO whatsapp_notificacoes (tipo, ativo, mensagem_template) VALUES (?, ?, ?)",
-            ['projeto_atualizado', 0, 'Projeto atualizado: {titulo} - Novo status: {status}']);
+        db.run('INSERT INTO whatsapp_notificacoes (tipo, ativo, mensagem_template) VALUES (?, ?, ?)', [
+            'chamado_aberto',
+            0,
+            'Chamado #{id} aberto: {titulo} ({categoria}) - {provedor}'
+        ]);
+        db.run('INSERT INTO whatsapp_notificacoes (tipo, ativo, mensagem_template) VALUES (?, ?, ?)', [
+            'chamado_resolvido',
+            0,
+            'Chamado #{id} resolvido: {titulo} - {resolucao}'
+        ]);
+        db.run('INSERT INTO whatsapp_notificacoes (tipo, ativo, mensagem_template) VALUES (?, ?, ?)', [
+            'treinamento_agendado',
+            0,
+            'Treinamento agendado: {titulo} para {provedor} em {data} às {hora}'
+        ]);
+        db.run('INSERT INTO whatsapp_notificacoes (tipo, ativo, mensagem_template) VALUES (?, ?, ?)', [
+            'projeto_atualizado',
+            0,
+            'Projeto atualizado: {titulo} - Novo status: {status}'
+        ]);
     }
 
     // Tabela de mensagens WhatsApp (armazenamento local para busca e exportacao)
@@ -903,7 +1079,9 @@ async function initDB() {
         )
     `);
     // Index para busca rapida por chat_id
-    try { db.run('CREATE INDEX IF NOT EXISTS idx_wa_msgs_chat ON whatsapp_mensagens(chat_id, timestamp)'); } catch {}
+    try {
+        db.run('CREATE INDEX IF NOT EXISTS idx_wa_msgs_chat ON whatsapp_mensagens(chat_id, timestamp)');
+    } catch {}
 
     // ==================== SLA CONFIG ====================
 
@@ -920,22 +1098,46 @@ async function initDB() {
     `);
 
     // Migracao: adicionar campos SLA na tabela chamados
-    try { db.run("ALTER TABLE chamados ADD COLUMN prioridade TEXT DEFAULT 'normal'"); } catch {}
-    try { db.run("ALTER TABLE chamados ADD COLUMN sla_resposta_limite TEXT"); } catch {}
-    try { db.run("ALTER TABLE chamados ADD COLUMN sla_resolucao_limite TEXT"); } catch {}
-    try { db.run("ALTER TABLE chamados ADD COLUMN sla_respondido_em TEXT"); } catch {}
-    try { db.run("ALTER TABLE chamados ADD COLUMN sla_estourado INTEGER DEFAULT 0"); } catch {}
-    try { db.run("ALTER TABLE chamados ADD COLUMN responsavel_id INTEGER"); } catch {}
+    try {
+        db.run("ALTER TABLE chamados ADD COLUMN prioridade TEXT DEFAULT 'normal'");
+    } catch {}
+    try {
+        db.run('ALTER TABLE chamados ADD COLUMN sla_resposta_limite TEXT');
+    } catch {}
+    try {
+        db.run('ALTER TABLE chamados ADD COLUMN sla_resolucao_limite TEXT');
+    } catch {}
+    try {
+        db.run('ALTER TABLE chamados ADD COLUMN sla_respondido_em TEXT');
+    } catch {}
+    try {
+        db.run('ALTER TABLE chamados ADD COLUMN sla_estourado INTEGER DEFAULT 0');
+    } catch {}
+    try {
+        db.run('ALTER TABLE chamados ADD COLUMN responsavel_id INTEGER');
+    } catch {}
 
     // Seed: SLA padrao
-    const slaCount = db.exec("SELECT COUNT(*) FROM sla_config");
+    const slaCount = db.exec('SELECT COUNT(*) FROM sla_config');
     if (slaCount.length > 0 && slaCount[0].values[0][0] === 0) {
-        db.run("INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('usuario', 'normal', 24, 72)");
-        db.run("INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('usuario', 'alta', 8, 24)");
-        db.run("INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('usuario', 'critica', 2, 8)");
-        db.run("INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('integracao', 'normal', 12, 48)");
-        db.run("INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('integracao', 'alta', 4, 12)");
-        db.run("INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('integracao', 'critica', 1, 4)");
+        db.run(
+            "INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('usuario', 'normal', 24, 72)"
+        );
+        db.run(
+            "INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('usuario', 'alta', 8, 24)"
+        );
+        db.run(
+            "INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('usuario', 'critica', 2, 8)"
+        );
+        db.run(
+            "INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('integracao', 'normal', 12, 48)"
+        );
+        db.run(
+            "INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('integracao', 'alta', 4, 12)"
+        );
+        db.run(
+            "INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('integracao', 'critica', 1, 4)"
+        );
     }
 
     // ==================== ERP SYNC LOG ====================
@@ -1049,8 +1251,12 @@ async function initDB() {
             FOREIGN KEY (provedor_id) REFERENCES provedores(id)
         )
     `);
-    try { db.run('CREATE INDEX IF NOT EXISTS idx_faturas_vencimento ON financeiro_faturas(data_vencimento)'); } catch {}
-    try { db.run('CREATE INDEX IF NOT EXISTS idx_faturas_status ON financeiro_faturas(status)'); } catch {}
+    try {
+        db.run('CREATE INDEX IF NOT EXISTS idx_faturas_vencimento ON financeiro_faturas(data_vencimento)');
+    } catch {}
+    try {
+        db.run('CREATE INDEX IF NOT EXISTS idx_faturas_status ON financeiro_faturas(status)');
+    } catch {}
 
     // ==================== WHATSAPP IA ====================
 
@@ -1158,9 +1364,13 @@ async function initDB() {
 
     // Migracao: chats existentes sem atendimento entram na fila
     try {
-        const existentes = db.exec("SELECT DISTINCT chat_id, chat_name FROM whatsapp_mensagens WHERE chat_id NOT LIKE '%@g.us' AND chat_id NOT IN (SELECT chat_id FROM whatsapp_atendimentos WHERE status IN ('fila','em_atendimento'))");
+        const existentes = db.exec(
+            "SELECT DISTINCT chat_id, chat_name FROM whatsapp_mensagens WHERE chat_id NOT LIKE '%@g.us' AND chat_id NOT IN (SELECT chat_id FROM whatsapp_atendimentos WHERE status IN ('fila','em_atendimento'))"
+        );
         if (existentes.length > 0 && existentes[0].values.length > 0) {
-            const stmt = db.prepare("INSERT OR IGNORE INTO whatsapp_atendimentos (chat_id, chat_nome, status) VALUES (?, ?, 'fila')");
+            const stmt = db.prepare(
+                "INSERT OR IGNORE INTO whatsapp_atendimentos (chat_id, chat_nome, status) VALUES (?, ?, 'fila')"
+            );
             for (const row of existentes[0].values) {
                 stmt.run([row[0], row[1] || row[0].split('@')[0]]);
             }
@@ -1256,8 +1466,12 @@ async function initDB() {
     `);
 
     // Migracao: adicionar campo prioridade nos projetos
-    try { db.run("ALTER TABLE projetos ADD COLUMN prioridade TEXT DEFAULT 'normal'"); } catch {}
-    try { db.run("ALTER TABLE projetos ADD COLUMN percentual_conclusao INTEGER DEFAULT 0"); } catch {}
+    try {
+        db.run("ALTER TABLE projetos ADD COLUMN prioridade TEXT DEFAULT 'normal'");
+    } catch {}
+    try {
+        db.run('ALTER TABLE projetos ADD COLUMN percentual_conclusao INTEGER DEFAULT 0');
+    } catch {}
 
     // ==================== NPS / PESQUISA DE SATISFACAO ====================
 
@@ -1297,24 +1511,32 @@ async function initDB() {
     `);
 
     // Seed: config padrao fila
-    const filaCount = db.exec("SELECT COUNT(*) FROM fila_atendimento_config");
+    const filaCount = db.exec('SELECT COUNT(*) FROM fila_atendimento_config');
     if (filaCount.length > 0 && filaCount[0].values[0][0] === 0) {
-        db.run("INSERT INTO fila_atendimento_config (nome, peso_prioridade, peso_sla, peso_tempo_espera, peso_reaberturas) VALUES ('Padrao', 3.0, 5.0, 2.0, 1.0)");
+        db.run(
+            "INSERT INTO fila_atendimento_config (nome, peso_prioridade, peso_sla, peso_tempo_espera, peso_reaberturas) VALUES ('Padrao', 3.0, 5.0, 2.0, 1.0)"
+        );
     }
 
     // Migracao: coluna reaberturas em chamados
-    try { db.run('ALTER TABLE chamados ADD COLUMN reaberturas INTEGER DEFAULT 0'); } catch {}
+    try {
+        db.run('ALTER TABLE chamados ADD COLUMN reaberturas INTEGER DEFAULT 0');
+    } catch {}
 
     // Seed: follow-up negocio_parado
     const fupNegocio = db.exec("SELECT COUNT(*) FROM vendas_followup_config WHERE tipo = 'negocio_parado'");
     if (fupNegocio.length > 0 && fupNegocio[0].values[0][0] === 0) {
-        db.run("INSERT INTO vendas_followup_config (tipo, dias_apos, ativo, mensagem) VALUES ('negocio_parado', 7, 1, 'Alerta: negocio \"{negocio}\" esta parado ha {dias} dias')");
+        db.run(
+            "INSERT INTO vendas_followup_config (tipo, dias_apos, ativo, mensagem) VALUES ('negocio_parado', 7, 1, 'Alerta: negocio \"{negocio}\" esta parado ha {dias} dias')"
+        );
     }
 
     // Seed: follow-up negocio_sem_atividade
     const fupSemAtiv = db.exec("SELECT COUNT(*) FROM vendas_followup_config WHERE tipo = 'negocio_sem_atividade'");
     if (fupSemAtiv.length > 0 && fupSemAtiv[0].values[0][0] === 0) {
-        db.run("INSERT INTO vendas_followup_config (tipo, dias_apos, ativo, mensagem) VALUES ('negocio_sem_atividade', 14, 1, 'Negocio \"{negocio}\" sem nenhuma interacao ha {dias} dias')");
+        db.run(
+            "INSERT INTO vendas_followup_config (tipo, dias_apos, ativo, mensagem) VALUES ('negocio_sem_atividade', 14, 1, 'Negocio \"{negocio}\" sem nenhuma interacao ha {dias} dias')"
+        );
     }
 
     // ==================== API REQUEST LOG ====================
@@ -1368,8 +1590,8 @@ async function initDB() {
 function seedBaseConhecimento() {
     const hasV2 = db.exec("SELECT COUNT(*) FROM kb_categorias WHERE nome = 'Integracoes ERP'");
     if (hasV2.length > 0 && hasV2[0].values[0][0] > 0) return;
-    db.run("DELETE FROM kb_artigos");
-    db.run("DELETE FROM kb_categorias");
+    db.run('DELETE FROM kb_artigos');
+    db.run('DELETE FROM kb_categorias');
     const kbSeed = require('./kb-seed');
 
     const categorias = [
@@ -1389,8 +1611,8 @@ function seedBaseConhecimento() {
 
     const catIds = {};
     for (const cat of kbSeed.categorias) {
-        db.run("INSERT INTO kb_categorias (nome, icone, ordem) VALUES (?, ?, ?)", [cat.nome, cat.icone, cat.ordem]);
-        const result = db.exec("SELECT last_insert_rowid()");
+        db.run('INSERT INTO kb_categorias (nome, icone, ordem) VALUES (?, ?, ?)', [cat.nome, cat.icone, cat.ordem]);
+        const result = db.exec('SELECT last_insert_rowid()');
         catIds[cat.nome] = result[0].values[0][0];
     }
 
@@ -2506,7 +2728,9 @@ DICA: Use a agenda para coordenar reunioes, treinamentos e prazos importantes da
         }
     ];
 
-    const stmtArtigo = db.prepare("INSERT INTO kb_artigos (categoria_id, titulo, conteudo, tags, publicado) VALUES (?, ?, ?, ?, 1)");
+    const stmtArtigo = db.prepare(
+        'INSERT INTO kb_artigos (categoria_id, titulo, conteudo, tags, publicado) VALUES (?, ?, ?, ?, 1)'
+    );
     for (const artigo of kbSeed.artigos) {
         stmtArtigo.run([catIds[artigo.cat], artigo.titulo, artigo.conteudo, artigo.tags]);
     }
@@ -2545,7 +2769,7 @@ function queryGet(sql, params = []) {
 function queryRun(sql, params = []) {
     db.run(sql, params);
     const changes = db.getRowsModified();
-    const lastIdResult = db.exec("SELECT last_insert_rowid() as id");
+    const lastIdResult = db.exec('SELECT last_insert_rowid() as id');
     const lastId = lastIdResult.length > 0 ? lastIdResult[0].values[0][0] : null;
     saveDB();
     return { lastInsertRowid: lastId, changes };

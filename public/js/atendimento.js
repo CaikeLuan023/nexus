@@ -30,7 +30,7 @@ async function atdInitQueue() {
     // Wait for _currentUser from app.js
     let tries = 0;
     while (!window._currentUser && tries < 30) {
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise((r) => setTimeout(r, 200));
         tries++;
     }
     if (window._currentUser) {
@@ -63,7 +63,7 @@ async function atdInitQueue() {
 
 function atdSetFiltro(filtro) {
     _atdFiltro = filtro;
-    document.querySelectorAll('.atd-filter-btn').forEach(b => {
+    document.querySelectorAll('.atd-filter-btn').forEach((b) => {
         b.classList.remove('btn-primary', 'active');
         b.classList.add('btn-outline-secondary');
     });
@@ -109,7 +109,13 @@ function atdPlaySound() {
         playGlobalNotifSound();
         return;
     }
-    try { const a = document.getElementById('atdNotifSound'); if (a) { a.currentTime = 0; a.play().catch(() => {}); } } catch {}
+    try {
+        const a = document.getElementById('atdNotifSound');
+        if (a) {
+            a.currentTime = 0;
+            a.play().catch(() => {});
+        }
+    } catch {}
 }
 
 // ==================== STATUS ====================
@@ -119,7 +125,9 @@ async function atdCheckStatus() {
         const res = await fetch('/api/whatsapp/status');
         const data = await res.json();
         atdUpdateStatus(data);
-    } catch { atdUpdateStatus({ status: 'STOPPED' }); }
+    } catch {
+        atdUpdateStatus({ status: 'STOPPED' });
+    }
 }
 
 function atdUpdateStatus(data) {
@@ -161,7 +169,8 @@ function atdUpdateStatus(data) {
         layout.style.display = 'none';
         btnStart.style.display = 'none';
         btnStop.style.display = '';
-        qrContainer.innerHTML = '<div class="spinner-border text-primary"></div><p class="text-muted mt-2">Iniciando sessao...</p>';
+        qrContainer.innerHTML =
+            '<div class="spinner-border text-primary"></div><p class="text-muted mt-2">Iniciando sessao...</p>';
         _atdChatsLoaded = false;
     } else {
         // STOPPED, FAILED, etc
@@ -171,7 +180,8 @@ function atdUpdateStatus(data) {
         layout.style.display = 'none';
         btnStart.style.display = '';
         btnStop.style.display = 'none';
-        qrContainer.innerHTML = '<div class="text-center"><i class="bi bi-wifi-off" style="font-size:3rem;color:#ccc"></i><p class="text-muted mt-2">Clique em <strong>Iniciar Sessao</strong> para conectar</p></div>';
+        qrContainer.innerHTML =
+            '<div class="text-center"><i class="bi bi-wifi-off" style="font-size:3rem;color:#ccc"></i><p class="text-muted mt-2">Clique em <strong>Iniciar Sessao</strong> para conectar</p></div>';
         _atdChatsLoaded = false;
     }
 }
@@ -182,7 +192,8 @@ async function atdStartSession() {
     const btn = document.getElementById('atdBtnStart');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Iniciando...';
-    document.getElementById('atdQrContainer').innerHTML = '<div class="spinner-border text-primary"></div><p class="text-muted mt-2">Iniciando sessao...</p>';
+    document.getElementById('atdQrContainer').innerHTML =
+        '<div class="spinner-border text-primary"></div><p class="text-muted mt-2">Iniciando sessao...</p>';
     try {
         const res = await atdFetch('/api/whatsapp/start', { method: 'POST' });
         const data = await res.json();
@@ -199,7 +210,9 @@ async function atdStartSession() {
         } else {
             mostrarToast(data.erro || 'Erro ao iniciar', 'error');
         }
-    } catch { mostrarToast('Erro ao iniciar sessao', 'error'); }
+    } catch {
+        mostrarToast('Erro ao iniciar sessao', 'error');
+    }
     btn.disabled = false;
     btn.innerHTML = '<i class="bi bi-play-circle me-1"></i>Iniciar Sessao';
 }
@@ -213,14 +226,17 @@ async function atdStopSession() {
         _atdChatsLoaded = false;
         atdCheckStatus();
         mostrarToast('Sessao encerrada');
-    } catch { mostrarToast('Erro ao desconectar', 'error'); }
+    } catch {
+        mostrarToast('Erro ao desconectar', 'error');
+    }
 }
 
 async function atdRefreshQR() {
     if (_atdQrLoading) return;
     _atdQrLoading = true;
     const container = document.getElementById('atdQrContainer');
-    container.innerHTML = '<div class="spinner-border text-primary"></div><p class="text-muted mt-2">Carregando QR Code...</p>';
+    container.innerHTML =
+        '<div class="spinner-border text-primary"></div><p class="text-muted mt-2">Carregando QR Code...</p>';
     try {
         const res = await fetch('/api/whatsapp/qr');
         if (!res.ok) throw new Error('Status ' + res.status);
@@ -235,11 +251,13 @@ async function atdRefreshQR() {
                 const src = data.value.startsWith('data:') ? data.value : `data:image/png;base64,${data.value}`;
                 container.innerHTML = `<img src="${src}" alt="QR Code">`;
             } else {
-                container.innerHTML = '<div class="text-center"><i class="bi bi-qr-code" style="font-size:3rem;color:#ccc"></i><p class="text-muted mt-2">QR nao disponivel. Clique em Atualizar QR.</p></div>';
+                container.innerHTML =
+                    '<div class="text-center"><i class="bi bi-qr-code" style="font-size:3rem;color:#ccc"></i><p class="text-muted mt-2">QR nao disponivel. Clique em Atualizar QR.</p></div>';
             }
         }
     } catch {
-        container.innerHTML = '<div class="text-center"><i class="bi bi-exclamation-triangle" style="font-size:2rem;color:#f59e0b"></i><p class="text-muted mt-2">Erro ao carregar QR. Clique em Atualizar QR.</p></div>';
+        container.innerHTML =
+            '<div class="text-center"><i class="bi bi-exclamation-triangle" style="font-size:2rem;color:#f59e0b"></i><p class="text-muted mt-2">Erro ao carregar QR. Clique em Atualizar QR.</p></div>';
     }
     _atdQrLoading = false;
 }
@@ -267,16 +285,24 @@ function atdHandleSSE(event) {
     if (type === 'message.status') return;
 
     // Queue events
-    if (type === 'atendimento.novo' || type === 'atendimento.atribuido' || type === 'atendimento.transferido' || type === 'atendimento.finalizado') {
+    if (
+        type === 'atendimento.novo' ||
+        type === 'atendimento.atribuido' ||
+        type === 'atendimento.transferido' ||
+        type === 'atendimento.finalizado'
+    ) {
         atdLoadChats();
         return;
     }
 
     if (type === 'message' && event.payload) {
         const msg = event.payload;
-        if (!msg.body && !msg.type) { atdLoadChats(); return; }
-        const chatId = typeof msg.from === 'object' ? msg.from._serialized : (msg.from || '');
-        const toChatId = typeof msg.to === 'object' ? msg.to._serialized : (msg.to || msg.from || '');
+        if (!msg.body && !msg.type) {
+            atdLoadChats();
+            return;
+        }
+        const chatId = typeof msg.from === 'object' ? msg.from._serialized : msg.from || '';
+        const toChatId = typeof msg.to === 'object' ? msg.to._serialized : msg.to || msg.from || '';
         const relevantChat = msg.fromMe ? toChatId : chatId;
 
         // Client-side filtering: skip messages from chats assigned to other agents (non-admin)
@@ -289,13 +315,17 @@ function atdHandleSSE(event) {
 
         if (relevantChat === _atdCurrentChatId && !msg.fromMe) {
             atdAppendMessage(msg);
-            atdFetch('/api/whatsapp/seen', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chatId: _atdCurrentChatId }) }).catch(() => {});
+            atdFetch('/api/whatsapp/seen', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chatId: _atdCurrentChatId })
+            }).catch(() => {});
         }
         if (!msg.fromMe && relevantChat !== _atdCurrentChatId) {
             atdPlaySound();
             atdShowNotif(msg, relevantChat);
             // Incrementar unread localmente
-            const chat = _atdChats.find(c => atdGetChatId(c) === relevantChat);
+            const chat = _atdChats.find((c) => atdGetChatId(c) === relevantChat);
             if (chat) {
                 chat.unreadCount = (chat.unreadCount || 0) + 1;
                 chat.timestamp = Math.floor(Date.now() / 1000);
@@ -317,8 +347,11 @@ function atdHandleSSE(event) {
         const typing = document.getElementById('atdTyping');
         if (event.payload.type === 'composing' || event.payload.type === 'recording') {
             typing.style.display = 'flex';
-            document.getElementById('atdTypingText').textContent = event.payload.type === 'recording' ? 'gravando audio...' : 'digitando...';
-        } else { typing.style.display = 'none'; }
+            document.getElementById('atdTypingText').textContent =
+                event.payload.type === 'recording' ? 'gravando audio...' : 'digitando...';
+        } else {
+            typing.style.display = 'none';
+        }
     }
 }
 
@@ -343,11 +376,14 @@ function atdShowNotif(msg, chatId) {
     </div>`;
     document.body.appendChild(el);
     requestAnimationFrame(() => el.classList.add('show'));
-    setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 5000);
+    setTimeout(() => {
+        el.classList.remove('show');
+        setTimeout(() => el.remove(), 300);
+    }, 5000);
 }
 
 function atdGoToChat(chatId, name) {
-    document.querySelectorAll('.atd-notif-toast').forEach(el => el.remove());
+    document.querySelectorAll('.atd-notif-toast').forEach((el) => el.remove());
     atdSelectChat(chatId, name);
 }
 
@@ -356,7 +392,8 @@ function atdGoToChat(chatId, name) {
 async function atdLoadChats() {
     try {
         if (!_atdChatsLoaded) {
-            document.getElementById('atdChatsList').innerHTML = '<div class="atd-contacts-empty"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Carregando...</div>';
+            document.getElementById('atdChatsList').innerHTML =
+                '<div class="atd-contacts-empty"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Carregando...</div>';
         }
         const res = await fetch('/api/whatsapp/chats?limit=50');
         if (!res.ok) return;
@@ -370,7 +407,7 @@ async function atdLoadChats() {
 
 function atdFilterChats() {
     const q = document.getElementById('atdSearchInput').value.toLowerCase();
-    atdRenderChats(!q ? _atdChats : _atdChats.filter(c => (c.name || atdGetChatId(c)).toLowerCase().includes(q)));
+    atdRenderChats(!q ? _atdChats : _atdChats.filter((c) => (c.name || atdGetChatId(c)).toLowerCase().includes(q)));
 }
 
 function atdRenderChats(chats) {
@@ -381,64 +418,88 @@ function atdRenderChats(chats) {
     const searchQ = (document.getElementById('atdSearchInput')?.value || '').toLowerCase();
 
     if (_atdFiltro === 'fila') {
-        filtered = chats.filter(c => c.atendimento && c.atendimento.status === 'fila');
+        filtered = chats.filter((c) => c.atendimento && c.atendimento.status === 'fila');
     } else if (_atdFiltro === 'meus') {
-        filtered = chats.filter(c => {
+        filtered = chats.filter((c) => {
             if (c.isGroup) return true;
-            return c.atendimento && c.atendimento.agente_id === (_atdUserInfo?.id || 0) && c.atendimento.status === 'em_atendimento';
+            return (
+                c.atendimento &&
+                c.atendimento.agente_id === (_atdUserInfo?.id || 0) &&
+                c.atendimento.status === 'em_atendimento'
+            );
         });
     } else if (_atdFiltro === 'em_atendimento') {
-        filtered = chats.filter(c => c.atendimento && c.atendimento.status === 'em_atendimento');
+        filtered = chats.filter((c) => c.atendimento && c.atendimento.status === 'em_atendimento');
     }
     // 'todos' shows everything
 
     if (searchQ) {
-        filtered = filtered.filter(c => (c.name || atdGetChatId(c)).toLowerCase().includes(searchQ));
+        filtered = filtered.filter((c) => (c.name || atdGetChatId(c)).toLowerCase().includes(searchQ));
     }
 
     _atdFilteredChats = filtered;
 
     // Update badge counts
-    const naFila = chats.filter(c => c.atendimento?.status === 'fila').length;
-    const meus = chats.filter(c => c.atendimento?.agente_id === (_atdUserInfo?.id || 0) && c.atendimento?.status === 'em_atendimento').length;
+    const naFila = chats.filter((c) => c.atendimento?.status === 'fila').length;
+    const meus = chats.filter(
+        (c) => c.atendimento?.agente_id === (_atdUserInfo?.id || 0) && c.atendimento?.status === 'em_atendimento'
+    ).length;
     const badgeFila = document.getElementById('atdBadgeFila');
     const badgeMeus = document.getElementById('atdBadgeMeus');
     if (badgeFila) badgeFila.textContent = naFila;
     if (badgeMeus) badgeMeus.textContent = meus;
 
     if (!filtered.length) {
-        const msgs = { fila: 'Nenhum chat na fila', meus: 'Nenhum chat atribuído a você', em_atendimento: 'Nenhum chat em atendimento', todos: 'Nenhuma conversa encontrada' };
+        const msgs = {
+            fila: 'Nenhum chat na fila',
+            meus: 'Nenhum chat atribuído a você',
+            em_atendimento: 'Nenhum chat em atendimento',
+            todos: 'Nenhuma conversa encontrada'
+        };
         container.innerHTML = `<div class="atd-contacts-empty">${msgs[_atdFiltro] || msgs.todos}</div>`;
         return;
     }
 
-    container.innerHTML = filtered.map((c, i) => {
-        const chatId = atdGetChatId(c);
-        const name = c.name || chatId.split('@')[0] || '?';
-        const lastMsg = c.lastMessage?.body || '';
-        const lastType = c.lastMessage?.type || '';
-        const typeLabels = { ptt: 'Audio', image: 'Imagem', sticker: 'Sticker', video: 'Video', document: 'Documento' };
-        const preview = lastMsg || typeLabels[lastType] || '';
-        const unread = c.unreadCount > 0 ? `<span class="atd-contact-badge">${c.unreadCount}</span>` : '';
-        const time = c.timestamp ? new Date(c.timestamp * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
-        const isActive = chatId === _atdCurrentChatId;
-        const cachedPic = _atdPicCache[chatId];
-        const avatarContent = cachedPic
-            ? `<img src="${cachedPic}" alt="">`
-            : `<span>${(name[0] || '?').toUpperCase()}</span>`;
+    container.innerHTML = filtered
+        .map((c, i) => {
+            const chatId = atdGetChatId(c);
+            const name = c.name || chatId.split('@')[0] || '?';
+            const lastMsg = c.lastMessage?.body || '';
+            const lastType = c.lastMessage?.type || '';
+            const typeLabels = {
+                ptt: 'Audio',
+                image: 'Imagem',
+                sticker: 'Sticker',
+                video: 'Video',
+                document: 'Documento'
+            };
+            const preview = lastMsg || typeLabels[lastType] || '';
+            const unread = c.unreadCount > 0 ? `<span class="atd-contact-badge">${c.unreadCount}</span>` : '';
+            const time = c.timestamp
+                ? new Date(c.timestamp * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                : '';
+            const isActive = chatId === _atdCurrentChatId;
+            const cachedPic = _atdPicCache[chatId];
+            const avatarContent = cachedPic
+                ? `<img src="${cachedPic}" alt="">`
+                : `<span>${(name[0] || '?').toUpperCase()}</span>`;
 
-        // Queue status badge
-        let statusBadge = '';
-        if (c.atendimento) {
-            if (c.atendimento.status === 'fila') {
-                statusBadge = '<span class="badge bg-warning text-dark" style="font-size:.6rem;padding:1px 4px">Fila</span>';
-            } else if (c.atendimento.status === 'em_atendimento') {
-                const agName = c.atendimento.agente_id === (_atdUserInfo?.id || 0) ? 'Você' : (c.atendimento.agente_nome || 'Agente');
-                statusBadge = `<span class="badge bg-success" style="font-size:.6rem;padding:1px 4px">${atdEscape(agName)}</span>`;
+            // Queue status badge
+            let statusBadge = '';
+            if (c.atendimento) {
+                if (c.atendimento.status === 'fila') {
+                    statusBadge =
+                        '<span class="badge bg-warning text-dark" style="font-size:.6rem;padding:1px 4px">Fila</span>';
+                } else if (c.atendimento.status === 'em_atendimento') {
+                    const agName =
+                        c.atendimento.agente_id === (_atdUserInfo?.id || 0)
+                            ? 'Você'
+                            : c.atendimento.agente_nome || 'Agente';
+                    statusBadge = `<span class="badge bg-success" style="font-size:.6rem;padding:1px 4px">${atdEscape(agName)}</span>`;
+                }
             }
-        }
 
-        return `<div class="atd-contact-item ${isActive ? 'active' : ''} ${c.unreadCount > 0 ? 'unread' : ''}" onclick="atdSelectFilteredIdx(${i})">
+            return `<div class="atd-contact-item ${isActive ? 'active' : ''} ${c.unreadCount > 0 ? 'unread' : ''}" onclick="atdSelectFilteredIdx(${i})">
             <div class="atd-contact-avatar" id="atd-av-${CSS.escape(chatId)}">${avatarContent}</div>
             <div class="atd-contact-body">
                 <div class="atd-contact-top">
@@ -451,7 +512,8 @@ function atdRenderChats(chats) {
                 </div>
             </div>
         </div>`;
-    }).join('');
+        })
+        .join('');
 
     atdLoadPics(filtered);
 }
@@ -462,21 +524,23 @@ function atdSelectFilteredIdx(i) {
 }
 
 async function atdLoadPics(chats) {
-    const toLoad = chats.filter(c => _atdPicCache[atdGetChatId(c)] === undefined).slice(0, 15);
+    const toLoad = chats.filter((c) => _atdPicCache[atdGetChatId(c)] === undefined).slice(0, 15);
     for (const c of toLoad) _atdPicCache[atdGetChatId(c)] = null;
     for (let i = 0; i < toLoad.length; i += 5) {
-        await Promise.all(toLoad.slice(i, i + 5).map(async c => {
-            const chatId = atdGetChatId(c);
-            try {
-                const res = await fetch(`/api/whatsapp/profile-pic/${encodeURIComponent(chatId)}`);
-                const data = await res.json();
-                if (data.profilePictureUrl) {
-                    _atdPicCache[chatId] = data.profilePictureUrl;
-                    const el = document.getElementById(`atd-av-${CSS.escape(chatId)}`);
-                    if (el) el.innerHTML = `<img src="${data.profilePictureUrl}" alt="">`;
-                }
-            } catch {}
-        }));
+        await Promise.all(
+            toLoad.slice(i, i + 5).map(async (c) => {
+                const chatId = atdGetChatId(c);
+                try {
+                    const res = await fetch(`/api/whatsapp/profile-pic/${encodeURIComponent(chatId)}`);
+                    const data = await res.json();
+                    if (data.profilePictureUrl) {
+                        _atdPicCache[chatId] = data.profilePictureUrl;
+                        const el = document.getElementById(`atd-av-${CSS.escape(chatId)}`);
+                        if (el) el.innerHTML = `<img src="${data.profilePictureUrl}" alt="">`;
+                    }
+                } catch {}
+            })
+        );
     }
 }
 
@@ -488,7 +552,7 @@ function atdSelectChatIdx(i) {
 }
 
 async function atdSelectChat(chatId, name) {
-    const chat = _atdChats.find(c => atdGetChatId(c) === chatId);
+    const chat = _atdChats.find((c) => atdGetChatId(c) === chatId);
     const isGroup = chatId.includes('@g.us');
 
     // Auto-claim: if agent clicks on a chat in queue, assign it to themselves
@@ -513,11 +577,18 @@ async function atdSelectChat(chatId, name) {
                 atdLoadChats();
                 return;
             }
-        } catch (e) { console.error('Erro ao atribuir:', e); }
+        } catch (e) {
+            console.error('Erro ao atribuir:', e);
+        }
     }
 
     // Block non-admin from opening another agent's chat
-    if (!_atdIsAdmin && !isGroup && chat?.atendimento?.status === 'em_atendimento' && chat?.atendimento?.agente_id !== (_atdUserInfo?.id || 0)) {
+    if (
+        !_atdIsAdmin &&
+        !isGroup &&
+        chat?.atendimento?.status === 'em_atendimento' &&
+        chat?.atendimento?.agente_id !== (_atdUserInfo?.id || 0)
+    ) {
         mostrarToast('Este chat está sendo atendido por outro agente', 'error');
         return;
     }
@@ -580,14 +651,18 @@ async function atdSelectChat(chatId, name) {
     }
 
     // Highlight in list
-    document.querySelectorAll('.atd-contact-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.atd-contact-item').forEach((el) => el.classList.remove('active'));
 
     // Mark as read
     if (chat && chat.unreadCount > 0) {
         chat.unreadCount = 0;
         atdRenderChats(_atdChats);
     }
-    atdFetch('/api/whatsapp/seen', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chatId }) }).catch(() => {});
+    atdFetch('/api/whatsapp/seen', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId })
+    }).catch(() => {});
 
     // Load messages + polling fallback
     _atdLastMsgCount = 0;
@@ -607,7 +682,8 @@ async function atdLoadMessages(showSpinner) {
     if (!_atdCurrentChatId) return;
     const body = document.getElementById('atdMessagesBody');
     if (showSpinner || !body.children.length || body.querySelector('.spinner-border')) {
-        body.innerHTML = '<div class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm"></div></div>';
+        body.innerHTML =
+            '<div class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm"></div></div>';
     }
 
     try {
@@ -628,13 +704,17 @@ async function atdLoadMessages(showSpinner) {
 function atdRenderMessages(messages) {
     const body = document.getElementById('atdMessagesBody');
     if (!messages.length) {
-        body.innerHTML = '<div class="text-center text-muted py-5"><i class="bi bi-chat-square-text" style="font-size:2.5rem;opacity:.3"></i><br><small>Envie uma mensagem para iniciar</small></div>';
+        body.innerHTML =
+            '<div class="text-center text-muted py-5"><i class="bi bi-chat-square-text" style="font-size:2.5rem;opacity:.3"></i><br><small>Envie uma mensagem para iniciar</small></div>';
         _atdLastMsgCount = 0;
         return;
     }
     const wasBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 100;
     const sorted = [...messages].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-    body.innerHTML = sorted.map(m => atdRenderBubble(m)).filter(Boolean).join('');
+    body.innerHTML = sorted
+        .map((m) => atdRenderBubble(m))
+        .filter(Boolean)
+        .join('');
     if (wasBottom || _atdLastMsgCount !== sorted.length) body.scrollTop = body.scrollHeight;
     _atdLastMsgCount = sorted.length;
 }
@@ -651,8 +731,10 @@ function atdRenderBubble(m) {
     if (m.hasMedia || ['image', 'video', 'ptt', 'audio', 'sticker', 'document'].includes(type)) {
         const mediaParam = mediaUrl ? `,'${atdEscape(mediaUrl)}'` : '';
         if (type === 'image' || type === 'sticker') {
-            if (mediaUrl) mediaHtml = `<div class="atd-media"><img src="${mediaUrl}" onclick="atdOpenMedia('${msgId}','image'${mediaParam})" onerror="this.outerHTML='<div class=\\'atd-media-placeholder\\' onclick=\\'atdOpenMedia(&quot;${msgId}&quot;,&quot;image&quot;${mediaParam})\\'><i class=\\'bi bi-image fs-3\\'></i></div>'"></div>`;
-            else mediaHtml = `<div class="atd-media-placeholder" onclick="atdOpenMedia('${msgId}','image')"><i class="bi bi-image fs-3"></i></div>`;
+            if (mediaUrl)
+                mediaHtml = `<div class="atd-media"><img src="${mediaUrl}" onclick="atdOpenMedia('${msgId}','image'${mediaParam})" onerror="this.outerHTML='<div class=\\'atd-media-placeholder\\' onclick=\\'atdOpenMedia(&quot;${msgId}&quot;,&quot;image&quot;${mediaParam})\\'><i class=\\'bi bi-image fs-3\\'></i></div>'"></div>`;
+            else
+                mediaHtml = `<div class="atd-media-placeholder" onclick="atdOpenMedia('${msgId}','image')"><i class="bi bi-image fs-3"></i></div>`;
         } else if (type === 'video') {
             mediaHtml = `<div class="atd-media-placeholder" onclick="atdOpenMedia('${msgId}','video'${mediaParam})"><i class="bi bi-play-circle fs-3"></i><br><small>Video</small></div>`;
         } else if (type === 'ptt' || type === 'audio') {
@@ -661,13 +743,22 @@ function atdRenderBubble(m) {
             mediaHtml = `<div class="atd-media-placeholder" onclick="atdOpenMedia('${msgId}','document'${mediaParam})"><i class="bi bi-file-earmark fs-3"></i><br><small>${atdEscape(m.filename || 'Documento')}</small></div>`;
         }
         if (!content) {
-            const labels = { ptt: 'Audio', audio: 'Audio', image: 'Imagem', sticker: 'Sticker', video: 'Video', document: 'Documento' };
+            const labels = {
+                ptt: 'Audio',
+                audio: 'Audio',
+                image: 'Imagem',
+                sticker: 'Sticker',
+                video: 'Video',
+                document: 'Documento'
+            };
             content = labels[type] || '';
         }
     }
     if (!content && !mediaHtml) return '';
 
-    const time = m.timestamp ? new Date(m.timestamp * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+    const time = m.timestamp
+        ? new Date(m.timestamp * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        : '';
     const sender = !fromMe && m.senderName ? `<div class="atd-bubble-sender">${atdEscape(m.senderName)}</div>` : '';
     let quotedHtml = '';
     if (m.hasQuotedMsg && m.quotedMsg) {
@@ -721,18 +812,26 @@ async function atdSendMessage() {
     btn.disabled = true;
     input.value = '';
 
-    atdFetch('/api/whatsapp/typing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chatId: _atdCurrentChatId }) }).catch(() => {});
+    atdFetch('/api/whatsapp/typing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId: _atdCurrentChatId })
+    }).catch(() => {});
 
     try {
         const payload = { chatId: _atdCurrentChatId, text };
         if (_atdReplyTo) payload.quotedMessageId = _atdReplyTo;
-        const res = await atdFetch('/api/whatsapp/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const res = await atdFetch('/api/whatsapp/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
         const data = await res.json();
         atdCancelReply();
 
         // Append local message
         const localMsg = {
-            id: data.messageId || ('local_' + Date.now()),
+            id: data.messageId || 'local_' + Date.now(),
             body: text,
             fromMe: true,
             timestamp: Math.floor(Date.now() / 1000),
@@ -758,7 +857,9 @@ async function atdSendFile(input) {
         await atdFetch('/api/whatsapp/send-file', { method: 'POST', body: fd });
         mostrarToast('Arquivo enviado!');
         setTimeout(atdLoadMessages, 1000);
-    } catch { mostrarToast('Erro ao enviar arquivo', 'error'); }
+    } catch {
+        mostrarToast('Erro ao enviar arquivo', 'error');
+    }
     input.value = '';
 }
 
@@ -769,7 +870,10 @@ async function atdOpenMedia(msgId, mediaType, directUrl) {
         ? `/api/whatsapp/media/${encodeURIComponent(msgId)}?url=${encodeURIComponent(directUrl)}`
         : `/api/whatsapp/media/${encodeURIComponent(msgId)}`;
 
-    if (mediaType === 'document') { window.open(directUrl || url, '_blank'); return; }
+    if (mediaType === 'document') {
+        window.open(directUrl || url, '_blank');
+        return;
+    }
 
     const modal = new bootstrap.Modal(document.getElementById('atdModalMedia'));
     const img = document.getElementById('atdMediaImg');
@@ -777,8 +881,11 @@ async function atdOpenMedia(msgId, mediaType, directUrl) {
     const loading = document.getElementById('atdMediaLoading');
     const download = document.getElementById('atdMediaDownload');
 
-    img.style.display = 'none'; video.style.display = 'none'; loading.style.display = 'block';
-    img.src = ''; video.src = '';
+    img.style.display = 'none';
+    video.style.display = 'none';
+    loading.style.display = 'block';
+    img.src = '';
+    video.src = '';
     download.href = url;
     modal.show();
 
@@ -788,11 +895,17 @@ async function atdOpenMedia(msgId, mediaType, directUrl) {
         const blob = await res.blob();
         const objectUrl = URL.createObjectURL(blob);
         loading.style.display = 'none';
-        if (blob.type.startsWith('video/')) { video.src = objectUrl; video.style.display = 'block'; }
-        else { img.src = objectUrl; img.style.display = 'block'; }
+        if (blob.type.startsWith('video/')) {
+            video.src = objectUrl;
+            video.style.display = 'block';
+        } else {
+            img.src = objectUrl;
+            img.style.display = 'block';
+        }
         download.href = objectUrl;
     } catch {
-        loading.innerHTML = '<p class="text-danger"><i class="bi bi-exclamation-triangle fs-3"></i><br>Erro ao carregar</p>';
+        loading.innerHTML =
+            '<p class="text-danger"><i class="bi bi-exclamation-triangle fs-3"></i><br>Erro ao carregar</p>';
     }
 }
 
@@ -809,12 +922,12 @@ function atdSearchInChat() {
     if (!q) return;
     const bubbles = document.querySelectorAll('.atd-bubble');
     let found = false;
-    bubbles.forEach(b => {
+    bubbles.forEach((b) => {
         const text = b.textContent.toLowerCase();
         if (text.includes(q) && !found) {
             b.scrollIntoView({ behavior: 'smooth', block: 'center' });
             b.style.outline = '2px solid #667eea';
-            setTimeout(() => b.style.outline = '', 2000);
+            setTimeout(() => (b.style.outline = ''), 2000);
             found = true;
         }
     });
@@ -832,7 +945,7 @@ async function atdAssumirChat(chatId) {
         });
         if (res.ok) {
             mostrarToast('Chat atribuído a você!');
-            const chat = _atdChats.find(c => atdGetChatId(c) === chatId);
+            const chat = _atdChats.find((c) => atdGetChatId(c) === chatId);
             if (chat?.atendimento) {
                 chat.atendimento.status = 'em_atendimento';
                 chat.atendimento.agente_id = _atdUserInfo?.id;
@@ -850,7 +963,9 @@ async function atdAssumirChat(chatId) {
             const data = await res.json();
             mostrarToast(data.erro || 'Erro ao assumir', 'error');
         }
-    } catch { mostrarToast('Erro ao assumir chat', 'error'); }
+    } catch {
+        mostrarToast('Erro ao assumir chat', 'error');
+    }
 }
 
 async function atdTransferirChat(chatId) {
@@ -865,7 +980,10 @@ async function atdTransferirChat(chatId) {
         const res = await fetch('/api/whatsapp/atendimentos/agentes');
         const agentes = await res.json();
         const myId = _atdUserInfo?.id || 0;
-        const options = agentes.filter(a => a.id !== myId).map(a => `<option value="${a.id}">${atdEscape(a.nome)} (${a.perfil})</option>`).join('');
+        const options = agentes
+            .filter((a) => a.id !== myId)
+            .map((a) => `<option value="${a.id}">${atdEscape(a.nome)} (${a.perfil})</option>`)
+            .join('');
         select.innerHTML = options || '<option value="">Nenhum agente disponível</option>';
     } catch {
         select.innerHTML = '<option value="">Erro ao carregar</option>';
@@ -903,7 +1021,9 @@ async function atdConfirmarTransferencia() {
             const data = await res.json();
             mostrarToast(data.erro || 'Erro ao transferir', 'error');
         }
-    } catch { mostrarToast('Erro ao transferir', 'error'); }
+    } catch {
+        mostrarToast('Erro ao transferir', 'error');
+    }
 }
 
 async function atdFinalizarChat(chatId) {
@@ -927,5 +1047,7 @@ async function atdFinalizarChat(chatId) {
             const data = await res.json();
             mostrarToast(data.erro || 'Erro ao finalizar', 'error');
         }
-    } catch { mostrarToast('Erro ao finalizar', 'error'); }
+    } catch {
+        mostrarToast('Erro ao finalizar', 'error');
+    }
 }

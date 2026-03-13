@@ -11,10 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
 async function carregarResumoFinanceiro() {
     try {
         const d = await api('/api/financeiro/resumo');
-        document.getElementById('finReceitas').textContent = 'R$ ' + (d.receitas || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-        document.getElementById('finDespesas').textContent = 'R$ ' + (d.despesas || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-        document.getElementById('finSaldo').textContent = 'R$ ' + (d.saldo || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-        document.getElementById('finInadimplencia').textContent = 'R$ ' + (d.inadimplencia || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        document.getElementById('finReceitas').textContent =
+            'R$ ' + (d.receitas || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        document.getElementById('finDespesas').textContent =
+            'R$ ' + (d.despesas || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        document.getElementById('finSaldo').textContent =
+            'R$ ' + (d.saldo || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        document.getElementById('finInadimplencia').textContent =
+            'R$ ' + (d.inadimplencia || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     } catch {}
 }
 
@@ -33,13 +37,15 @@ async function carregarFaturas() {
         const faturas = await api(`/api/financeiro/faturas?${params}`);
         const tbody = document.getElementById('tabelaFaturas');
         if (!faturas.length) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Nenhuma fatura encontrada</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="8" class="text-center text-muted py-4">Nenhuma fatura encontrada</td></tr>';
             return;
         }
-        tbody.innerHTML = faturas.map(f => {
-            const tipoClass = f.tipo === 'receita' ? 'success' : 'danger';
-            const statusMap = { pendente: 'warning', pago: 'success', vencido: 'danger', cancelado: 'secondary' };
-            return `<tr>
+        tbody.innerHTML = faturas
+            .map((f) => {
+                const tipoClass = f.tipo === 'receita' ? 'success' : 'danger';
+                const statusMap = { pendente: 'warning', pago: 'success', vencido: 'danger', cancelado: 'secondary' };
+                return `<tr>
                 <td>${f.id}</td>
                 <td>${f.provedor_nome}</td>
                 <td>${f.descricao || '-'}</td>
@@ -55,8 +61,11 @@ async function carregarFaturas() {
                     </div>
                 </td>
             </tr>`;
-        }).join('');
-    } catch (err) { mostrarToast(err.message, 'error'); }
+            })
+            .join('');
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 function abrirModalFatura() {
@@ -87,7 +96,9 @@ async function editarFatura(id) {
         document.getElementById('faturaObs').value = f.observacoes || '';
         document.getElementById('modalFaturaTitulo').textContent = 'Editar Fatura';
         new bootstrap.Modal(document.getElementById('modalFatura')).show();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function salvarFatura() {
@@ -103,7 +114,8 @@ async function salvarFatura() {
         observacoes: document.getElementById('faturaObs').value.trim()
     };
     if (!data.provedor_id || !data.valor || !data.data_vencimento) {
-        mostrarToast('Provedor, valor e vencimento obrigatorios', 'warning'); return;
+        mostrarToast('Provedor, valor e vencimento obrigatorios', 'warning');
+        return;
     }
 
     try {
@@ -117,7 +129,9 @@ async function salvarFatura() {
         bootstrap.Modal.getInstance(document.getElementById('modalFatura')).hide();
         carregarFaturas();
         carregarResumoFinanceiro();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function marcarPago(id) {
@@ -126,7 +140,9 @@ async function marcarPago(id) {
         mostrarToast('Fatura marcada como paga!');
         carregarFaturas();
         carregarResumoFinanceiro();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function excluirFatura(id) {
@@ -136,5 +152,7 @@ async function excluirFatura(id) {
         mostrarToast('Fatura excluida!');
         carregarFaturas();
         carregarResumoFinanceiro();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }

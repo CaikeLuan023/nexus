@@ -12,13 +12,15 @@ async function carregarProvedoresFiltro() {
     try {
         const provedores = await api('/api/provedores');
         const select = document.getElementById('npsFiltroProvedor');
-        provedores.forEach(p => {
+        provedores.forEach((p) => {
             const opt = document.createElement('option');
             opt.value = p.id;
             opt.textContent = p.nome;
             select.appendChild(opt);
         });
-    } catch (err) { console.error('Erro provedores:', err); }
+    } catch (err) {
+        console.error('Erro provedores:', err);
+    }
 }
 
 async function carregarNPS() {
@@ -51,8 +53,16 @@ function renderScore(data) {
         labelEl.textContent = 'Sem dados suficientes';
     } else {
         scoreEl.textContent = data.score;
-        const cor = data.score >= 75 ? 'text-success' : data.score >= 50 ? 'text-primary' : data.score >= 0 ? 'text-warning' : 'text-danger';
-        const label = data.score >= 75 ? 'Excelente' : data.score >= 50 ? 'Muito Bom' : data.score >= 0 ? 'Razoavel' : 'Critico';
+        const cor =
+            data.score >= 75
+                ? 'text-success'
+                : data.score >= 50
+                  ? 'text-primary'
+                  : data.score >= 0
+                    ? 'text-warning'
+                    : 'text-danger';
+        const label =
+            data.score >= 75 ? 'Excelente' : data.score >= 50 ? 'Muito Bom' : data.score >= 0 ? 'Razoavel' : 'Critico';
         scoreEl.className = 'display-3 fw-bold ' + cor;
         labelEl.textContent = `${label} (media: ${data.media || 0} | ${data.total} respostas)`;
     }
@@ -68,28 +78,42 @@ function renderDistribuicao(dist) {
     if (!ctx) return;
     if (!dist || !dist.length) return;
 
-    const colors = dist.map(d =>
-        d.nota <= 6 ? '#dc3545' : d.nota <= 8 ? '#ffc107' : '#198754'
-    );
+    const colors = dist.map((d) => (d.nota <= 6 ? '#dc3545' : d.nota <= 8 ? '#ffc107' : '#198754'));
 
     if (chartDistribuicao) chartDistribuicao.destroy();
     chartDistribuicao = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: dist.map(d => d.nota),
-            datasets: [{
-                label: 'Respostas',
-                data: dist.map(d => d.quantidade),
-                backgroundColor: colors,
-                borderRadius: 4
-            }]
+            labels: dist.map((d) => d.nota),
+            datasets: [
+                {
+                    label: 'Respostas',
+                    data: dist.map((d) => d.quantidade),
+                    backgroundColor: colors,
+                    borderRadius: 4
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1, color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#666' } },
-                x: { ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#666' } }
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        color:
+                            getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() ||
+                            '#666'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color:
+                            getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() ||
+                            '#666'
+                    }
+                }
             },
             plugins: { legend: { display: false } }
         }
@@ -101,7 +125,7 @@ function renderEvolucao(evolucao) {
     if (!ctx) return;
     if (!evolucao || !evolucao.length) return;
 
-    const labels = evolucao.map(e => {
+    const labels = evolucao.map((e) => {
         const [ano, mes] = e.mes.split('-');
         return new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
     });
@@ -111,29 +135,47 @@ function renderEvolucao(evolucao) {
         type: 'line',
         data: {
             labels,
-            datasets: [{
-                label: 'NPS Score',
-                data: evolucao.map(e => e.score),
-                borderColor: '#0d6efd',
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: 5,
-                pointBackgroundColor: '#0d6efd',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2
-            }]
+            datasets: [
+                {
+                    label: 'NPS Score',
+                    data: evolucao.map((e) => e.score),
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#0d6efd',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
                 y: {
-                    min: -100, max: 100,
-                    ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#666' },
-                    grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim() || '#e9ecef' }
+                    min: -100,
+                    max: 100,
+                    ticks: {
+                        color:
+                            getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() ||
+                            '#666'
+                    },
+                    grid: {
+                        color:
+                            getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim() ||
+                            '#e9ecef'
+                    }
                 },
-                x: { ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#666' }, grid: { display: false } }
+                x: {
+                    ticks: {
+                        color:
+                            getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() ||
+                            '#666'
+                    },
+                    grid: { display: false }
+                }
             },
             plugins: { legend: { display: false } }
         }
@@ -149,9 +191,11 @@ function renderProvedores(provedores) {
 
     container.innerHTML = `
         <div class="list-group list-group-flush">
-            ${provedores.map(p => {
-                const cor = p.score >= 75 ? 'success' : p.score >= 50 ? 'primary' : p.score >= 0 ? 'warning' : 'danger';
-                return `
+            ${provedores
+                .map((p) => {
+                    const cor =
+                        p.score >= 75 ? 'success' : p.score >= 50 ? 'primary' : p.score >= 0 ? 'warning' : 'danger';
+                    return `
                     <div class="list-group-item d-flex justify-content-between align-items-center px-0">
                         <div>
                             <strong>${escapeHtml(p.provedor)}</strong>
@@ -160,7 +204,8 @@ function renderProvedores(provedores) {
                         <span class="badge bg-${cor} fs-6">${p.score}</span>
                     </div>
                 `;
-            }).join('')}
+                })
+                .join('')}
         </div>
     `;
 }
@@ -174,10 +219,12 @@ function renderRespostas(respostas) {
 
     container.innerHTML = `
         <div class="list-group list-group-flush" style="max-height:400px;overflow-y:auto">
-            ${respostas.slice(0, 20).map(r => {
-                const cor = r.nota >= 9 ? 'success' : r.nota >= 7 ? 'warning' : 'danger';
-                const tipo = r.nota >= 9 ? 'Promotor' : r.nota >= 7 ? 'Neutro' : 'Detrator';
-                return `
+            ${respostas
+                .slice(0, 20)
+                .map((r) => {
+                    const cor = r.nota >= 9 ? 'success' : r.nota >= 7 ? 'warning' : 'danger';
+                    const tipo = r.nota >= 9 ? 'Promotor' : r.nota >= 7 ? 'Neutro' : 'Detrator';
+                    return `
                     <div class="list-group-item px-0">
                         <div class="d-flex justify-content-between align-items-start mb-1">
                             <div>
@@ -191,7 +238,8 @@ function renderRespostas(respostas) {
                         ${r.comentario ? `<p class="mb-0 mt-1 small fst-italic">"${escapeHtml(r.comentario)}"</p>` : ''}
                     </div>
                 `;
-            }).join('')}
+                })
+                .join('')}
         </div>
     `;
 }
@@ -204,8 +252,14 @@ function escapeHtml(str) {
 function formatarData(dt) {
     if (!dt) return '-';
     try {
-        return new Date(dt.replace(' ', 'T')).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    } catch { return dt; }
+        return new Date(dt.replace(' ', 'T')).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    } catch {
+        return dt;
+    }
 }
 
 async function enviarNPSMassa() {

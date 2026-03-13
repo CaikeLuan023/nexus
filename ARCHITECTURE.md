@@ -34,20 +34,20 @@ Nexus e uma aplicacao monolitica Node.js/Express para gestao de provedores de in
 
 ## Stack Tecnologico
 
-| Camada | Tecnologia | Versao |
-|--------|-----------|--------|
-| Runtime | Node.js | 18+ |
-| Framework | Express.js | 4.x |
-| Banco de Dados | SQLite via sql.js | 1.11 |
-| Frontend | Vanilla JavaScript | ES2021 |
-| UI Framework | Bootstrap | 5.3.3 |
-| Graficos | Chart.js | 4.4.0 |
-| WhatsApp | WAHA (Docker) | - |
-| Seguranca | Helmet, bcryptjs | - |
-| Email | Nodemailer | 8.x |
-| PDF | PDFKit | 0.17 |
-| Excel | xlsx (SheetJS) | 0.18 |
-| 2FA | otplib (TOTP) | 13.x |
+| Camada         | Tecnologia         | Versao |
+| -------------- | ------------------ | ------ |
+| Runtime        | Node.js            | 18+    |
+| Framework      | Express.js         | 4.x    |
+| Banco de Dados | SQLite via sql.js  | 1.11   |
+| Frontend       | Vanilla JavaScript | ES2021 |
+| UI Framework   | Bootstrap          | 5.3.3  |
+| Graficos       | Chart.js           | 4.4.0  |
+| WhatsApp       | WAHA (Docker)      | -      |
+| Seguranca      | Helmet, bcryptjs   | -      |
+| Email          | Nodemailer         | 8.x    |
+| PDF            | PDFKit             | 0.17   |
+| Excel          | xlsx (SheetJS)     | 0.18   |
+| 2FA            | otplib (TOTP)      | 13.x   |
 
 ## Estrutura de Diretorios
 
@@ -132,38 +132,39 @@ gestao-trabalho/
 ### Arquitetura de Persistencia
 
 sql.js carrega o banco SQLite inteiro em memoria ao iniciar. Alteracoes sao persistidas em disco:
+
 - `setInterval` periodico (a cada 30s)
 - Apos cada operacao de escrita critica
 - Backup automatico em `backups/` antes de salvar
 
 ### Tabelas Principais (66 total)
 
-| Grupo | Tabelas | Descricao |
-|-------|---------|-----------|
-| **Core** | usuarios, provedores, chamados, projetos, treinamentos | Entidades principais |
-| **Vendas** | vendas_negocios, vendas_tarefas, vendas_metas, vendas_propostas, vendas_contratos, vendas_comissoes (+6) | Pipeline completo de CRM |
-| **WhatsApp** | whatsapp_mensagens, whatsapp_templates, whatsapp_flows, whatsapp_atendimentos (+8) | Integracao WAHA |
-| **Ponto** | ponto_registros, ponto_pausas, ponto_config | Controle de jornada |
-| **Config** | config_geral, config_email, config_ixc, config_erp, api_tokens, webhooks_saida | Configuracoes do sistema |
-| **Conteudo** | kb_categorias, kb_artigos, agenda_eventos, financeiro_faturas | Base de conhecimento, agenda, financeiro |
-| **Seguranca** | permissoes_modulos, lgpd_consentimentos, lgpd_retencao | Permissoes e LGPD |
-| **Logs** | atividades_log, api_request_log, webhook_dispatch_log, erp_sync_log | Auditoria |
-| **Auxiliares** | anexos, comentarios, notificacoes, chat_mensagens, nps_pesquisas, dashboard_widgets | Funcionalidades transversais |
+| Grupo          | Tabelas                                                                                                  | Descricao                                |
+| -------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **Core**       | usuarios, provedores, chamados, projetos, treinamentos                                                   | Entidades principais                     |
+| **Vendas**     | vendas_negocios, vendas_tarefas, vendas_metas, vendas_propostas, vendas_contratos, vendas_comissoes (+6) | Pipeline completo de CRM                 |
+| **WhatsApp**   | whatsapp_mensagens, whatsapp_templates, whatsapp_flows, whatsapp_atendimentos (+8)                       | Integracao WAHA                          |
+| **Ponto**      | ponto_registros, ponto_pausas, ponto_config                                                              | Controle de jornada                      |
+| **Config**     | config_geral, config_email, config_ixc, config_erp, api_tokens, webhooks_saida                           | Configuracoes do sistema                 |
+| **Conteudo**   | kb_categorias, kb_artigos, agenda_eventos, financeiro_faturas                                            | Base de conhecimento, agenda, financeiro |
+| **Seguranca**  | permissoes_modulos, lgpd_consentimentos, lgpd_retencao                                                   | Permissoes e LGPD                        |
+| **Logs**       | atividades_log, api_request_log, webhook_dispatch_log, erp_sync_log                                      | Auditoria                                |
+| **Auxiliares** | anexos, comentarios, notificacoes, chat_mensagens, nps_pesquisas, dashboard_widgets                      | Funcionalidades transversais             |
 
 ## Seguranca
 
 ### Camadas de Protecao
 
-| Mecanismo | Implementacao |
-|-----------|--------------|
-| **CSP** | Helmet com `scriptSrc: ['self', 'cdn.jsdelivr.net']` |
-| **CSRF** | Token gerado por sessao, validado em POST/PUT/DELETE |
-| **Rate Limiting** | Login: 5/15min, envio em massa: 3/min, formularios: 10/15min |
-| **Senhas** | bcryptjs com salt rounds automatico |
-| **Sessao** | Cookie httpOnly, sameSite strict, secure em producao |
-| **XSS** | `escapeHtml()` server-side, sanitizacao client-side |
-| **2FA** | TOTP via otplib (Google Authenticator compativel) |
-| **Permissoes** | Por modulo (permissoes_modulos) + por perfil (admin, analista, vendedor, etc.) |
+| Mecanismo         | Implementacao                                                                  |
+| ----------------- | ------------------------------------------------------------------------------ |
+| **CSP**           | Helmet com `scriptSrc: ['self', 'cdn.jsdelivr.net']`                           |
+| **CSRF**          | Token gerado por sessao, validado em POST/PUT/DELETE                           |
+| **Rate Limiting** | Login: 5/15min, envio em massa: 3/min, formularios: 10/15min                   |
+| **Senhas**        | bcryptjs com salt rounds automatico                                            |
+| **Sessao**        | Cookie httpOnly, sameSite strict, secure em producao                           |
+| **XSS**           | `escapeHtml()` server-side, sanitizacao client-side                            |
+| **2FA**           | TOTP via otplib (Google Authenticator compativel)                              |
+| **Permissoes**    | Por modulo (permissoes_modulos) + por perfil (admin, analista, vendedor, etc.) |
 
 ### Middleware de Autorizacao
 
@@ -196,18 +197,18 @@ GET /api/whatsapp/events ──► Conexao persistente SSE
 
 ## Modulos do Sistema
 
-| Modulo | Frontend | Backend (server.js) | Descricao |
-|--------|----------|---------------------|-----------|
-| Dashboard | dashboard.js (966L) | /api/dashboard/* | Metricas, graficos, widgets customizaveis |
-| Provedores | provedores.js (498L) | /api/provedores/* | CRUD de ISPs, metricas, historico |
-| Chamados | chamados.js (591L) | /api/chamados/* | Tickets, kanban, SLA, anexos |
-| Vendas | vendas.js (2289L) | /api/vendas/* | Pipeline CRM, propostas PDF, comissoes |
-| WhatsApp | whatsapp.js + atendimento.js | /api/whatsapp/* | Templates, bot, fila, fluxos |
-| Treinamentos | treinamentos.js (272L) | /api/treinamentos/* | Agendamento e controle |
-| Projetos | projetos.js (429L) | /api/projetos/* | Kanban com prioridades |
-| Financeiro | financeiro.js (140L) | /api/financeiro/* | Faturas, receitas, despesas |
-| Ponto | ponto.js (720L) | /api/ponto/* | Entrada/saida, pausas, relatorios |
-| Configuracoes | configuracoes.js (1129L) | /api/config/* | Geral, email, integracoes, ERP |
+| Modulo        | Frontend                     | Backend (server.js)  | Descricao                                 |
+| ------------- | ---------------------------- | -------------------- | ----------------------------------------- |
+| Dashboard     | dashboard.js (966L)          | /api/dashboard/\*    | Metricas, graficos, widgets customizaveis |
+| Provedores    | provedores.js (498L)         | /api/provedores/\*   | CRUD de ISPs, metricas, historico         |
+| Chamados      | chamados.js (591L)           | /api/chamados/\*     | Tickets, kanban, SLA, anexos              |
+| Vendas        | vendas.js (2289L)            | /api/vendas/\*       | Pipeline CRM, propostas PDF, comissoes    |
+| WhatsApp      | whatsapp.js + atendimento.js | /api/whatsapp/\*     | Templates, bot, fila, fluxos              |
+| Treinamentos  | treinamentos.js (272L)       | /api/treinamentos/\* | Agendamento e controle                    |
+| Projetos      | projetos.js (429L)           | /api/projetos/\*     | Kanban com prioridades                    |
+| Financeiro    | financeiro.js (140L)         | /api/financeiro/\*   | Faturas, receitas, despesas               |
+| Ponto         | ponto.js (720L)              | /api/ponto/\*        | Entrada/saida, pausas, relatorios         |
+| Configuracoes | configuracoes.js (1129L)     | /api/config/\*       | Geral, email, integracoes, ERP            |
 
 ## Integracoes Externas
 
@@ -221,6 +222,7 @@ GET /api/whatsapp/events ──► Conexao persistente SSE
 ### ERP
 
 Adaptador unificado para 5 ERPs de ISP:
+
 - IXC Provedor, ISPfy, Hubsoft, SGP, Atlaz
 - Sincronizacao bidirecional via webhooks e polling
 - Logs em `erp_sync_log` e `erp_communication_log`

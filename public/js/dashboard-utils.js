@@ -10,9 +10,21 @@
     // ===== PALETA DE CORES =====
 
     DashboardUtils.CORES = [
-        '#f59e0b', '#3a0ca3', '#7209b7', '#f72585', '#4cc9f0',
-        '#2ec4b6', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3',
-        '#6c5ce7', '#00b894', '#e17055', '#0984e3', '#fdcb6e'
+        '#f59e0b',
+        '#3a0ca3',
+        '#7209b7',
+        '#f72585',
+        '#4cc9f0',
+        '#2ec4b6',
+        '#ff6b6b',
+        '#feca57',
+        '#48dbfb',
+        '#ff9ff3',
+        '#6c5ce7',
+        '#00b894',
+        '#e17055',
+        '#0984e3',
+        '#fdcb6e'
     ];
 
     DashboardUtils.CORES_CATEGORIA = {
@@ -125,7 +137,9 @@
         return {
             labels: data.map(labelFn),
             values: data.map(valueFn),
-            colors: data.map(function (_, i) { return DashboardUtils.getColor(i); })
+            colors: data.map(function (_, i) {
+                return DashboardUtils.getColor(i);
+            })
         };
     };
 
@@ -134,7 +148,9 @@
         return {
             labels: data.map(labelFn),
             values: data.map(valueFn),
-            colors: data.map(function (_, i) { return DashboardUtils.getColor(i); })
+            colors: data.map(function (_, i) {
+                return DashboardUtils.getColor(i);
+            })
         };
     };
 
@@ -142,7 +158,10 @@
         var seen = {};
         var meses = [];
         dados.forEach(function (d) {
-            if (!seen[d.mes]) { meses.push(d.mes); seen[d.mes] = true; }
+            if (!seen[d.mes]) {
+                meses.push(d.mes);
+                seen[d.mes] = true;
+            }
         });
         meses.sort();
 
@@ -153,7 +172,9 @@
             return {
                 label: s.replace('_', ' '),
                 data: meses.map(function (m) {
-                    var d = dados.find(function (x) { return x.mes === m && x.status === s; });
+                    var d = dados.find(function (x) {
+                        return x.mes === m && x.status === s;
+                    });
                     return d ? d.total : 0;
                 }),
                 borderColor: cores[s],
@@ -173,7 +194,9 @@
         var result = [];
         Object.keys(porProvedor).forEach(function (nome) {
             var categorias = porProvedor[nome];
-            var total = categorias.reduce(function (sum, c) { return sum + c.total; }, 0);
+            var total = categorias.reduce(function (sum, c) {
+                return sum + c.total;
+            }, 0);
             result.push({ nome: nome, categorias: categorias, total: total });
         });
         return result;
@@ -185,5 +208,4 @@
     } else {
         root.DashboardUtils = DashboardUtils;
     }
-
 })(typeof window !== 'undefined' ? window : global);

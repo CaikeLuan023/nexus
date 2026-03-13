@@ -33,9 +33,9 @@ async function carregarHistorico() {
         }
 
         // Resumo
-        const totalChamados = eventos.filter(e => e.tipo === 'chamado').length;
-        const totalTreinamentos = eventos.filter(e => e.tipo === 'treinamento').length;
-        const totalProjetos = eventos.filter(e => e.tipo === 'projeto').length;
+        const totalChamados = eventos.filter((e) => e.tipo === 'chamado').length;
+        const totalTreinamentos = eventos.filter((e) => e.tipo === 'treinamento').length;
+        const totalProjetos = eventos.filter((e) => e.tipo === 'projeto').length;
 
         const resumoHtml = `
             <div class="row g-3 mb-4">
@@ -76,18 +76,19 @@ async function carregarHistorico() {
         `;
 
         // Timeline
-        const timelineHtml = eventos.map(e => {
-            const icone = { chamado: 'bi-ticket-detailed', treinamento: 'bi-mortarboard', projeto: 'bi-kanban' };
-            const tipoLabel = { chamado: 'Chamado', treinamento: 'Treinamento', projeto: 'Projeto' };
+        const timelineHtml = eventos
+            .map((e) => {
+                const icone = { chamado: 'bi-ticket-detailed', treinamento: 'bi-mortarboard', projeto: 'bi-kanban' };
+                const tipoLabel = { chamado: 'Chamado', treinamento: 'Treinamento', projeto: 'Projeto' };
 
-            let extra = '';
-            if (e.tipo === 'chamado') {
-                extra = `${badgeCategoria(e.categoria)} ${badgeStatus(e.status)}`;
-            } else if (e.tipo === 'projeto') {
-                extra = `${badgePrioridade(e.prioridade)} ${badgeStatus(e.status)}`;
-            }
+                let extra = '';
+                if (e.tipo === 'chamado') {
+                    extra = `${badgeCategoria(e.categoria)} ${badgeStatus(e.status)}`;
+                } else if (e.tipo === 'projeto') {
+                    extra = `${badgePrioridade(e.prioridade)} ${badgeStatus(e.status)}`;
+                }
 
-            return `
+                return `
                 <div class="timeline-item">
                     <div class="timeline-dot ${e.tipo}"></div>
                     <div class="timeline-content">
@@ -102,7 +103,8 @@ async function carregarHistorico() {
                     </div>
                 </div>
             `;
-        }).join('');
+            })
+            .join('');
 
         container.innerHTML = `
             <h5 class="mb-3"><i class="bi bi-building me-2"></i>${provedor.nome}</h5>

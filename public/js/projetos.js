@@ -52,7 +52,7 @@ async function carregarResponsaveisProjeto() {
         const users = await api('/api/usuarios/lista');
         const sel = document.getElementById('projetoResponsavel');
         sel.innerHTML = '<option value="">Nenhum</option>';
-        users.forEach(u => {
+        users.forEach((u) => {
             const opt = document.createElement('option');
             opt.value = u.id;
             opt.textContent = u.nome;
@@ -76,7 +76,9 @@ function renderTabela(projetos) {
         return;
     }
 
-    tbody.innerHTML = projetos.map(p => `
+    tbody.innerHTML = projetos
+        .map(
+            (p) => `
         <tr>
             <td class="text-muted">${p.id}</td>
             <td class="fw-medium">${p.titulo}</td>
@@ -101,7 +103,9 @@ function renderTabela(projetos) {
                 </div>
             </td>
         </tr>
-    `).join('');
+    `
+        )
+        .join('');
 }
 
 function abrirModalProjeto() {
@@ -124,7 +128,7 @@ function abrirModalProjeto() {
 async function editarProjeto(id) {
     try {
         const projetos = await api('/api/projetos');
-        const p = projetos.find(pr => pr.id === id);
+        const p = projetos.find((pr) => pr.id === id);
         if (!p) return;
 
         document.getElementById('projetoId').value = p.id;
@@ -191,7 +195,7 @@ async function mudarStatusProjeto(id, novoStatus, selectEl) {
     }
     try {
         const projetos = await api('/api/projetos');
-        const p = projetos.find(pr => pr.id === id);
+        const p = projetos.find((pr) => pr.id === id);
         if (!p) return;
 
         await api(`/api/projetos/${id}`, {
@@ -206,7 +210,7 @@ async function mudarStatusProjeto(id, novoStatus, selectEl) {
 }
 
 async function excluirProjeto(id) {
-    if (!await confirmar('Tem certeza que deseja excluir este projeto?')) return;
+    if (!(await confirmar('Tem certeza que deseja excluir este projeto?'))) return;
     try {
         await api(`/api/projetos/${id}`, { method: 'DELETE' });
         mostrarToast('Projeto excluído!');
@@ -220,7 +224,7 @@ async function verProjeto(id) {
     _projetoAtualId = id;
     try {
         const projetos = await api('/api/projetos');
-        const p = projetos.find(pr => pr.id === id);
+        const p = projetos.find((pr) => pr.id === id);
         if (!p) return;
 
         const container = document.getElementById('detalhesProjetoConteudo');
@@ -229,33 +233,41 @@ async function verProjeto(id) {
         if (p.anexos && p.anexos.length > 0) {
             const fileIconMap = {
                 pdf: 'bi-file-earmark-pdf text-danger',
-                doc: 'bi-file-earmark-word text-primary', docx: 'bi-file-earmark-word text-primary',
-                xls: 'bi-file-earmark-excel text-success', xlsx: 'bi-file-earmark-excel text-success',
-                ppt: 'bi-file-earmark-ppt text-warning', pptx: 'bi-file-earmark-ppt text-warning',
-                zip: 'bi-file-earmark-zip text-secondary', rar: 'bi-file-earmark-zip text-secondary',
-                mp4: 'bi-file-earmark-play text-info', mp3: 'bi-file-earmark-music text-info',
-                txt: 'bi-file-earmark-text text-muted', csv: 'bi-file-earmark-spreadsheet text-success'
+                doc: 'bi-file-earmark-word text-primary',
+                docx: 'bi-file-earmark-word text-primary',
+                xls: 'bi-file-earmark-excel text-success',
+                xlsx: 'bi-file-earmark-excel text-success',
+                ppt: 'bi-file-earmark-ppt text-warning',
+                pptx: 'bi-file-earmark-ppt text-warning',
+                zip: 'bi-file-earmark-zip text-secondary',
+                rar: 'bi-file-earmark-zip text-secondary',
+                mp4: 'bi-file-earmark-play text-info',
+                mp3: 'bi-file-earmark-music text-info',
+                txt: 'bi-file-earmark-text text-muted',
+                csv: 'bi-file-earmark-spreadsheet text-success'
             };
 
             anexosHtml = `
                 <h6 class="mt-3 mb-2"><i class="bi bi-paperclip me-1"></i>Anexos (${p.anexos.length})</h6>
                 <div class="d-flex flex-wrap gap-2">
-                    ${p.anexos.map(a => {
-                        const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(a.nome_arquivo);
-                        if (isImage) {
-                            return `<div class="position-relative">
+                    ${p.anexos
+                        .map((a) => {
+                            const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(a.nome_arquivo);
+                            if (isImage) {
+                                return `<div class="position-relative">
                                 <img src="/${a.caminho}" class="anexo-thumb" title="${a.nome_arquivo}">
                                 <button class="btn btn-sm btn-danger position-absolute top-0 end-0" style="padding:0.1rem 0.3rem;font-size:0.65rem" onclick="excluirAnexoProjeto(${a.id})"><i class="bi bi-x"></i></button>
                             </div>`;
-                        }
-                        const ext = a.nome_arquivo.split('.').pop().toLowerCase();
-                        const icon = fileIconMap[ext] || 'bi-file-earmark text-muted';
-                        return `<div class="anexo-file">
+                            }
+                            const ext = a.nome_arquivo.split('.').pop().toLowerCase();
+                            const icon = fileIconMap[ext] || 'bi-file-earmark text-muted';
+                            return `<div class="anexo-file">
                             <i class="bi ${icon} fs-4"></i>
                             <a href="/${a.caminho}" target="_blank" class="text-decoration-none flex-grow-1">${a.nome_arquivo}</a>
                             <button class="btn btn-sm btn-outline-danger" style="padding:0.1rem 0.3rem;font-size:0.65rem" onclick="excluirAnexoProjeto(${a.id})"><i class="bi bi-x"></i></button>
                         </div>`;
-                    }).join('')}
+                        })
+                        .join('')}
                 </div>
             `;
         }
@@ -321,16 +333,23 @@ async function carregarComentariosProjeto(projetoId) {
             container.innerHTML = '<div class="text-center text-muted py-2"><small>Nenhum comentario</small></div>';
             return;
         }
-        container.innerHTML = comentarios.map(c => {
-            const iniciais = c.usuario_nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            return `<div class="comentario-item">
+        container.innerHTML = comentarios
+            .map((c) => {
+                const iniciais = c.usuario_nome
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .substring(0, 2)
+                    .toUpperCase();
+                return `<div class="comentario-item">
                 <div class="comentario-avatar">${iniciais}</div>
                 <div class="comentario-body">
                     <div class="comentario-header"><strong>${c.usuario_nome}</strong> - ${formatarDataHora(c.criado_em)}</div>
                     <div class="comentario-texto">${c.texto}</div>
                 </div>
             </div>`;
-        }).join('');
+            })
+            .join('');
         container.scrollTop = container.scrollHeight;
     } catch {}
 }
@@ -379,9 +398,10 @@ function renderKanbanProjetos(projetos) {
         { status: 'cancelado', label: 'Cancelado', color: 'secondary' }
     ];
 
-    board.innerHTML = columns.map(col => {
-        const items = projetos.filter(p => p.status === col.status);
-        return `
+    board.innerHTML = columns
+        .map((col) => {
+            const items = projetos.filter((p) => p.status === col.status);
+            return `
             <div class="kanban-column">
                 <div class="kanban-column-header">
                     <span class="text-${col.color}">${col.label}</span>
@@ -391,7 +411,9 @@ function renderKanbanProjetos(projetos) {
                      ondragover="event.preventDefault();this.classList.add('drag-over')"
                      ondragleave="this.classList.remove('drag-over')"
                      ondrop="dropKanbanProjeto(event, '${col.status}')">
-                    ${items.map(p => `
+                    ${items
+                        .map(
+                            (p) => `
                         <div class="kanban-card" draggable="true"
                              ondragstart="event.dataTransfer.setData('text/plain','${p.id}');this.classList.add('dragging')"
                              ondragend="this.classList.remove('dragging')"
@@ -407,11 +429,14 @@ function renderKanbanProjetos(projetos) {
                                 <span class="ms-auto"><i class="bi bi-calendar me-1"></i>${formatarData(p.data_previsao) || '-'}</span>
                             </div>
                         </div>
-                    `).join('')}
+                    `
+                        )
+                        .join('')}
                 </div>
             </div>
         `;
-    }).join('');
+        })
+        .join('');
 }
 
 async function dropKanbanProjeto(event, newStatus) {

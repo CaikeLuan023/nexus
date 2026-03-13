@@ -26,7 +26,10 @@ function iniciarAutoRefresh() {
 }
 
 function pararAutoRefresh() {
-    if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    }
 }
 
 function getFiltrosDatas() {
@@ -97,15 +100,27 @@ async function carregarLogAPI(mais) {
         const tbody = document.getElementById('tabelaLogAPI');
 
         if (!data.length && !mais) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><i class="bi bi-check-circle text-success fs-3 d-block mb-2"></i>Nenhum log de API encontrado</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="8" class="text-center text-muted py-4"><i class="bi bi-check-circle text-success fs-3 d-block mb-2"></i>Nenhum log de API encontrado</td></tr>';
             document.getElementById('btnMaisAPI').style.display = 'none';
             return;
         }
 
-        const html = data.map(r => {
-            const statusClass = r.status_code >= 500 ? 'text-bg-danger' : r.status_code >= 400 ? 'text-bg-warning' : 'text-bg-success';
-            const tempoClass = r.tempo_resposta_ms > 1000 ? 'text-danger fw-bold' : r.tempo_resposta_ms > 500 ? 'text-warning' : '';
-            return `<tr>
+        const html = data
+            .map((r) => {
+                const statusClass =
+                    r.status_code >= 500
+                        ? 'text-bg-danger'
+                        : r.status_code >= 400
+                          ? 'text-bg-warning'
+                          : 'text-bg-success';
+                const tempoClass =
+                    r.tempo_resposta_ms > 1000
+                        ? 'text-danger fw-bold'
+                        : r.tempo_resposta_ms > 500
+                          ? 'text-warning'
+                          : '';
+                return `<tr>
                 <td class="small">${formatarDataHora(r.criado_em)}</td>
                 <td><span class="badge bg-secondary">${esc(r.metodo)}</span></td>
                 <td class="small text-truncate" style="max-width:250px" title="${esc(r.endpoint)}">${esc(r.endpoint)}</td>
@@ -115,7 +130,8 @@ async function carregarLogAPI(mais) {
                 <td class="small">${esc(r.ip || '-')}</td>
                 <td class="small text-danger text-truncate" style="max-width:200px" title="${esc(r.erro || '')}">${esc(r.erro || '-')}</td>
             </tr>`;
-        }).join('');
+            })
+            .join('');
 
         if (mais) tbody.innerHTML += html;
         else tbody.innerHTML = html;
@@ -144,15 +160,19 @@ async function carregarLogWebhooks(mais) {
         const tbody = document.getElementById('tabelaLogWebhooks');
 
         if (!data.length && !mais) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-broadcast text-muted fs-3 d-block mb-2"></i>Nenhum disparo de webhook registrado</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-broadcast text-muted fs-3 d-block mb-2"></i>Nenhum disparo de webhook registrado</td></tr>';
             document.getElementById('btnMaisWebhooks').style.display = 'none';
             return;
         }
 
-        const html = data.map(r => {
-            const statusBadge = r.sucesso ? '<span class="badge text-bg-success">OK</span>' : '<span class="badge text-bg-danger">Falha</span>';
-            const statusCode = r.status_code ? `<span class="badge bg-secondary">${r.status_code}</span>` : '-';
-            return `<tr class="${!r.sucesso ? 'table-danger' : ''}">
+        const html = data
+            .map((r) => {
+                const statusBadge = r.sucesso
+                    ? '<span class="badge text-bg-success">OK</span>'
+                    : '<span class="badge text-bg-danger">Falha</span>';
+                const statusCode = r.status_code ? `<span class="badge bg-secondary">${r.status_code}</span>` : '-';
+                return `<tr class="${!r.sucesso ? 'table-danger' : ''}">
                 <td class="small">${formatarDataHora(r.criado_em)}</td>
                 <td><span class="badge bg-info text-dark">${esc(r.evento)}</span></td>
                 <td class="small text-truncate" style="max-width:200px" title="${esc(r.url)}">${esc(r.url)}</td>
@@ -161,7 +181,8 @@ async function carregarLogWebhooks(mais) {
                 <td>${statusBadge}</td>
                 <td class="small text-danger text-truncate" style="max-width:200px" title="${esc(r.erro || '')}">${esc(r.erro || '-')}</td>
             </tr>`;
-        }).join('');
+            })
+            .join('');
 
         if (mais) tbody.innerHTML += html;
         else tbody.innerHTML = html;
@@ -188,12 +209,15 @@ async function carregarLogERP(mais) {
         const tbody = document.getElementById('tabelaLogERP');
 
         if (!data.length && !mais) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-arrow-repeat text-muted fs-3 d-block mb-2"></i>Nenhum log de sync ERP encontrado</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-arrow-repeat text-muted fs-3 d-block mb-2"></i>Nenhum log de sync ERP encontrado</td></tr>';
             document.getElementById('btnMaisERP').style.display = 'none';
             return;
         }
 
-        const html = data.map(r => `<tr class="${r.erros > 0 ? 'table-danger' : ''}">
+        const html = data
+            .map(
+                (r) => `<tr class="${r.erros > 0 ? 'table-danger' : ''}">
             <td class="small">${formatarDataHora(r.criado_em)}</td>
             <td><span class="badge bg-secondary">${esc(r.tipo || '-')}</span></td>
             <td>${esc(r.entidade || '-')}</td>
@@ -201,7 +225,9 @@ async function carregarLogERP(mais) {
             <td><span class="text-success">${r.novos || 0}</span> / <span class="text-primary">${r.atualizados || 0}</span> / <span class="text-danger">${r.erros || 0}</span></td>
             <td>${r.duracao_ms || 0}ms</td>
             <td class="small text-truncate" style="max-width:250px" title="${esc(r.detalhes || '')}">${esc(r.detalhes || '-')}</td>
-        </tr>`).join('');
+        </tr>`
+            )
+            .join('');
 
         if (mais) tbody.innerHTML += html;
         else tbody.innerHTML = html;
@@ -226,14 +252,21 @@ async function carregarLogIntegracoes(mais) {
         const tbody = document.getElementById('tabelaLogIntegracoes');
 
         if (!data.length && !mais) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-plug text-muted fs-3 d-block mb-2"></i>Nenhum log de integracoes encontrado</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-plug text-muted fs-3 d-block mb-2"></i>Nenhum log de integracoes encontrado</td></tr>';
             document.getElementById('btnMaisIntegracoes').style.display = 'none';
             return;
         }
 
-        const html = data.map(r => {
-            const acaoBadge = r.acao === 'criar' ? 'text-bg-success' : r.acao === 'excluir' ? 'text-bg-danger' : 'text-bg-primary';
-            return `<tr>
+        const html = data
+            .map((r) => {
+                const acaoBadge =
+                    r.acao === 'criar'
+                        ? 'text-bg-success'
+                        : r.acao === 'excluir'
+                          ? 'text-bg-danger'
+                          : 'text-bg-primary';
+                return `<tr>
                 <td class="small">${formatarDataHora(r.criado_em)}</td>
                 <td>${esc(r.usuario_nome || 'Sistema')}</td>
                 <td><span class="badge ${acaoBadge}">${esc(r.acao)}</span></td>
@@ -241,7 +274,8 @@ async function carregarLogIntegracoes(mais) {
                 <td class="small text-truncate" style="max-width:350px" title="${esc(r.detalhes || '')}">${esc(r.detalhes || '-')}</td>
                 <td class="small">${esc(r.ip || '-')}</td>
             </tr>`;
-        }).join('');
+            })
+            .join('');
 
         if (mais) tbody.innerHTML += html;
         else tbody.innerHTML = html;
@@ -266,16 +300,20 @@ async function carregarLogIA(mais) {
         const tbody = document.getElementById('tabelaLogIA');
 
         if (!data.length && !mais) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-whatsapp text-muted fs-3 d-block mb-2"></i>Nenhum log de WhatsApp IA encontrado</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-whatsapp text-muted fs-3 d-block mb-2"></i>Nenhum log de WhatsApp IA encontrado</td></tr>';
             document.getElementById('btnMaisIA').style.display = 'none';
             return;
         }
 
-        const html = data.map(r => {
-            const statusBadge = r.enviado ? '<span class="badge text-bg-success">Enviado</span>' :
-                                r.aprovado ? '<span class="badge text-bg-warning">Aprovado</span>' :
-                                '<span class="badge text-bg-secondary">Pendente</span>';
-            return `<tr>
+        const html = data
+            .map((r) => {
+                const statusBadge = r.enviado
+                    ? '<span class="badge text-bg-success">Enviado</span>'
+                    : r.aprovado
+                      ? '<span class="badge text-bg-warning">Aprovado</span>'
+                      : '<span class="badge text-bg-secondary">Pendente</span>';
+                return `<tr>
                 <td class="small">${formatarDataHora(r.criado_em)}</td>
                 <td>${esc(r.chat_nome || r.chat_id || '-')}</td>
                 <td class="small text-truncate" style="max-width:200px" title="${esc(r.mensagem_entrada || '')}">${esc(r.mensagem_entrada || '-')}</td>
@@ -284,7 +322,8 @@ async function carregarLogIA(mais) {
                 <td>${r.tokens_usados || '-'}</td>
                 <td>${statusBadge}</td>
             </tr>`;
-        }).join('');
+            })
+            .join('');
 
         if (mais) tbody.innerHTML += html;
         else tbody.innerHTML = html;
@@ -315,24 +354,44 @@ async function carregarLogERPComm(mais) {
         const tbody = document.getElementById('tabelaLogERPComm');
 
         if (!data.length && !mais) {
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-arrow-left-right text-muted fs-3 d-block mb-2"></i>Nenhum log de comunicacao ERP encontrado.<br><small>Os logs aparecerao quando houver comunicacao com ERPs configurados.</small></td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-arrow-left-right text-muted fs-3 d-block mb-2"></i>Nenhum log de comunicacao ERP encontrado.<br><small>Os logs aparecerao quando houver comunicacao com ERPs configurados.</small></td></tr>';
             document.getElementById('btnMaisERPComm').style.display = 'none';
             return;
         }
 
         const ctxLabels = {
-            teste_conexao: 'Teste', sync_clientes: 'Sync', consulta_clientes: 'Clientes',
-            consulta_contratos: 'Contratos', consulta_planos: 'Planos',
-            lgpd_consulta_erp: 'LGPD', lgpd_consulta_contratos: 'LGPD Contr.', lgpd_exportar_dados: 'LGPD Export'
+            teste_conexao: 'Teste',
+            sync_clientes: 'Sync',
+            consulta_clientes: 'Clientes',
+            consulta_contratos: 'Contratos',
+            consulta_planos: 'Planos',
+            lgpd_consulta_erp: 'LGPD',
+            lgpd_consulta_contratos: 'LGPD Contr.',
+            lgpd_exportar_dados: 'LGPD Export'
         };
 
-        const html = data.map(r => {
-            const statusClass = !r.sucesso ? 'text-bg-danger' : r.response_status >= 400 ? 'text-bg-warning' : 'text-bg-success';
-            const tempoClass = r.tempo_resposta_ms > 3000 ? 'text-danger fw-bold' : r.tempo_resposta_ms > 1000 ? 'text-warning' : '';
-            const ctxBadge = r.contexto ? `<span class="badge bg-secondary">${esc(ctxLabels[r.contexto] || r.contexto)}</span>` : '-';
-            const resultBadge = r.sucesso ? '<span class="badge text-bg-success">OK</span>' : '<span class="badge text-bg-danger">Falha</span>';
-            const urlShort = r.url ? r.url.replace(/https?:\/\/[^/]+/, '...') : '-';
-            return `<tr class="${!r.sucesso ? 'table-danger' : ''}">
+        const html = data
+            .map((r) => {
+                const statusClass = !r.sucesso
+                    ? 'text-bg-danger'
+                    : r.response_status >= 400
+                      ? 'text-bg-warning'
+                      : 'text-bg-success';
+                const tempoClass =
+                    r.tempo_resposta_ms > 3000
+                        ? 'text-danger fw-bold'
+                        : r.tempo_resposta_ms > 1000
+                          ? 'text-warning'
+                          : '';
+                const ctxBadge = r.contexto
+                    ? `<span class="badge bg-secondary">${esc(ctxLabels[r.contexto] || r.contexto)}</span>`
+                    : '-';
+                const resultBadge = r.sucesso
+                    ? '<span class="badge text-bg-success">OK</span>'
+                    : '<span class="badge text-bg-danger">Falha</span>';
+                const urlShort = r.url ? r.url.replace(/https?:\/\/[^/]+/, '...') : '-';
+                return `<tr class="${!r.sucesso ? 'table-danger' : ''}">
                 <td class="small">${formatarDataHora(r.criado_em)}</td>
                 <td><span class="badge bg-info text-dark">${esc(r.erp_label || r.erp_tipo)}</span></td>
                 <td><span class="badge bg-secondary">${esc(r.metodo)}</span></td>
@@ -343,7 +402,8 @@ async function carregarLogERPComm(mais) {
                 <td>${resultBadge}</td>
                 <td><button class="btn btn-xs btn-outline-primary" onclick="verDetalheERPComm(${r.id})" title="Ver payload completo"><i class="bi bi-eye"></i></button></td>
             </tr>`;
-        }).join('');
+            })
+            .join('');
 
         if (mais) tbody.innerHTML += html;
         else tbody.innerHTML = html;
@@ -359,7 +419,8 @@ async function carregarLogERPComm(mais) {
 async function verDetalheERPComm(id) {
     const modal = new bootstrap.Modal(document.getElementById('modalERPCommDetalhe'));
     const body = document.getElementById('modalERPCommBody');
-    body.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm"></div> Carregando payload...</div>';
+    body.innerHTML =
+        '<div class="text-center py-3"><div class="spinner-border spinner-border-sm"></div> Carregando payload...</div>';
     modal.show();
 
     try {
@@ -381,20 +442,49 @@ async function verDetalheERPComm(id) {
         }
 
         // Request
-        html += '<div class="col-md-6"><div class="card"><div class="card-header bg-primary text-white py-1"><strong><i class="bi bi-arrow-up-right me-1"></i>REQUEST (Enviado ao ERP)</strong></div><div class="card-body p-2">';
+        html +=
+            '<div class="col-md-6"><div class="card"><div class="card-header bg-primary text-white py-1"><strong><i class="bi bi-arrow-up-right me-1"></i>REQUEST (Enviado ao ERP)</strong></div><div class="card-body p-2">';
         html += '<h6 class="small fw-bold mb-1">Headers:</h6>';
-        html += '<pre class="bg-dark text-light p-2 rounded small mb-2" style="max-height:200px;overflow:auto">' + esc(typeof d.request_headers === 'object' ? JSON.stringify(d.request_headers, null, 2) : (d.request_headers || 'N/A')) + '</pre>';
+        html +=
+            '<pre class="bg-dark text-light p-2 rounded small mb-2" style="max-height:200px;overflow:auto">' +
+            esc(
+                typeof d.request_headers === 'object'
+                    ? JSON.stringify(d.request_headers, null, 2)
+                    : d.request_headers || 'N/A'
+            ) +
+            '</pre>';
         html += '<h6 class="small fw-bold mb-1">Body:</h6>';
-        html += '<pre class="bg-dark text-light p-2 rounded small" style="max-height:300px;overflow:auto">' + esc(formatJsonSafe(d.request_body)) + '</pre>';
+        html +=
+            '<pre class="bg-dark text-light p-2 rounded small" style="max-height:300px;overflow:auto">' +
+            esc(formatJsonSafe(d.request_body)) +
+            '</pre>';
         html += '</div></div></div>';
 
         // Response
-        html += '<div class="col-md-6"><div class="card"><div class="card-header py-1 ' + (d.sucesso ? 'bg-success' : 'bg-danger') + ' text-white"><strong><i class="bi bi-arrow-down-left me-1"></i>RESPONSE (Recebido do ERP)</strong></div><div class="card-body p-2">';
-        html += '<h6 class="small fw-bold mb-1">Status: <span class="badge ' + (d.response_status >= 400 ? 'bg-danger' : 'bg-success') + '">' + (d.response_status || 'N/A') + '</span></h6>';
+        html +=
+            '<div class="col-md-6"><div class="card"><div class="card-header py-1 ' +
+            (d.sucesso ? 'bg-success' : 'bg-danger') +
+            ' text-white"><strong><i class="bi bi-arrow-down-left me-1"></i>RESPONSE (Recebido do ERP)</strong></div><div class="card-body p-2">';
+        html +=
+            '<h6 class="small fw-bold mb-1">Status: <span class="badge ' +
+            (d.response_status >= 400 ? 'bg-danger' : 'bg-success') +
+            '">' +
+            (d.response_status || 'N/A') +
+            '</span></h6>';
         html += '<h6 class="small fw-bold mb-1">Headers:</h6>';
-        html += '<pre class="bg-dark text-light p-2 rounded small mb-2" style="max-height:200px;overflow:auto">' + esc(typeof d.response_headers === 'object' ? JSON.stringify(d.response_headers, null, 2) : (d.response_headers || 'N/A')) + '</pre>';
+        html +=
+            '<pre class="bg-dark text-light p-2 rounded small mb-2" style="max-height:200px;overflow:auto">' +
+            esc(
+                typeof d.response_headers === 'object'
+                    ? JSON.stringify(d.response_headers, null, 2)
+                    : d.response_headers || 'N/A'
+            ) +
+            '</pre>';
         html += '<h6 class="small fw-bold mb-1">Body:</h6>';
-        html += '<pre class="bg-dark text-light p-2 rounded small" style="max-height:400px;overflow:auto">' + esc(formatJsonSafe(d.response_body)) + '</pre>';
+        html +=
+            '<pre class="bg-dark text-light p-2 rounded small" style="max-height:400px;overflow:auto">' +
+            esc(formatJsonSafe(d.response_body)) +
+            '</pre>';
         html += '</div></div></div>';
 
         html += '</div>';
@@ -432,12 +522,12 @@ function exportarCSVAtual() {
     if (!table) return;
 
     const headers = [];
-    table.querySelectorAll('thead th').forEach(th => headers.push(th.textContent.trim()));
+    table.querySelectorAll('thead th').forEach((th) => headers.push(th.textContent.trim()));
 
     const rows = [];
-    table.querySelectorAll('tbody tr').forEach(tr => {
+    table.querySelectorAll('tbody tr').forEach((tr) => {
         const cells = [];
-        tr.querySelectorAll('td').forEach(td => cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"'));
+        tr.querySelectorAll('td').forEach((td) => cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"'));
         if (cells.length > 1) rows.push(cells.join(';'));
     });
 
@@ -464,7 +554,11 @@ function formatarDataHora(dt) {
     if (!dt) return '-';
     const d = new Date(dt);
     if (isNaN(d)) return dt;
-    return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return (
+        d.toLocaleDateString('pt-BR') +
+        ' ' +
+        d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    );
 }
 
 function esc(str) {

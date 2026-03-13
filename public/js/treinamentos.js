@@ -32,7 +32,7 @@ async function carregarTreinamentos() {
         const statusFiltro = document.getElementById('filtroStatusTreinamento').value;
         let filtrados = treinamentos;
         if (statusFiltro) {
-            filtrados = treinamentos.filter(t => t.status === statusFiltro);
+            filtrados = treinamentos.filter((t) => t.status === statusFiltro);
         }
 
         renderTabela(filtrados);
@@ -44,9 +44,9 @@ async function carregarTreinamentos() {
 }
 
 function atualizarCards(treinamentos) {
-    const pendentes = treinamentos.filter(t => t.status === 'pendente').length;
-    const agendados = treinamentos.filter(t => t.status === 'agendado').length;
-    const realizados = treinamentos.filter(t => t.status === 'realizado').length;
+    const pendentes = treinamentos.filter((t) => t.status === 'pendente').length;
+    const agendados = treinamentos.filter((t) => t.status === 'agendado').length;
+    const realizados = treinamentos.filter((t) => t.status === 'realizado').length;
 
     document.getElementById('totalPendentes').textContent = pendentes;
     document.getElementById('totalAgendados').textContent = agendados;
@@ -63,16 +63,18 @@ function badgeStatusTreinamento(status) {
 function renderTabela(treinamentos) {
     const tbody = document.getElementById('tabelaTreinamentos');
     if (treinamentos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Nenhum treinamento encontrado</td></tr>';
+        tbody.innerHTML =
+            '<tr><td colspan="8" class="text-center text-muted py-4">Nenhum treinamento encontrado</td></tr>';
         return;
     }
 
-    tbody.innerHTML = treinamentos.map(t => {
-        const horaFormatada = t.hora_treinamento || '-';
-        const ehHoje = isHoje(t.data_treinamento);
-        const rowClass = ehHoje && t.status !== 'realizado' ? 'table-warning' : '';
+    tbody.innerHTML = treinamentos
+        .map((t) => {
+            const horaFormatada = t.hora_treinamento || '-';
+            const ehHoje = isHoje(t.data_treinamento);
+            const rowClass = ehHoje && t.status !== 'realizado' ? 'table-warning' : '';
 
-        return `
+            return `
             <tr class="${rowClass}">
                 <td class="text-muted">${t.id}</td>
                 <td class="fw-medium">${t.provedor_nome}</td>
@@ -95,7 +97,8 @@ function renderTabela(treinamentos) {
                 </td>
             </tr>
         `;
-    }).join('');
+        })
+        .join('');
 }
 
 function isHoje(dateStr) {
@@ -110,11 +113,10 @@ function verificarNotificacoes() {
 
     const hoje = new Date().toISOString().split('T')[0];
     const agora = new Date();
-    const horaAtual = agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
+    const horaAtual =
+        agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
 
-    const treinamentosHoje = todosTreinamentos.filter(t =>
-        t.data_treinamento === hoje && t.status !== 'realizado'
-    );
+    const treinamentosHoje = todosTreinamentos.filter((t) => t.data_treinamento === hoje && t.status !== 'realizado');
 
     if (treinamentosHoje.length === 0) {
         container.style.display = 'none';
@@ -122,7 +124,7 @@ function verificarNotificacoes() {
     }
 
     let html = '';
-    treinamentosHoje.forEach(t => {
+    treinamentosHoje.forEach((t) => {
         const hora = t.hora_treinamento || '';
         let tipo = 'info';
         let icone = 'bi-calendar-event';
@@ -212,7 +214,7 @@ function abrirModalTreinamento() {
 async function editarTreinamento(id) {
     try {
         const treinamentos = await api('/api/treinamentos');
-        const t = treinamentos.find(tr => tr.id === id);
+        const t = treinamentos.find((tr) => tr.id === id);
         if (!t) return;
 
         document.getElementById('treinamentoId').value = t.id;
@@ -261,7 +263,7 @@ async function salvarTreinamento() {
 }
 
 async function excluirTreinamento(id) {
-    if (!await confirmar('Tem certeza que deseja excluir este treinamento?')) return;
+    if (!(await confirmar('Tem certeza que deseja excluir este treinamento?'))) return;
     try {
         await api(`/api/treinamentos/${id}`, { method: 'DELETE' });
         mostrarToast('Treinamento excluído!');

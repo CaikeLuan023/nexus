@@ -64,6 +64,8 @@ async function fazerLogin(e) {
         erro.textContent = 'Erro de conexao com o servidor';
         erro.style.display = 'block';
         btn.disabled = false;
-        btn.innerHTML = _aguardando2fa ? '<i class="bi bi-shield-lock me-2"></i>Verificar' : '<i class="bi bi-box-arrow-in-right me-2"></i>Entrar';
+        btn.innerHTML = _aguardando2fa
+            ? '<i class="bi bi-shield-lock me-2"></i>Verificar'
+            : '<i class="bi bi-box-arrow-in-right me-2"></i>Entrar';
     }
 }

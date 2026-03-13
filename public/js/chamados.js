@@ -13,7 +13,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('chamados_vista') === 'kanban') setVistaKanban(true);
 
     // Filtros automáticos
-    ['filtroProvedor', 'filtroCategoria', 'filtroStatus', 'filtroPrioridade', 'filtroDataInicio', 'filtroDataFim'].forEach(id => {
+    [
+        'filtroProvedor',
+        'filtroCategoria',
+        'filtroStatus',
+        'filtroPrioridade',
+        'filtroDataInicio',
+        'filtroDataFim'
+    ].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('change', carregarChamados);
     });
@@ -76,7 +83,9 @@ function badgePrioridade(p) {
 
 function slaIndicator(c) {
     if (c.status === 'resolvido' || c.status === 'fechado') {
-        return c.sla_estourado ? '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Estourado</span>' : '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>OK</span>';
+        return c.sla_estourado
+            ? '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Estourado</span>'
+            : '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>OK</span>';
     }
     if (!c.sla_resolucao_limite) return '<span class="text-muted">-</span>';
     const agora = new Date();
@@ -102,7 +111,9 @@ function renderTabela(chamados) {
         return;
     }
 
-    tbody.innerHTML = chamados.map(c => `
+    tbody.innerHTML = chamados
+        .map(
+            (c) => `
         <tr>
             <td class="text-muted">${c.id}</td>
             <td class="fw-medium">${c.provedor_nome}</td>
@@ -121,7 +132,9 @@ function renderTabela(chamados) {
                 </div>
             </td>
         </tr>
-    `).join('');
+    `
+        )
+        .join('');
 }
 
 async function carregarResponsaveis() {
@@ -129,7 +142,7 @@ async function carregarResponsaveis() {
         const users = await api('/api/usuarios/lista');
         const sel = document.getElementById('chamadoResponsavel');
         sel.innerHTML = '<option value="">Nenhum</option>';
-        users.forEach(u => {
+        users.forEach((u) => {
             const opt = document.createElement('option');
             opt.value = u.id;
             opt.textContent = u.nome;
@@ -218,37 +231,47 @@ async function verChamado(id) {
         let anexosHtml = '';
         if (c.anexos && c.anexos.length > 0) {
             // Store image paths for gallery
-            window._galeriaAnexos = c.anexos.filter(a => /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(a.nome_arquivo)).map(a => '/' + a.caminho);
+            window._galeriaAnexos = c.anexos
+                .filter((a) => /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(a.nome_arquivo))
+                .map((a) => '/' + a.caminho);
 
             const fileIconMap = {
                 pdf: 'bi-file-earmark-pdf text-danger',
-                doc: 'bi-file-earmark-word text-primary', docx: 'bi-file-earmark-word text-primary',
-                xls: 'bi-file-earmark-excel text-success', xlsx: 'bi-file-earmark-excel text-success',
-                ppt: 'bi-file-earmark-ppt text-warning', pptx: 'bi-file-earmark-ppt text-warning',
-                zip: 'bi-file-earmark-zip text-secondary', rar: 'bi-file-earmark-zip text-secondary',
-                mp4: 'bi-file-earmark-play text-info', mp3: 'bi-file-earmark-music text-info',
-                txt: 'bi-file-earmark-text text-muted', csv: 'bi-file-earmark-spreadsheet text-success'
+                doc: 'bi-file-earmark-word text-primary',
+                docx: 'bi-file-earmark-word text-primary',
+                xls: 'bi-file-earmark-excel text-success',
+                xlsx: 'bi-file-earmark-excel text-success',
+                ppt: 'bi-file-earmark-ppt text-warning',
+                pptx: 'bi-file-earmark-ppt text-warning',
+                zip: 'bi-file-earmark-zip text-secondary',
+                rar: 'bi-file-earmark-zip text-secondary',
+                mp4: 'bi-file-earmark-play text-info',
+                mp3: 'bi-file-earmark-music text-info',
+                txt: 'bi-file-earmark-text text-muted',
+                csv: 'bi-file-earmark-spreadsheet text-success'
             };
 
             anexosHtml = `
                 <h6 class="mt-3 mb-2"><i class="bi bi-paperclip me-1"></i>Anexos (${c.anexos.length})</h6>
                 <div class="d-flex flex-wrap gap-2">
-                    ${c.anexos.map(a => {
-                        const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(a.nome_arquivo);
-                        if (isImage) {
-                            return `<div class="position-relative">
+                    ${c.anexos
+                        .map((a) => {
+                            const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(a.nome_arquivo);
+                            if (isImage) {
+                                return `<div class="position-relative">
                                 <img src="/${a.caminho}" class="anexo-thumb" onclick="ampliarImagem('/${a.caminho}')" title="${a.nome_arquivo}">
                                 <button class="btn btn-sm btn-danger position-absolute top-0 end-0" style="padding:0.1rem 0.3rem;font-size:0.65rem" onclick="excluirAnexo(${a.id})"><i class="bi bi-x"></i></button>
                             </div>`;
-                        }
-                        const ext = a.nome_arquivo.split('.').pop().toLowerCase();
-                        const icon = fileIconMap[ext] || 'bi-file-earmark text-muted';
-                        return `<div class="anexo-file">
+                            }
+                            const ext = a.nome_arquivo.split('.').pop().toLowerCase();
+                            const icon = fileIconMap[ext] || 'bi-file-earmark text-muted';
+                            return `<div class="anexo-file">
                             <i class="bi ${icon} fs-4"></i>
                             <a href="/${a.caminho}" target="_blank" class="text-decoration-none flex-grow-1">${a.nome_arquivo}</a>
                             <button class="btn btn-sm btn-outline-danger" style="padding:0.1rem 0.3rem;font-size:0.65rem" onclick="excluirAnexo(${a.id})"><i class="bi bi-x"></i></button>
                         </div>`;
-                    }).join('')}
+                        })
+                        .join('')}
                 </div>
             `;
         }
@@ -264,9 +287,13 @@ async function verChamado(id) {
             let slaIcon = 'bi-check-circle';
             let slaLabel = 'SLA dentro do prazo';
             if (c.sla_estourado || diffResol <= 0) {
-                slaClass = 'danger'; slaIcon = 'bi-exclamation-triangle'; slaLabel = 'SLA ESTOURADO';
+                slaClass = 'danger';
+                slaIcon = 'bi-exclamation-triangle';
+                slaLabel = 'SLA ESTOURADO';
             } else if (diffResol <= 7200000) {
-                slaClass = 'warning'; slaIcon = 'bi-clock-history'; slaLabel = 'SLA proximo de estourar';
+                slaClass = 'warning';
+                slaIcon = 'bi-clock-history';
+                slaLabel = 'SLA proximo de estourar';
             }
             slaBannerHtml = `
                 <div class="alert alert-${slaClass} d-flex align-items-center py-2 mb-0" role="alert">
@@ -274,7 +301,7 @@ async function verChamado(id) {
                     <div class="flex-grow-1">
                         <strong>${slaLabel}</strong>
                         <div class="d-flex gap-4 mt-1" style="font-size:0.85rem">
-                            <span><i class="bi bi-reply me-1"></i>Resposta: ${c.sla_respondido_em ? formatarDataHora(c.sla_respondido_em) : (limiteResp ? 'ate ' + formatarDataHora(c.sla_resposta_limite) : '-')}</span>
+                            <span><i class="bi bi-reply me-1"></i>Resposta: ${c.sla_respondido_em ? formatarDataHora(c.sla_respondido_em) : limiteResp ? 'ate ' + formatarDataHora(c.sla_resposta_limite) : '-'}</span>
                             <span><i class="bi bi-check2-all me-1"></i>Resolucao: ${c.status === 'resolvido' ? formatarDataHora(c.data_resolucao) : 'ate ' + formatarDataHora(c.sla_resolucao_limite)}</span>
                         </div>
                     </div>
@@ -353,7 +380,7 @@ function ampliarImagem(src) {
 
     // Show/hide navigation buttons
     const navBtns = document.querySelectorAll('.galeria-nav');
-    navBtns.forEach(btn => btn.style.display = galeriaImagens.length > 1 ? 'block' : 'none');
+    navBtns.forEach((btn) => (btn.style.display = galeriaImagens.length > 1 ? 'block' : 'none'));
 
     new bootstrap.Modal(document.getElementById('modalImagem')).show();
 }
@@ -361,7 +388,8 @@ function ampliarImagem(src) {
 function atualizarGaleria() {
     document.getElementById('imagemAmpliada').src = galeriaImagens[galeriaIndice];
     const counter = document.getElementById('galeriaCounter');
-    if (counter) counter.textContent = galeriaImagens.length > 1 ? `${galeriaIndice + 1} / ${galeriaImagens.length}` : '';
+    if (counter)
+        counter.textContent = galeriaImagens.length > 1 ? `${galeriaIndice + 1} / ${galeriaImagens.length}` : '';
 }
 
 function galeriaAnterior() {
@@ -389,7 +417,7 @@ async function resolverChamado(id) {
 }
 
 async function excluirChamado(id) {
-    if (!await confirmar('Tem certeza que deseja excluir este chamado e todos os seus anexos?')) return;
+    if (!(await confirmar('Tem certeza que deseja excluir este chamado e todos os seus anexos?'))) return;
     try {
         await api(`/api/chamados/${id}`, { method: 'DELETE' });
         mostrarToast('Chamado excluído!');
@@ -427,7 +455,7 @@ function abrirModalNovoProvedor() {
     document.getElementById('novoProvedorPlano').value = '';
     document.getElementById('novoProvedorModelo').value = '';
     document.getElementById('novoProvedorERP').value = '';
-    document.querySelectorAll('.novo-prov-add').forEach(cb => cb.checked = false);
+    document.querySelectorAll('.novo-prov-add').forEach((cb) => (cb.checked = false));
     new bootstrap.Modal(document.getElementById('modalNovoProvedor')).show();
 }
 
@@ -437,7 +465,9 @@ async function salvarNovoProvedor() {
     const plano = document.getElementById('novoProvedorPlano').value;
     const modelo_integracao = document.getElementById('novoProvedorModelo').value;
     const erp = document.getElementById('novoProvedorERP').value;
-    const adicionais = Array.from(document.querySelectorAll('.novo-prov-add:checked')).map(cb => cb.value).join(',');
+    const adicionais = Array.from(document.querySelectorAll('.novo-prov-add:checked'))
+        .map((cb) => cb.value)
+        .join(',');
 
     if (!nome) {
         mostrarToast('Nome do provedor é obrigatório', 'warning');
@@ -488,9 +518,10 @@ function renderKanban(chamados) {
         { status: 'fechado', label: 'Fechado', color: 'secondary' }
     ];
 
-    board.innerHTML = columns.map(col => {
-        const items = chamados.filter(c => c.status === col.status);
-        return `
+    board.innerHTML = columns
+        .map((col) => {
+            const items = chamados.filter((c) => c.status === col.status);
+            return `
             <div class="kanban-column">
                 <div class="kanban-column-header">
                     <span class="text-${col.color}">${col.label}</span>
@@ -500,7 +531,9 @@ function renderKanban(chamados) {
                      ondragover="event.preventDefault();this.classList.add('drag-over')"
                      ondragleave="this.classList.remove('drag-over')"
                      ondrop="dropKanban(event, '${col.status}')">
-                    ${items.map(c => `
+                    ${items
+                        .map(
+                            (c) => `
                         <div class="kanban-card" draggable="true"
                              ondragstart="event.dataTransfer.setData('text/plain','${c.id}');this.classList.add('dragging')"
                              ondragend="this.classList.remove('dragging')"
@@ -518,11 +551,14 @@ function renderKanban(chamados) {
                                 <i class="bi bi-calendar me-1"></i>${formatarData(c.data_abertura)}
                             </div>
                         </div>
-                    `).join('')}
+                    `
+                        )
+                        .join('')}
                 </div>
             </div>
         `;
-    }).join('');
+        })
+        .join('');
 }
 
 async function dropKanban(event, newStatus) {
@@ -549,16 +585,23 @@ async function carregarComentariosChamado(chamadoId) {
             container.innerHTML = '<div class="text-center text-muted py-2"><small>Nenhum comentario</small></div>';
             return;
         }
-        container.innerHTML = comentarios.map(c => {
-            const iniciais = c.usuario_nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            return `<div class="comentario-item">
+        container.innerHTML = comentarios
+            .map((c) => {
+                const iniciais = c.usuario_nome
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .substring(0, 2)
+                    .toUpperCase();
+                return `<div class="comentario-item">
                 <div class="comentario-avatar">${iniciais}</div>
                 <div class="comentario-body">
                     <div class="comentario-header"><strong>${c.usuario_nome}</strong> - ${formatarDataHora(c.criado_em)}</div>
                     <div class="comentario-texto">${c.texto}</div>
                 </div>
             </div>`;
-        }).join('');
+            })
+            .join('');
         container.scrollTop = container.scrollHeight;
     } catch {}
 }

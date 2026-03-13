@@ -11,7 +11,9 @@ async function getCsrfToken() {
             _csrfToken = data.token;
             return _csrfToken;
         }
-    } catch (e) { /* noop */ }
+    } catch (e) {
+        /* noop */
+    }
     return null;
 }
 
@@ -27,7 +29,12 @@ async function api(url, options = {}) {
             options.headers = { ...options.headers, 'X-CSRF-Token': token };
         }
     }
-    if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData) && typeof options.body !== 'string') {
+    if (
+        options.body &&
+        typeof options.body === 'object' &&
+        !(options.body instanceof FormData) &&
+        typeof options.body !== 'string'
+    ) {
         options.body = JSON.stringify(options.body);
     }
     const res = await fetch(url, options);
@@ -44,7 +51,10 @@ async function api(url, options = {}) {
             if (token) {
                 options.headers = { ...options.headers, 'X-CSRF-Token': token };
                 const retry = await fetch(url, options);
-                if (retry.status === 401) { window.location.href = '/login'; throw new Error('Sessao expirada'); }
+                if (retry.status === 401) {
+                    window.location.href = '/login';
+                    throw new Error('Sessao expirada');
+                }
                 const retryData = await retry.json();
                 if (!retry.ok) throw new Error(retryData.erro || 'Erro desconhecido');
                 return retryData;
@@ -124,8 +134,24 @@ function badgePrioridade(prioridade) {
 }
 
 function badgeCategoria(categoria) {
-    const cores = { usuario: 'info', app: 'primary', integracao: 'warning', canal: 'danger', troca_senha: 'purple', email_ativacao: 'dark', outro: 'secondary' };
-    const labels = { usuario: 'Usuario', app: 'App', integracao: 'Integracao', canal: 'Canal', troca_senha: 'Troca de Senha/Email', email_ativacao: 'Email Ativacao', outro: 'Outro' };
+    const cores = {
+        usuario: 'info',
+        app: 'primary',
+        integracao: 'warning',
+        canal: 'danger',
+        troca_senha: 'purple',
+        email_ativacao: 'dark',
+        outro: 'secondary'
+    };
+    const labels = {
+        usuario: 'Usuario',
+        app: 'App',
+        integracao: 'Integracao',
+        canal: 'Canal',
+        troca_senha: 'Troca de Senha/Email',
+        email_ativacao: 'Email Ativacao',
+        outro: 'Outro'
+    };
     const cor = cores[categoria] || 'secondary';
     const style = cor === 'purple' ? 'style="background-color:#7209b7"' : '';
     return `<span class="badge bg-${cor}" ${style}>${labels[categoria] || categoria}</span>`;
@@ -147,7 +173,7 @@ function labelCategoria(categoria) {
 async function carregarProvedores(selectEl, selecionado) {
     const provedores = await api('/api/provedores');
     selectEl.innerHTML = '<option value="">Selecione...</option>';
-    provedores.forEach(p => {
+    provedores.forEach((p) => {
         const opt = document.createElement('option');
         opt.value = p.id;
         opt.textContent = p.nome;
@@ -158,7 +184,7 @@ async function carregarProvedores(selectEl, selecionado) {
 
 // ==================== THEME TOGGLE ====================
 
-(function() {
+(function () {
     const saved = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', saved);
 })();
@@ -205,16 +231,40 @@ const _sidebarItems = [
     { id: 'navDashboard', modulo: 'dashboard', icon: 'bi-speedometer2', label: 'Dashboard', href: '/' },
     { id: 'navProvedores', modulo: 'provedores', icon: 'bi-building', label: 'Provedores', href: '/provedores' },
     { id: 'navVendas', modulo: 'vendas', icon: 'bi-cash-coin', label: 'Vendas', href: '/vendas' },
-    { id: 'navDashboardVendedor', modulo: 'dashboard_vendedor', icon: 'bi-graph-up-arrow', label: 'Meu Dashboard', href: '/dashboard-vendedor' },
+    {
+        id: 'navDashboardVendedor',
+        modulo: 'dashboard_vendedor',
+        icon: 'bi-graph-up-arrow',
+        label: 'Meu Dashboard',
+        href: '/dashboard-vendedor'
+    },
     { id: 'navChamados', modulo: 'chamados', icon: 'bi-ticket-detailed', label: 'Chamados', href: '/chamados' },
-    { id: 'navFilaAtendimento', modulo: 'chamados', icon: 'bi-sort-down', label: 'Fila Atendimento', href: '/fila-atendimento' },
-    { id: 'navTreinamentos', modulo: 'treinamentos', icon: 'bi-mortarboard', label: 'Treinamentos', href: '/treinamentos' },
+    {
+        id: 'navFilaAtendimento',
+        modulo: 'chamados',
+        icon: 'bi-sort-down',
+        label: 'Fila Atendimento',
+        href: '/fila-atendimento'
+    },
+    {
+        id: 'navTreinamentos',
+        modulo: 'treinamentos',
+        icon: 'bi-mortarboard',
+        label: 'Treinamentos',
+        href: '/treinamentos'
+    },
     { id: 'navProjetos', modulo: 'projetos', icon: 'bi-kanban', label: 'Projetos', href: '/projetos' },
     { id: 'navHistorico', modulo: 'historico', icon: 'bi-clock-history', label: 'Historico', href: '/historico' },
     { id: 'navAtendimento', modulo: 'whatsapp', icon: 'bi-headset', label: 'Atendimento', href: '/atendimento' },
     { id: 'navPonto', modulo: 'ponto', icon: 'bi-clock-history', label: 'Ponto', href: '/ponto' },
     { id: 'navFlow', modulo: 'whatsapp', icon: 'bi-diagram-3', label: 'Fluxos', href: '/flow' },
-    { id: 'navRelatorios', modulo: 'relatorios', icon: 'bi-file-earmark-bar-graph', label: 'Relatorios', href: '/relatorios' },
+    {
+        id: 'navRelatorios',
+        modulo: 'relatorios',
+        icon: 'bi-file-earmark-bar-graph',
+        label: 'Relatorios',
+        href: '/relatorios'
+    },
     { id: 'navConhecimento', modulo: 'conhecimento', icon: 'bi-book', label: 'Conhecimento', href: '/conhecimento' },
     { id: 'navAgenda', modulo: 'agenda', icon: 'bi-calendar3', label: 'Agenda', href: '/agenda' },
     { id: 'navNPS', modulo: 'chamados', icon: 'bi-star', label: 'NPS', href: '/nps' },
@@ -230,16 +280,20 @@ function gerarSidebar(permissoes) {
 
     const currentPath = window.location.pathname;
 
-    const navItems = _sidebarItems.map(item => {
-        const isActive = (item.href === '/' && currentPath === '/') || (item.href !== '/' && currentPath.startsWith(item.href));
-        const display = permissoes[item.modulo] ? '' : 'none';
-        const activeClass = isActive ? ' active' : '';
-        let extra = '';
-        if (item.id === 'navWhatsApp' && currentPath === '/whatsapp') {
-            extra = ' <span class="badge bg-success rounded-pill ms-1" id="sidebarUnreadBadge" style="display:none">0</span>';
-        }
-        return `<li class="nav-item" id="${item.id}" style="display:${display}"><a class="nav-link${activeClass}" href="${item.href}"><i class="bi ${item.icon}"></i> ${item.label}${extra}</a></li>`;
-    }).join('\n            ');
+    const navItems = _sidebarItems
+        .map((item) => {
+            const isActive =
+                (item.href === '/' && currentPath === '/') || (item.href !== '/' && currentPath.startsWith(item.href));
+            const display = permissoes[item.modulo] ? '' : 'none';
+            const activeClass = isActive ? ' active' : '';
+            let extra = '';
+            if (item.id === 'navWhatsApp' && currentPath === '/whatsapp') {
+                extra =
+                    ' <span class="badge bg-success rounded-pill ms-1" id="sidebarUnreadBadge" style="display:none">0</span>';
+            }
+            return `<li class="nav-item" id="${item.id}" style="display:${display}"><a class="nav-link${activeClass}" href="${item.href}"><i class="bi ${item.icon}"></i> ${item.label}${extra}</a></li>`;
+        })
+        .join('\n            ');
 
     sidebar.innerHTML = `
         <div class="sidebar-brand">
@@ -291,8 +345,21 @@ async function carregarUsuarioLogado() {
         window._currentUser = user;
         const sidebarUser = document.getElementById('sidebarUser');
         if (sidebarUser) {
-            const iniciais = user.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            const perfilLabels = { admin: 'Administrador', analista: 'Analista', vendedor: 'Vendedor', gestor_atendimento: 'Gestor Atendimento', gerente_noc: 'Gerente NOC', financeiro: 'Financeiro', atendente: 'Atendente' };
+            const iniciais = user.nome
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .substring(0, 2)
+                .toUpperCase();
+            const perfilLabels = {
+                admin: 'Administrador',
+                analista: 'Analista',
+                vendedor: 'Vendedor',
+                gestor_atendimento: 'Gestor Atendimento',
+                gerente_noc: 'Gerente NOC',
+                financeiro: 'Financeiro',
+                atendente: 'Atendente'
+            };
             const perfilLabel = perfilLabels[user.perfil] || user.perfil;
             const avatarHtml = user.foto_url
                 ? `<img src="${escapeHtmlGlobal(user.foto_url)}" class="sidebar-user-avatar-img">`
@@ -324,7 +391,9 @@ async function carregarUsuarioLogado() {
 
 function abrirModalPerfil() {
     if (!document.getElementById('modalPerfil')) {
-        document.body.insertAdjacentHTML('beforeend', `
+        document.body.insertAdjacentHTML(
+            'beforeend',
+            `
         <div class="modal fade" id="modalPerfil" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -368,11 +437,17 @@ function abrirModalPerfil() {
                     </div>
                 </div>
             </div>
-        </div>`);
+        </div>`
+        );
     }
     const u = window._currentUser;
     if (u) {
-        const iniciais = u.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        const iniciais = u.nome
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .substring(0, 2)
+            .toUpperCase();
         const container = document.getElementById('perfilFotoContainer');
         if (u.foto_url) {
             container.innerHTML = `<img src="${escapeHtmlGlobal(u.foto_url)}" class="perfil-foto-img">`;
@@ -383,7 +458,15 @@ function abrirModalPerfil() {
         }
         document.getElementById('perfilNome').textContent = u.nome;
         document.getElementById('perfilUsuario').textContent = u.usuario;
-        const perfilLabels = { admin: 'Administrador', analista: 'Analista', vendedor: 'Vendedor', gestor_atendimento: 'Gestor Atendimento', gerente_noc: 'Gerente NOC', financeiro: 'Financeiro', atendente: 'Atendente' };
+        const perfilLabels = {
+            admin: 'Administrador',
+            analista: 'Analista',
+            vendedor: 'Vendedor',
+            gestor_atendimento: 'Gestor Atendimento',
+            gerente_noc: 'Gerente NOC',
+            financeiro: 'Financeiro',
+            atendente: 'Atendente'
+        };
         document.getElementById('perfilRole').textContent = perfilLabels[u.perfil] || u.perfil;
     }
     new bootstrap.Modal(document.getElementById('modalPerfil')).show();
@@ -404,7 +487,9 @@ async function uploadFotoPerfil(input) {
         } else {
             mostrarToast(data.erro || 'Erro ao enviar foto', 'danger');
         }
-    } catch { mostrarToast('Erro ao enviar foto', 'danger'); }
+    } catch {
+        mostrarToast('Erro ao enviar foto', 'danger');
+    }
     input.value = '';
 }
 
@@ -415,7 +500,9 @@ async function removerFotoPerfil() {
         mostrarToast('Foto removida', 'success');
         abrirModalPerfil();
         carregarUsuarioLogado();
-    } catch { mostrarToast('Erro ao remover foto', 'danger'); }
+    } catch {
+        mostrarToast('Erro ao remover foto', 'danger');
+    }
 }
 
 // ==================== TROCA DE SENHA ====================
@@ -511,10 +598,12 @@ async function carregar2FAStatus() {
         const data = await api('/api/me/2fa/status');
         const statusDiv = document.getElementById('2faStatus');
         if (data.ativo) {
-            statusDiv.innerHTML = '<div class="d-flex justify-content-between align-items-center"><span class="badge bg-success"><i class="bi bi-shield-check me-1"></i>2FA Ativo</span><button class="btn btn-sm btn-outline-danger" onclick="desativar2FA()">Desativar</button></div>';
+            statusDiv.innerHTML =
+                '<div class="d-flex justify-content-between align-items-center"><span class="badge bg-success"><i class="bi bi-shield-check me-1"></i>2FA Ativo</span><button class="btn btn-sm btn-outline-danger" onclick="desativar2FA()">Desativar</button></div>';
             document.getElementById('2faSetup').style.display = 'none';
         } else {
-            statusDiv.innerHTML = '<div class="d-flex justify-content-between align-items-center"><span class="badge bg-secondary">2FA Inativo</span><button class="btn btn-sm btn-outline-primary" onclick="gerar2FA()">Configurar</button></div>';
+            statusDiv.innerHTML =
+                '<div class="d-flex justify-content-between align-items-center"><span class="badge bg-secondary">2FA Inativo</span><button class="btn btn-sm btn-outline-primary" onclick="gerar2FA()">Configurar</button></div>';
         }
     } catch {}
 }
@@ -534,17 +623,24 @@ async function gerar2FA() {
         } else {
             canvas.style.display = 'none';
         }
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function ativar2FA() {
     const codigo = document.getElementById('codigo2fa').value.trim();
-    if (!codigo || codigo.length !== 6) { mostrarToast('Digite o codigo de 6 digitos', 'warning'); return; }
+    if (!codigo || codigo.length !== 6) {
+        mostrarToast('Digite o codigo de 6 digitos', 'warning');
+        return;
+    }
     try {
         await api('/api/me/2fa/ativar', { method: 'POST', body: { secret: _2faSecret, codigo } });
         mostrarToast('2FA ativado com sucesso!');
         carregar2FAStatus();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function desativar2FA() {
@@ -554,7 +650,9 @@ async function desativar2FA() {
         await api('/api/me/2fa/desativar', { method: 'POST', body: { senha } });
         mostrarToast('2FA desativado');
         carregar2FAStatus();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function logout() {
@@ -568,16 +666,18 @@ async function logout() {
 
 function exportarCSV(dados, colunas, nomeArquivo) {
     const sep = ';';
-    const header = colunas.map(c => c.label).join(sep);
-    const linhas = dados.map(row =>
-        colunas.map(c => {
-            let val = typeof c.value === 'function' ? c.value(row) : (row[c.key] || '');
-            val = String(val).replace(/"/g, '""');
-            if (String(val).includes(sep) || String(val).includes('"') || String(val).includes('\n')) {
-                val = `"${val}"`;
-            }
-            return val;
-        }).join(sep)
+    const header = colunas.map((c) => c.label).join(sep);
+    const linhas = dados.map((row) =>
+        colunas
+            .map((c) => {
+                let val = typeof c.value === 'function' ? c.value(row) : row[c.key] || '';
+                val = String(val).replace(/"/g, '""');
+                if (String(val).includes(sep) || String(val).includes('"') || String(val).includes('\n')) {
+                    val = `"${val}"`;
+                }
+                return val;
+            })
+            .join(sep)
     );
     const bom = '\uFEFF';
     const csv = bom + [header, ...linhas].join('\n');
@@ -591,15 +691,15 @@ function exportarExcel(abas, nomeArquivo) {
         return;
     }
     const wb = XLSX.utils.book_new();
-    abas.forEach(aba => {
-        const header = aba.colunas.map(c => c.label);
-        const rows = aba.dados.map(row =>
-            aba.colunas.map(c => typeof c.value === 'function' ? c.value(row) : (row[c.key] || ''))
+    abas.forEach((aba) => {
+        const header = aba.colunas.map((c) => c.label);
+        const rows = aba.dados.map((row) =>
+            aba.colunas.map((c) => (typeof c.value === 'function' ? c.value(row) : row[c.key] || ''))
         );
         const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
         // Auto-width
         ws['!cols'] = header.map((h, i) => {
-            const maxLen = Math.max(h.length, ...rows.map(r => String(r[i] || '').length));
+            const maxLen = Math.max(h.length, ...rows.map((r) => String(r[i] || '').length));
             return { wch: Math.min(maxLen + 2, 40) };
         });
         XLSX.utils.book_append_sheet(wb, ws, aba.nome.substring(0, 31));
@@ -619,15 +719,29 @@ function baixarArquivo(blob, nomeArquivo) {
 }
 
 function confirmar(mensagem) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         const modal = document.getElementById('confirmModal');
-        if (!modal) { resolve(confirm(mensagem)); return; }
+        if (!modal) {
+            resolve(confirm(mensagem));
+            return;
+        }
         document.getElementById('confirmMessage').textContent = mensagem;
         const bsModal = new bootstrap.Modal(modal);
         const btnConfirm = document.getElementById('confirmBtn');
-        const handler = () => { resolve(true); bsModal.hide(); btnConfirm.removeEventListener('click', handler); };
+        const handler = () => {
+            resolve(true);
+            bsModal.hide();
+            btnConfirm.removeEventListener('click', handler);
+        };
         btnConfirm.addEventListener('click', handler);
-        modal.addEventListener('hidden.bs.modal', () => { resolve(false); btnConfirm.removeEventListener('click', handler); }, { once: true });
+        modal.addEventListener(
+            'hidden.bs.modal',
+            () => {
+                resolve(false);
+                btnConfirm.removeEventListener('click', handler);
+            },
+            { once: true }
+        );
         bsModal.show();
     });
 }
@@ -640,7 +754,12 @@ let _globalNotifSound = null;
 
 function escapeHtmlGlobal(str) {
     if (!str) return '';
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 function connectGlobalSSE() {
@@ -653,13 +772,19 @@ function connectGlobalSSE() {
                 adicionarNotifWhatsApp(event.payload);
             }
             if (event.event === 'user.online') {
-                fetch('/api/online').then(r => r.json()).then(renderOnlineUsers).catch(() => {});
+                fetch('/api/online')
+                    .then((r) => r.json())
+                    .then(renderOnlineUsers)
+                    .catch(() => {});
                 if (event.payload && event.payload.id !== window._currentUser?.id) {
                     mostrarOnlineToast(event.payload.nome);
                 }
             }
             if (event.event === 'user.offline') {
-                fetch('/api/online').then(r => r.json()).then(renderOnlineUsers).catch(() => {});
+                fetch('/api/online')
+                    .then((r) => r.json())
+                    .then(renderOnlineUsers)
+                    .catch(() => {});
             }
             if (event.event === 'chat.message') {
                 handleChatMessage(event.payload);
@@ -668,7 +793,10 @@ function connectGlobalSSE() {
                 mostrarToast(`Proposta visualizada: ${event.payload.provedor_nome}`, 'info');
             }
             if (event.event === 'contrato.assinado') {
-                mostrarToast(`Contrato assinado por ${event.payload.assinatura_nome} (${event.payload.provedor_nome})`, 'success');
+                mostrarToast(
+                    `Contrato assinado por ${event.payload.assinatura_nome} (${event.payload.provedor_nome})`,
+                    'success'
+                );
             }
         } catch {}
     };
@@ -682,9 +810,16 @@ function connectGlobalSSE() {
 function adicionarNotifWhatsApp(msg) {
     const senderName = msg.senderName || msg.chatName || '';
     const text = msg.body || msg.text || '';
-    const typeLabels = { ptt: 'Audio', audio: 'Audio', image: 'Imagem', sticker: 'Sticker', video: 'Video', document: 'Documento' };
-    const preview = text ? text.substring(0, 80) : (typeLabels[msg.type] || 'Nova mensagem');
-    const chatId = typeof msg.from === 'object' ? msg.from._serialized : (msg.from || '');
+    const typeLabels = {
+        ptt: 'Audio',
+        audio: 'Audio',
+        image: 'Imagem',
+        sticker: 'Sticker',
+        video: 'Video',
+        document: 'Documento'
+    };
+    const preview = text ? text.substring(0, 80) : typeLabels[msg.type] || 'Nova mensagem';
+    const chatId = typeof msg.from === 'object' ? msg.from._serialized : msg.from || '';
 
     // Adicionar ao array local
     _whatsappNotifs.unshift({
@@ -711,7 +846,7 @@ function adicionarNotifWhatsApp(msg) {
 }
 
 function atualizarBadgeWhatsApp() {
-    const naoLidas = _whatsappNotifs.filter(n => !n.lida).length;
+    const naoLidas = _whatsappNotifs.filter((n) => !n.lida).length;
     const badge = document.getElementById('badgeNotifWA');
     if (badge) {
         if (naoLidas > 0) {
@@ -728,7 +863,7 @@ function atualizarBadgeWhatsApp() {
 function atualizarBadgeNotifGlobal() {
     const badge = document.getElementById('badgeNotificacoes');
     if (!badge) return;
-    const waNaoLidas = _whatsappNotifs.filter(n => !n.lida).length;
+    const waNaoLidas = _whatsappNotifs.filter((n) => !n.lida).length;
     // Combinar com contagem do sistema
     const sistBadge = document.getElementById('badgeNotifSistema');
     const sistCount = sistBadge ? parseInt(sistBadge.textContent) || 0 : 0;
@@ -750,17 +885,26 @@ function _ensureAudioCtx() {
         _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
     if (_audioCtx.state === 'suspended' && !_audioResumed) {
-        _audioCtx.resume().then(() => { _audioResumed = true; }).catch(() => {});
+        _audioCtx
+            .resume()
+            .then(() => {
+                _audioResumed = true;
+            })
+            .catch(() => {});
     }
     return _audioCtx;
 }
 
 // Resumir AudioContext na primeira interacao do usuario
-['click', 'keydown', 'touchstart'].forEach(evt => {
-    document.addEventListener(evt, function _resumeAudio() {
-        _ensureAudioCtx();
-        document.removeEventListener(evt, _resumeAudio);
-    }, { once: true });
+['click', 'keydown', 'touchstart'].forEach((evt) => {
+    document.addEventListener(
+        evt,
+        function _resumeAudio() {
+            _ensureAudioCtx();
+            document.removeEventListener(evt, _resumeAudio);
+        },
+        { once: true }
+    );
 });
 
 function playGlobalNotifSound() {
@@ -786,8 +930,16 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(connectGlobalSSE, 2000);
     // Heartbeat: marcar usuario como online
     function sendHeartbeat() {
-        fetch('/api/heartbeat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ page: location.pathname }) })
-            .then(r => r.json()).then(d => { if (d.online) renderOnlineUsers(d.online); }).catch(() => {});
+        fetch('/api/heartbeat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ page: location.pathname })
+        })
+            .then((r) => r.json())
+            .then((d) => {
+                if (d.online) renderOnlineUsers(d.online);
+            })
+            .catch(() => {});
     }
     sendHeartbeat();
     setInterval(sendHeartbeat, 30000);
@@ -801,19 +953,24 @@ function renderOnlineUsers(users) {
     const meuId = window._currentUser?.id;
     el.innerHTML = `
         <div class="sidebar-online-header"><i class="bi bi-circle-fill text-success" style="font-size:.5rem"></i> Online (${users.length})</div>
-        ${users.map(u => {
-            if (u.id === meuId) return '';
-            const fotoHtml = u.foto_url
-                ? `<img src="${escapeHtmlGlobal(u.foto_url)}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0">`
-                : `<span class="online-dot"></span>`;
-            const naoLidas = _chatNaoLidas[u.id] || 0;
-            const badge = naoLidas > 0 ? `<span class="badge bg-danger rounded-pill ms-auto" style="font-size:.6rem">${naoLidas}</span>` : '';
-            return `<div class="sidebar-online-user sidebar-online-clickable" onclick="abrirChatCom(${u.id}, '${escapeHtmlGlobal(u.nome).replace(/'/g, "\\'")}')">
+        ${users
+            .map((u) => {
+                if (u.id === meuId) return '';
+                const fotoHtml = u.foto_url
+                    ? `<img src="${escapeHtmlGlobal(u.foto_url)}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+                    : `<span class="online-dot"></span>`;
+                const naoLidas = _chatNaoLidas[u.id] || 0;
+                const badge =
+                    naoLidas > 0
+                        ? `<span class="badge bg-danger rounded-pill ms-auto" style="font-size:.6rem">${naoLidas}</span>`
+                        : '';
+                return `<div class="sidebar-online-user sidebar-online-clickable" onclick="abrirChatCom(${u.id}, '${escapeHtmlGlobal(u.nome).replace(/'/g, "\\'")}')">
                 ${fotoHtml}
                 <span>${escapeHtmlGlobal(u.nome)}</span>
                 ${badge}
             </div>`;
-        }).join('')}
+            })
+            .join('')}
     `;
 }
 
@@ -871,7 +1028,12 @@ function _injectNotifPanel() {
 
     // Fechar ao clicar fora
     document.addEventListener('click', (e) => {
-        if (_notifPanel && _notifPanel.classList.contains('show') && !_notifPanel.contains(e.target) && !e.target.closest('#btnNotificacoes')) {
+        if (
+            _notifPanel &&
+            _notifPanel.classList.contains('show') &&
+            !_notifPanel.contains(e.target) &&
+            !e.target.closest('#btnNotificacoes')
+        ) {
             _notifPanel.classList.remove('show');
         }
     });
@@ -879,7 +1041,7 @@ function _injectNotifPanel() {
 
 function trocarAbaNotif(tab) {
     _notifActiveTab = tab;
-    document.querySelectorAll('.notif-panel-tab').forEach(t => {
+    document.querySelectorAll('.notif-panel-tab').forEach((t) => {
         t.classList.toggle('active', t.dataset.tab === tab);
     });
     if (tab === 'sistema') {
@@ -908,10 +1070,11 @@ async function carregarNotificacoes() {
             list.innerHTML = '<div class="text-center text-muted py-3">Nenhuma notificacao</div>';
             return;
         }
-        list.innerHTML = notifs.map(n => {
-            const iconClass = n.tipo === 'chamado' ? 'notif-icon-chamado' : 'notif-icon-sistema';
-            const iconBi = n.tipo === 'chamado' ? 'bi-ticket-detailed' : 'bi-bell';
-            return `
+        list.innerHTML = notifs
+            .map((n) => {
+                const iconClass = n.tipo === 'chamado' ? 'notif-icon-chamado' : 'notif-icon-sistema';
+                const iconBi = n.tipo === 'chamado' ? 'bi-ticket-detailed' : 'bi-bell';
+                return `
             <div class="notif-item ${n.lida ? '' : 'notif-unread'}" onclick="clicarNotificacao(${n.id}, '${escapeHtmlGlobal(n.link || '')}')">
                 <div class="d-flex align-items-start">
                     <div class="notif-item-icon ${iconClass}"><i class="bi ${iconBi}"></i></div>
@@ -922,17 +1085,21 @@ async function carregarNotificacoes() {
                     </div>
                 </div>
             </div>`;
-        }).join('');
+            })
+            .join('');
     } catch (err) {}
 }
 
 function renderNotifWhatsApp() {
     const list = document.getElementById('notifList');
     if (!_whatsappNotifs.length) {
-        list.innerHTML = '<div class="text-center text-muted py-3"><i class="bi bi-whatsapp" style="font-size:1.5rem"></i><br>Nenhuma mensagem WhatsApp</div>';
+        list.innerHTML =
+            '<div class="text-center text-muted py-3"><i class="bi bi-whatsapp" style="font-size:1.5rem"></i><br>Nenhuma mensagem WhatsApp</div>';
         return;
     }
-    list.innerHTML = _whatsappNotifs.map(n => `
+    list.innerHTML = _whatsappNotifs
+        .map(
+            (n) => `
         <div class="notif-item notif-whatsapp ${n.lida ? '' : 'notif-unread'}" onclick="clicarNotifWhatsApp(${n.id}, '${escapeHtmlGlobal(n.chatId || '')}')">
             <div class="d-flex align-items-start">
                 <div class="notif-item-icon notif-icon-whatsapp"><i class="bi bi-whatsapp"></i></div>
@@ -943,27 +1110,34 @@ function renderNotifWhatsApp() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `
+        )
+        .join('');
 }
 
 function clicarNotifWhatsApp(id, chatId) {
-    const n = _whatsappNotifs.find(x => x.id === id);
+    const n = _whatsappNotifs.find((x) => x.id === id);
     if (n) n.lida = true;
     atualizarBadgeWhatsApp();
     if (chatId) window.location.href = '/whatsapp#chat=' + encodeURIComponent(chatId);
 }
 
 async function clicarNotificacao(id, link) {
-    try { await api('/api/notificacoes/' + id + '/lida', { method: 'PATCH' }); } catch {}
+    try {
+        await api('/api/notificacoes/' + id + '/lida', { method: 'PATCH' });
+    } catch {}
     if (link) window.location.href = link;
-    else { atualizarContagemNotif(); carregarNotificacoes(); }
+    else {
+        atualizarContagemNotif();
+        carregarNotificacoes();
+    }
 }
 
 function marcarTodasLidasAtual() {
     if (_notifActiveTab === 'sistema') {
         marcarTodasLidas();
     } else {
-        _whatsappNotifs.forEach(n => n.lida = true);
+        _whatsappNotifs.forEach((n) => (n.lida = true));
         atualizarBadgeWhatsApp();
         renderNotifWhatsApp();
     }
@@ -1030,7 +1204,9 @@ function _injectBuscaModal() {
     const div = document.createElement('div');
     div.id = 'buscaGlobalOverlay';
     div.className = 'busca-global-overlay';
-    div.onclick = (e) => { if (e.target === div) fecharBuscaGlobal(); };
+    div.onclick = (e) => {
+        if (e.target === div) fecharBuscaGlobal();
+    };
     div.innerHTML = `
         <div class="busca-global-container">
             <div class="busca-global-input-wrapper">
@@ -1066,19 +1242,42 @@ function debounceBusca() {
 async function executarBuscaGlobal() {
     const q = document.getElementById('buscaGlobalInput').value.trim();
     const resultsDiv = document.getElementById('buscaGlobalResults');
-    if (q.length < 2) { resultsDiv.style.display = 'none'; return; }
+    if (q.length < 2) {
+        resultsDiv.style.display = 'none';
+        return;
+    }
 
     try {
         const data = await api('/api/busca?q=' + encodeURIComponent(q));
         const sections = [];
-        const icons = { chamados: 'bi-ticket-detailed', provedores: 'bi-building', projetos: 'bi-kanban', treinamentos: 'bi-mortarboard', vendas: 'bi-cash-coin' };
-        const labels = { chamados: 'Chamados', provedores: 'Provedores', projetos: 'Projetos', treinamentos: 'Treinamentos', vendas: 'Vendas' };
-        const hrefs = { chamados: '/chamados', provedores: '/provedores', projetos: '/projetos', treinamentos: '/treinamentos', vendas: '/vendas' };
+        const icons = {
+            chamados: 'bi-ticket-detailed',
+            provedores: 'bi-building',
+            projetos: 'bi-kanban',
+            treinamentos: 'bi-mortarboard',
+            vendas: 'bi-cash-coin'
+        };
+        const labels = {
+            chamados: 'Chamados',
+            provedores: 'Provedores',
+            projetos: 'Projetos',
+            treinamentos: 'Treinamentos',
+            vendas: 'Vendas'
+        };
+        const hrefs = {
+            chamados: '/chamados',
+            provedores: '/provedores',
+            projetos: '/projetos',
+            treinamentos: '/treinamentos',
+            vendas: '/vendas'
+        };
 
         for (const [tipo, items] of Object.entries(data)) {
             if (items.length) {
-                sections.push(`<div class="busca-section-title"><i class="bi ${icons[tipo]} me-1"></i>${labels[tipo]}</div>`);
-                items.forEach(item => {
+                sections.push(
+                    `<div class="busca-section-title"><i class="bi ${icons[tipo]} me-1"></i>${labels[tipo]}</div>`
+                );
+                items.forEach((item) => {
                     sections.push(`<a class="busca-result-item" href="${hrefs[tipo]}">
                         <span class="busca-result-title">${item.titulo}</span>
                         ${item.status ? '<span class="badge bg-secondary ms-2">' + item.status + '</span>' : ''}
@@ -1120,7 +1319,9 @@ let _chatRenderedIds = new Set();
 
 function injetarChatWidget() {
     if (document.getElementById('chatWidget')) return;
-    document.body.insertAdjacentHTML('beforeend', `
+    document.body.insertAdjacentHTML(
+        'beforeend',
+        `
         <div id="chatWidget" class="chat-widget" style="display:none">
             <div class="chat-widget-header" id="chatWidgetHeader">
                 <div class="d-flex align-items-center gap-2 flex-grow-1 min-width-0">
@@ -1145,7 +1346,8 @@ function injetarChatWidget() {
             <i class="bi bi-chat-dots-fill"></i>
             <span class="chat-fab-badge" id="chatFabBadge" style="display:none">0</span>
         </button>
-    `);
+    `
+    );
     _chatWidgetEl = document.getElementById('chatWidget');
     carregarChatNaoLidas();
 }
@@ -1199,23 +1401,24 @@ async function mostrarListaChat() {
     // Mostrar usuarios online + conversas recentes
     try {
         const [onlineRes, conversasRes] = await Promise.all([
-            fetch('/api/online').then(r => r.json()),
+            fetch('/api/online').then((r) => r.json()),
             api('/api/chat/conversas')
         ]);
         const meuId = window._currentUser?.id;
-        const online = onlineRes.filter(u => u.id !== meuId);
-        const conversasIds = new Set(conversasRes.map(c => c.id));
+        const online = onlineRes.filter((u) => u.id !== meuId);
+        const conversasIds = new Set(conversasRes.map((c) => c.id));
 
         let html = '';
         if (online.length > 0) {
             html += `<div class="chat-section-label">Online</div>`;
-            html += online.map(u => {
-                const naoLidas = _chatNaoLidas[u.id] || 0;
-                const badge = naoLidas > 0 ? `<span class="badge bg-danger rounded-pill">${naoLidas}</span>` : '';
-                const fotoHtml = u.foto_url
-                    ? `<img src="${escapeHtmlGlobal(u.foto_url)}" class="chat-contact-avatar">`
-                    : `<div class="chat-contact-avatar-placeholder">${escapeHtmlGlobal(u.nome).charAt(0).toUpperCase()}</div>`;
-                return `<div class="chat-contact-item" onclick="abrirChatCom(${u.id}, '${escapeHtmlGlobal(u.nome).replace(/'/g, "\\'")}')">
+            html += online
+                .map((u) => {
+                    const naoLidas = _chatNaoLidas[u.id] || 0;
+                    const badge = naoLidas > 0 ? `<span class="badge bg-danger rounded-pill">${naoLidas}</span>` : '';
+                    const fotoHtml = u.foto_url
+                        ? `<img src="${escapeHtmlGlobal(u.foto_url)}" class="chat-contact-avatar">`
+                        : `<div class="chat-contact-avatar-placeholder">${escapeHtmlGlobal(u.nome).charAt(0).toUpperCase()}</div>`;
+                    return `<div class="chat-contact-item" onclick="abrirChatCom(${u.id}, '${escapeHtmlGlobal(u.nome).replace(/'/g, "\\'")}')">
                     ${fotoHtml}
                     <div class="chat-contact-info">
                         <div class="chat-contact-name">${escapeHtmlGlobal(u.nome)}</div>
@@ -1223,20 +1426,24 @@ async function mostrarListaChat() {
                     </div>
                     ${badge}
                 </div>`;
-            }).join('');
+                })
+                .join('');
         }
 
-        const conversasOffline = conversasRes.filter(c => !online.some(o => o.id === c.id));
+        const conversasOffline = conversasRes.filter((c) => !online.some((o) => o.id === c.id));
         if (conversasOffline.length > 0) {
             html += `<div class="chat-section-label">Conversas</div>`;
-            html += conversasOffline.map(c => {
-                const naoLidas = c.nao_lidas || 0;
-                const badge = naoLidas > 0 ? `<span class="badge bg-danger rounded-pill">${naoLidas}</span>` : '';
-                const fotoHtml = c.foto_url
-                    ? `<img src="${escapeHtmlGlobal(c.foto_url)}" class="chat-contact-avatar">`
-                    : `<div class="chat-contact-avatar-placeholder">${escapeHtmlGlobal(c.nome).charAt(0).toUpperCase()}</div>`;
-                const preview = c.ultima_msg ? c.ultima_msg.substring(0, 30) + (c.ultima_msg.length > 30 ? '...' : '') : '';
-                return `<div class="chat-contact-item" onclick="abrirChatCom(${c.id}, '${escapeHtmlGlobal(c.nome).replace(/'/g, "\\'")}')">
+            html += conversasOffline
+                .map((c) => {
+                    const naoLidas = c.nao_lidas || 0;
+                    const badge = naoLidas > 0 ? `<span class="badge bg-danger rounded-pill">${naoLidas}</span>` : '';
+                    const fotoHtml = c.foto_url
+                        ? `<img src="${escapeHtmlGlobal(c.foto_url)}" class="chat-contact-avatar">`
+                        : `<div class="chat-contact-avatar-placeholder">${escapeHtmlGlobal(c.nome).charAt(0).toUpperCase()}</div>`;
+                    const preview = c.ultima_msg
+                        ? c.ultima_msg.substring(0, 30) + (c.ultima_msg.length > 30 ? '...' : '')
+                        : '';
+                    return `<div class="chat-contact-item" onclick="abrirChatCom(${c.id}, '${escapeHtmlGlobal(c.nome).replace(/'/g, "\\'")}')">
                     ${fotoHtml}
                     <div class="chat-contact-info">
                         <div class="chat-contact-name">${escapeHtmlGlobal(c.nome)}</div>
@@ -1244,10 +1451,13 @@ async function mostrarListaChat() {
                     </div>
                     ${badge}
                 </div>`;
-            }).join('');
+                })
+                .join('');
         }
 
-        if (!html) html = '<div class="text-center text-muted py-4"><i class="bi bi-chat-dots" style="font-size:2rem;opacity:.3"></i><br><small>Nenhum usuario online</small></div>';
+        if (!html)
+            html =
+                '<div class="text-center text-muted py-4"><i class="bi bi-chat-dots" style="font-size:2rem;opacity:.3"></i><br><small>Nenhum usuario online</small></div>';
         lista.innerHTML = html;
     } catch {
         lista.innerHTML = '<div class="text-center text-muted py-3">Erro ao carregar</div>';
@@ -1273,7 +1483,8 @@ async function abrirChatCom(userId, nome) {
 
     const msgsEl = document.getElementById('chatMsgs');
     _chatRenderedIds.clear();
-    msgsEl.innerHTML = '<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm"></div></div>';
+    msgsEl.innerHTML =
+        '<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm"></div></div>';
     try {
         const msgs = await api(`/api/chat/${userId}`);
         renderChatMsgs(msgs);
@@ -1295,15 +1506,19 @@ function renderChatMsgs(msgs) {
     }
     const meuId = window._currentUser?.id;
     _chatRenderedIds.clear();
-    msgs.forEach(m => { if (m.id) _chatRenderedIds.add(m.id); });
-    msgsEl.innerHTML = msgs.map(m => {
-        const ehMeu = m.remetente_id === meuId;
-        const hora = m.criado_em ? m.criado_em.substring(11, 16) : '';
-        return `<div class="chat-msg ${ehMeu ? 'chat-msg-sent' : 'chat-msg-received'}">
+    msgs.forEach((m) => {
+        if (m.id) _chatRenderedIds.add(m.id);
+    });
+    msgsEl.innerHTML = msgs
+        .map((m) => {
+            const ehMeu = m.remetente_id === meuId;
+            const hora = m.criado_em ? m.criado_em.substring(11, 16) : '';
+            return `<div class="chat-msg ${ehMeu ? 'chat-msg-sent' : 'chat-msg-received'}">
             <div class="chat-msg-text">${escapeHtmlGlobal(m.texto)}</div>
             <div class="chat-msg-time">${hora}</div>
         </div>`;
-    }).join('');
+        })
+        .join('');
     msgsEl.scrollTop = msgsEl.scrollHeight;
 }
 
@@ -1363,12 +1578,15 @@ function appendChatMsg(msg, ehMeu) {
     const placeholder = msgsEl.querySelector('.text-muted');
     if (placeholder && msgsEl.children.length === 1) msgsEl.innerHTML = '';
     const hora = msg.criado_em ? msg.criado_em.substring(11, 16) : '';
-    msgsEl.insertAdjacentHTML('beforeend', `
+    msgsEl.insertAdjacentHTML(
+        'beforeend',
+        `
         <div class="chat-msg ${ehMeu ? 'chat-msg-sent' : 'chat-msg-received'}">
             <div class="chat-msg-text">${escapeHtmlGlobal(msg.texto)}</div>
             <div class="chat-msg-time">${hora}</div>
         </div>
-    `);
+    `
+    );
     msgsEl.scrollTop = msgsEl.scrollHeight;
 }
 
@@ -1379,7 +1597,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ==================== PWA SERVICE WORKER ====================
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').then(reg => {
-        reg.update();
-    }).catch(() => {});
+    navigator.serviceWorker
+        .register('/sw.js')
+        .then((reg) => {
+            reg.update();
+        })
+        .catch(() => {});
 }

@@ -1,9 +1,36 @@
 // ==================== PROVEDORES ====================
 
-const LABELS_PLANO = { zapping_lite_plus: 'Zapping Lite Plus', zapping_full: 'Zapping Full', liteplus_full: 'Lite Plus + Full' };
-const LABELS_MODELO = { bundle: 'Bundle', hardbundle: 'Hardbundle', reseller: 'Reseller', hospitality: 'Hospitality', empresas: 'Empresas' };
-const LABELS_ERP = { ixc: 'IXC', hubsoft: 'Hubsoft', radius_net: 'Radius NET', sgp: 'SGP', atlaz: 'Atlaz', ispfy: 'ISPFY', mycore: 'MYCORE', mk_auth: 'Mk-auth', proprio: 'Próprio', voalle: 'Voalle' };
-const LABELS_ADICIONAIS = { telecine: 'Telecine', combate: 'Combate', canais_adultos: 'Canais Adultos', premiere: 'Premiere', sportv_plus: 'Sportv+' };
+const LABELS_PLANO = {
+    zapping_lite_plus: 'Zapping Lite Plus',
+    zapping_full: 'Zapping Full',
+    liteplus_full: 'Lite Plus + Full'
+};
+const LABELS_MODELO = {
+    bundle: 'Bundle',
+    hardbundle: 'Hardbundle',
+    reseller: 'Reseller',
+    hospitality: 'Hospitality',
+    empresas: 'Empresas'
+};
+const LABELS_ERP = {
+    ixc: 'IXC',
+    hubsoft: 'Hubsoft',
+    radius_net: 'Radius NET',
+    sgp: 'SGP',
+    atlaz: 'Atlaz',
+    ispfy: 'ISPFY',
+    mycore: 'MYCORE',
+    mk_auth: 'Mk-auth',
+    proprio: 'Próprio',
+    voalle: 'Voalle'
+};
+const LABELS_ADICIONAIS = {
+    telecine: 'Telecine',
+    combate: 'Combate',
+    canais_adultos: 'Canais Adultos',
+    premiere: 'Premiere',
+    sportv_plus: 'Sportv+'
+};
 
 const ITENS_POR_PAGINA = 10;
 let todosProvedores = [];
@@ -30,14 +57,14 @@ function filtrarProvedores() {
     let filtrados = todosProvedores;
 
     if (termo) {
-        filtrados = todosProvedores.filter(p => {
+        filtrados = todosProvedores.filter((p) => {
             const planoLabel = LABELS_PLANO[p.plano] || p.plano || '';
             const modeloLabel = LABELS_MODELO[p.modelo_integracao] || p.modelo_integracao || '';
             const erpLabel = LABELS_ERP[p.erp] || p.erp || '';
-            const texto = [
-                p.nome, planoLabel, modeloLabel, erpLabel,
-                p.responsavel, p.contato, p.observacoes
-            ].filter(Boolean).join(' ').toLowerCase();
+            const texto = [p.nome, planoLabel, modeloLabel, erpLabel, p.responsavel, p.contato, p.observacoes]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
             return texto.includes(termo);
         });
     }
@@ -61,20 +88,28 @@ function renderPaginado(provedores) {
 function renderTabela(provedores) {
     const tbody = document.getElementById('tabelaProvedores');
     if (provedores.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">Nenhum provedor encontrado</td></tr>';
+        tbody.innerHTML =
+            '<tr><td colspan="9" class="text-center text-muted py-4">Nenhum provedor encontrado</td></tr>';
         return;
     }
 
-    tbody.innerHTML = provedores.map(p => {
-        const adicionaisBadges = p.adicionais
-            ? p.adicionais.split(',').map(a => `<span class="badge bg-light text-dark me-1">${LABELS_ADICIONAIS[a.trim()] || a.trim()}</span>`).join('')
-            : '<span class="text-muted">-</span>';
+    tbody.innerHTML = provedores
+        .map((p) => {
+            const adicionaisBadges = p.adicionais
+                ? p.adicionais
+                      .split(',')
+                      .map(
+                          (a) =>
+                              `<span class="badge bg-light text-dark me-1">${LABELS_ADICIONAIS[a.trim()] || a.trim()}</span>`
+                      )
+                      .join('')
+                : '<span class="text-muted">-</span>';
 
-        const logoHtml = p.logo_url
-            ? `<img src="${p.logo_url}" alt="${p.nome}" class="logo-provedor" style="cursor:pointer" onclick="ampliarLogo('${p.logo_url.replace(/'/g, "\\'")}', '${p.nome.replace(/'/g, "\\'")}')" onerror="this.outerHTML='<div class=\\'logo-placeholder\\'><i class=\\'bi bi-building\\'></i></div>'">`
-            : '<div class="logo-placeholder"><i class="bi bi-building"></i></div>';
+            const logoHtml = p.logo_url
+                ? `<img src="${p.logo_url}" alt="${p.nome}" class="logo-provedor" style="cursor:pointer" onclick="ampliarLogo('${p.logo_url.replace(/'/g, "\\'")}', '${p.nome.replace(/'/g, "\\'")}')" onerror="this.outerHTML='<div class=\\'logo-placeholder\\'><i class=\\'bi bi-building\\'></i></div>'">`
+                : '<div class="logo-placeholder"><i class="bi bi-building"></i></div>';
 
-        return `
+            return `
             <tr>
                 <td>${logoHtml}</td>
                 <td class="fw-bold">${p.nome}</td>
@@ -94,7 +129,8 @@ function renderTabela(provedores) {
                 </td>
             </tr>
         `;
-    }).join('');
+        })
+        .join('');
 }
 
 function renderPaginacao(totalPaginas, provedoresFiltrados) {
@@ -149,14 +185,14 @@ function irParaPagina(pagina, event) {
     let filtrados = todosProvedores;
 
     if (termo) {
-        filtrados = todosProvedores.filter(p => {
+        filtrados = todosProvedores.filter((p) => {
             const planoLabel = LABELS_PLANO[p.plano] || p.plano || '';
             const modeloLabel = LABELS_MODELO[p.modelo_integracao] || p.modelo_integracao || '';
             const erpLabel = LABELS_ERP[p.erp] || p.erp || '';
-            const texto = [
-                p.nome, planoLabel, modeloLabel, erpLabel,
-                p.responsavel, p.contato, p.observacoes
-            ].filter(Boolean).join(' ').toLowerCase();
+            const texto = [p.nome, planoLabel, modeloLabel, erpLabel, p.responsavel, p.contato, p.observacoes]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
             return texto.includes(termo);
         });
     }
@@ -167,13 +203,15 @@ function irParaPagina(pagina, event) {
 
 function getAdicionaisSelecionados() {
     const checkboxes = document.querySelectorAll('#modalProvedor .form-check-input:checked');
-    return Array.from(checkboxes).map(cb => cb.value).join(',');
+    return Array.from(checkboxes)
+        .map((cb) => cb.value)
+        .join(',');
 }
 
 function setAdicionais(adicionaisStr) {
-    document.querySelectorAll('#modalProvedor .form-check-input').forEach(cb => cb.checked = false);
+    document.querySelectorAll('#modalProvedor .form-check-input').forEach((cb) => (cb.checked = false));
     if (!adicionaisStr) return;
-    adicionaisStr.split(',').forEach(a => {
+    adicionaisStr.split(',').forEach((a) => {
         const cb = document.querySelector(`#modalProvedor .form-check-input[value="${a.trim()}"]`);
         if (cb) cb.checked = true;
     });
@@ -184,7 +222,9 @@ function previewLogo(url) {
     const img = document.getElementById('logoPreviewImg');
     if (url && (url.startsWith('http') || url.startsWith('/'))) {
         img.src = url;
-        img.onerror = () => { preview.style.display = 'none'; };
+        img.onerror = () => {
+            preview.style.display = 'none';
+        };
         preview.style.display = 'block';
     } else {
         preview.style.display = 'none';
@@ -196,7 +236,10 @@ function previewLogoFile(input) {
     const img = document.getElementById('logoPreviewImg');
     if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = (e) => { img.src = e.target.result; preview.style.display = 'block'; };
+        reader.onload = (e) => {
+            img.src = e.target.result;
+            preview.style.display = 'block';
+        };
         reader.readAsDataURL(input.files[0]);
     } else {
         preview.style.display = 'none';
@@ -266,7 +309,10 @@ async function salvarProvedor() {
         token_integracao: document.getElementById('provedorToken').value.trim()
     };
 
-    if (!data.nome) { mostrarToast('Nome é obrigatório', 'warning'); return; }
+    if (!data.nome) {
+        mostrarToast('Nome é obrigatório', 'warning');
+        return;
+    }
 
     try {
         let provedor;
@@ -295,7 +341,7 @@ async function salvarProvedor() {
 }
 
 async function excluirProvedor(id) {
-    if (!await confirmar('Tem certeza que deseja excluir este provedor?')) return;
+    if (!(await confirmar('Tem certeza que deseja excluir este provedor?'))) return;
     try {
         await api(`/api/provedores/${id}`, { method: 'DELETE' });
         mostrarToast('Provedor excluído!');
@@ -311,7 +357,9 @@ async function carregarVinculosWhatsApp() {
     try {
         const vinculos = await api('/api/whatsapp/provedores-vinculados');
         vinculosWhatsApp = {};
-        vinculos.forEach(v => { vinculosWhatsApp[v.provedor_id] = v.chat_id; });
+        vinculos.forEach((v) => {
+            vinculosWhatsApp[v.provedor_id] = v.chat_id;
+        });
     } catch {}
 }
 
@@ -323,27 +371,42 @@ function abrirChatProvedor(chatId) {
 
 const COLUNAS_PROVEDORES = [
     { label: 'Nome', key: 'nome' },
-    { label: 'Plano', value: p => LABELS_PLANO[p.plano] || p.plano || '' },
-    { label: 'Adicionais', value: p => p.adicionais ? p.adicionais.split(',').map(a => LABELS_ADICIONAIS[a.trim()] || a.trim()).join(', ') : '' },
-    { label: 'Modelo de Integração', value: p => LABELS_MODELO[p.modelo_integracao] || p.modelo_integracao || '' },
-    { label: 'ERP', value: p => LABELS_ERP[p.erp] || p.erp || '' },
+    { label: 'Plano', value: (p) => LABELS_PLANO[p.plano] || p.plano || '' },
+    {
+        label: 'Adicionais',
+        value: (p) =>
+            p.adicionais
+                ? p.adicionais
+                      .split(',')
+                      .map((a) => LABELS_ADICIONAIS[a.trim()] || a.trim())
+                      .join(', ')
+                : ''
+    },
+    { label: 'Modelo de Integração', value: (p) => LABELS_MODELO[p.modelo_integracao] || p.modelo_integracao || '' },
+    { label: 'ERP', value: (p) => LABELS_ERP[p.erp] || p.erp || '' },
     { label: 'Responsável', key: 'responsavel' },
     { label: 'Contato WhatsApp', key: 'contato' },
-    { label: 'Total Chamados', value: p => p.totalChamados || 0 },
-    { label: 'Total Treinamentos', value: p => p.totalTreinamentos || 0 },
-    { label: 'Total Projetos', value: p => p.totalProjetos || 0 },
+    { label: 'Total Chamados', value: (p) => p.totalChamados || 0 },
+    { label: 'Total Treinamentos', value: (p) => p.totalTreinamentos || 0 },
+    { label: 'Total Projetos', value: (p) => p.totalProjetos || 0 },
     { label: 'Observações', key: 'observacoes' },
     { label: 'Logo URL', key: 'logo_url' }
 ];
 
 function exportarProvedoresCSV() {
-    if (todosProvedores.length === 0) { mostrarToast('Nenhum provedor para exportar', 'warning'); return; }
+    if (todosProvedores.length === 0) {
+        mostrarToast('Nenhum provedor para exportar', 'warning');
+        return;
+    }
     exportarCSV(todosProvedores, COLUNAS_PROVEDORES, 'provedores');
     mostrarToast('CSV exportado com sucesso!');
 }
 
 function exportarProvedoresExcel() {
-    if (todosProvedores.length === 0) { mostrarToast('Nenhum provedor para exportar', 'warning'); return; }
+    if (todosProvedores.length === 0) {
+        mostrarToast('Nenhum provedor para exportar', 'warning');
+        return;
+    }
     exportarExcel([{ nome: 'Provedores', dados: todosProvedores, colunas: COLUNAS_PROVEDORES }], 'provedores');
     mostrarToast('Excel exportado com sucesso!');
 }
@@ -351,8 +414,13 @@ function exportarProvedoresExcel() {
 // ==================== EXPORTAÇÃO PDF ====================
 
 const LABELS_STATUS_PDF = {
-    pendente: 'Pendente', em_andamento: 'Em Andamento', resolvido: 'Resolvido',
-    fechado: 'Fechado', concluido: 'Concluido', pausado: 'Pausado', cancelado: 'Cancelado'
+    pendente: 'Pendente',
+    em_andamento: 'Em Andamento',
+    resolvido: 'Resolvido',
+    fechado: 'Fechado',
+    concluido: 'Concluido',
+    pausado: 'Pausado',
+    cancelado: 'Cancelado'
 };
 
 function gerarHeaderPDF() {
@@ -365,15 +433,39 @@ function gerarHeaderPDF() {
 
 function gerarTabelaPDF(headers, rows) {
     let html = '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:15px">';
-    html += '<thead><tr>' + headers.map(h => `<th style="background:#f59e0b;color:#fff;padding:6px 8px;text-align:left;font-size:10px">${h}</th>`).join('') + '</tr></thead>';
-    html += '<tbody>' + rows.map((row, i) =>
-        '<tr>' + row.map(cell => `<td style="padding:5px 8px;border-bottom:1px solid #e9ecef;background:${i % 2 ? '#f8f9fa' : '#fff'}">${cell}</td>`).join('') + '</tr>'
-    ).join('') + '</tbody></table>';
+    html +=
+        '<thead><tr>' +
+        headers
+            .map(
+                (h) =>
+                    `<th style="background:#f59e0b;color:#fff;padding:6px 8px;text-align:left;font-size:10px">${h}</th>`
+            )
+            .join('') +
+        '</tr></thead>';
+    html +=
+        '<tbody>' +
+        rows
+            .map(
+                (row, i) =>
+                    '<tr>' +
+                    row
+                        .map(
+                            (cell) =>
+                                `<td style="padding:5px 8px;border-bottom:1px solid #e9ecef;background:${i % 2 ? '#f8f9fa' : '#fff'}">${cell}</td>`
+                        )
+                        .join('') +
+                    '</tr>'
+            )
+            .join('') +
+        '</tbody></table>';
     return html;
 }
 
 async function exportarProvedorPDF(id) {
-    if (typeof html2pdf === 'undefined') { mostrarToast('Biblioteca html2pdf nao carregada', 'error'); return; }
+    if (typeof html2pdf === 'undefined') {
+        mostrarToast('Biblioteca html2pdf nao carregada', 'error');
+        return;
+    }
     mostrarToast('Gerando PDF...', 'info');
     try {
         const data = await api(`/api/dashboard/provedor/${id}/metricas`);
@@ -387,7 +479,8 @@ async function exportarProvedorPDF(id) {
         html += `<h3 style="color:#f59e0b;margin:0 0 10px;border-bottom:1px solid #e9ecef;padding-bottom:8px">${p.nome}</h3>`;
         html += '<div style="display:flex;flex-wrap:wrap;gap:15px;margin-bottom:20px;font-size:12px">';
         if (p.plano) html += `<div><strong>Plano:</strong> ${LABELS_PLANO[p.plano] || p.plano}</div>`;
-        if (p.modelo_integracao) html += `<div><strong>Modelo:</strong> ${LABELS_MODELO[p.modelo_integracao] || p.modelo_integracao}</div>`;
+        if (p.modelo_integracao)
+            html += `<div><strong>Modelo:</strong> ${LABELS_MODELO[p.modelo_integracao] || p.modelo_integracao}</div>`;
         if (p.erp) html += `<div><strong>ERP:</strong> ${LABELS_ERP[p.erp] || p.erp}</div>`;
         if (p.responsavel) html += `<div><strong>Responsavel:</strong> ${p.responsavel}</div>`;
         if (p.contato) html += `<div><strong>Contato:</strong> ${p.contato}</div>`;
@@ -402,7 +495,7 @@ async function exportarProvedorPDF(id) {
             { label: 'Treinamentos', val: r.total_treinamentos, color: '#7209b7' },
             { label: 'Projetos', val: r.total_projetos, color: '#3a0ca3' }
         ];
-        cards.forEach(c => {
+        cards.forEach((c) => {
             html += `<div style="flex:1;text-align:center;padding:10px;border-radius:8px;background:${c.color}15;border:1px solid ${c.color}30">
                 <div style="font-size:22px;font-weight:700;color:${c.color}">${c.val}</div>
                 <div style="font-size:10px;color:#6c757d">${c.label}</div>
@@ -415,7 +508,13 @@ async function exportarProvedorPDF(id) {
             html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Chamados</h5>';
             html += gerarTabelaPDF(
                 ['ID', 'Titulo', 'Categoria', 'Status', 'Data'],
-                data.chamados.map(c => [c.id, c.titulo, c.categoria, LABELS_STATUS_PDF[c.status] || c.status, c.data_abertura ? new Date(c.data_abertura.replace(' ', 'T')).toLocaleDateString('pt-BR') : '-'])
+                data.chamados.map((c) => [
+                    c.id,
+                    c.titulo,
+                    c.categoria,
+                    LABELS_STATUS_PDF[c.status] || c.status,
+                    c.data_abertura ? new Date(c.data_abertura.replace(' ', 'T')).toLocaleDateString('pt-BR') : '-'
+                ])
             );
         }
 
@@ -424,7 +523,14 @@ async function exportarProvedorPDF(id) {
             html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Treinamentos</h5>';
             html += gerarTabelaPDF(
                 ['ID', 'Titulo', 'Status', 'Data'],
-                data.treinamentos.map(t => [t.id, t.titulo, LABELS_STATUS_PDF[t.status] || t.status, t.data_treinamento ? new Date(t.data_treinamento.replace(' ', 'T')).toLocaleDateString('pt-BR') : '-'])
+                data.treinamentos.map((t) => [
+                    t.id,
+                    t.titulo,
+                    LABELS_STATUS_PDF[t.status] || t.status,
+                    t.data_treinamento
+                        ? new Date(t.data_treinamento.replace(' ', 'T')).toLocaleDateString('pt-BR')
+                        : '-'
+                ])
             );
         }
 
@@ -433,7 +539,12 @@ async function exportarProvedorPDF(id) {
             html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Projetos</h5>';
             html += gerarTabelaPDF(
                 ['ID', 'Titulo', 'Status', 'Prioridade'],
-                data.projetos.map(pr => [pr.id, pr.titulo, LABELS_STATUS_PDF[pr.status] || pr.status, pr.prioridade || '-'])
+                data.projetos.map((pr) => [
+                    pr.id,
+                    pr.titulo,
+                    LABELS_STATUS_PDF[pr.status] || pr.status,
+                    pr.prioridade || '-'
+                ])
             );
         }
 
@@ -443,13 +554,16 @@ async function exportarProvedorPDF(id) {
         container.innerHTML = html;
         document.body.appendChild(container);
 
-        await html2pdf().set({
-            margin: [10, 10, 10, 10],
-            filename: `provedor-${p.nome.replace(/\s+/g, '-').toLowerCase()}.pdf`,
-            image: { type: 'jpeg', quality: 0.95 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        }).from(container).save();
+        await html2pdf()
+            .set({
+                margin: [10, 10, 10, 10],
+                filename: `provedor-${p.nome.replace(/\s+/g, '-').toLowerCase()}.pdf`,
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            })
+            .from(container)
+            .save();
 
         document.body.removeChild(container);
         mostrarToast(`PDF de ${p.nome} exportado!`);
@@ -459,8 +573,14 @@ async function exportarProvedorPDF(id) {
 }
 
 async function exportarProvedoresPDF() {
-    if (typeof html2pdf === 'undefined') { mostrarToast('Biblioteca html2pdf nao carregada', 'error'); return; }
-    if (todosProvedores.length === 0) { mostrarToast('Nenhum provedor para exportar', 'warning'); return; }
+    if (typeof html2pdf === 'undefined') {
+        mostrarToast('Biblioteca html2pdf nao carregada', 'error');
+        return;
+    }
+    if (todosProvedores.length === 0) {
+        mostrarToast('Nenhum provedor para exportar', 'warning');
+        return;
+    }
     mostrarToast('Gerando PDF...', 'info');
 
     let html = `<div style="padding:20px;font-family:Segoe UI,Tahoma,sans-serif;color:#333">`;
@@ -469,7 +589,7 @@ async function exportarProvedoresPDF() {
 
     html += gerarTabelaPDF(
         ['Nome', 'Plano', 'Modelo', 'ERP', 'Responsavel', 'Contato'],
-        todosProvedores.map(p => [
+        todosProvedores.map((p) => [
             p.nome,
             LABELS_PLANO[p.plano] || p.plano || '-',
             LABELS_MODELO[p.modelo_integracao] || p.modelo_integracao || '-',
@@ -485,13 +605,16 @@ async function exportarProvedoresPDF() {
     container.innerHTML = html;
     document.body.appendChild(container);
 
-    await html2pdf().set({
-        margin: [10, 10, 10, 10],
-        filename: 'relatorio-provedores.pdf',
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-    }).from(container).save();
+    await html2pdf()
+        .set({
+            margin: [10, 10, 10, 10],
+            filename: 'relatorio-provedores.pdf',
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        })
+        .from(container)
+        .save();
 
     document.body.removeChild(container);
     mostrarToast('PDF de provedores exportado!');

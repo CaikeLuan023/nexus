@@ -1,0 +1,73 @@
+{
+    "env": {
+        "node": true,
+        "browser": true,
+        "es2021": true,
+        "jest": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 2021,
+        "sourceType": "script"
+    },
+    "extends": ["eslint:recommended", "prettier"],
+    "plugins": ["prettier"],
+    "rules": {
+        "prettier/prettier": "warn",
+        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+        "no-console": "off",
+        "no-undef": "off",
+        "no-redeclare": "warn",
+        "eqeqeq": ["warn", "smart"],
+        "curly": ["warn", "multi-line"],
+        "no-var": "off",
+        "prefer-const": "off"
+    },
+    "overrides": [
+        {
+            "files": ["server.js", "database.js", "kb-seed.js", "importar-planilha.js"],
+            "env": {
+                "node": true,
+                "browser": false
+            }
+        },
+        {
+            "files": ["public/js/**/*.js"],
+            "env": {
+                "browser": true,
+                "node": false
+            },
+            "globals": {
+                "Chart": "readonly",
+                "bootstrap": "readonly",
+                "XLSX": "readonly",
+                "html2pdf": "readonly",
+                "Drawflow": "readonly",
+                "QRCode": "readonly",
+                "api": "readonly",
+                "formatarData": "readonly",
+                "formatarDataHora": "readonly",
+                "mostrarToast": "readonly",
+                "badgeStatus": "readonly",
+                "badgePrioridade": "readonly",
+                "badgeCategoria": "readonly",
+                "labelCategoria": "readonly",
+                "carregarProvedores": "readonly",
+                "exportarCSV": "readonly",
+                "exportarExcel": "readonly",
+                "baixarArquivo": "readonly",
+                "confirmar": "readonly",
+                "escapeHtmlGlobal": "readonly",
+                "DashboardUtils": "readonly",
+                "perfilLabels": "readonly",
+                "toggleTheme": "readonly"
+            }
+        },
+        {
+            "files": ["tests/**/*.js"],
+            "env": {
+                "jest": true,
+                "node": true
+            }
+        }
+    ]
+}

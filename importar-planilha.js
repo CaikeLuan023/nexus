@@ -81,7 +81,7 @@ async function importar() {
 
     // Verificar provedores já existentes
     const existentes = db.queryAll('SELECT nome FROM provedores');
-    const nomesExistentes = new Set(existentes.map(p => p.nome.toLowerCase().trim()));
+    const nomesExistentes = new Set(existentes.map((p) => p.nome.toLowerCase().trim()));
 
     let importados = 0;
     let duplicados = 0;
@@ -118,7 +118,9 @@ async function importar() {
             );
             nomesExistentes.add(nome.toLowerCase());
             importados++;
-            detalhes.push(`[OK] ${nome} | Resp: ${responsavel || '-'} | Plano: ${plano || '-'} | Modelo: ${modelo_integracao || '-'} | ERP: ${erp || '-'}`);
+            detalhes.push(
+                `[OK] ${nome} | Resp: ${responsavel || '-'} | Plano: ${plano || '-'} | Modelo: ${modelo_integracao || '-'} | ERP: ${erp || '-'}`
+            );
         } catch (err) {
             erros++;
             detalhes.push(`[ERRO] ${nome}: ${err.message}`);
@@ -137,13 +139,13 @@ async function importar() {
 
     if (detalhes.length > 0) {
         console.log('\nDetalhes:');
-        detalhes.forEach(d => console.log('  ' + d));
+        detalhes.forEach((d) => console.log('  ' + d));
     }
 
     console.log('\nImportação concluída!');
 }
 
-importar().catch(err => {
+importar().catch((err) => {
     console.error('Erro fatal:', err);
     process.exit(1);
 });

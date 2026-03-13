@@ -13,14 +13,14 @@ Sistema web para gestao de provedores de internet, chamados, treinamentos, proje
 5. [Banco de Dados](#banco-de-dados)
 6. [Autenticacao e Usuarios](#autenticacao-e-usuarios)
 7. [Modulos do Sistema](#modulos-do-sistema)
-   - [Dashboard](#dashboard)
-   - [Provedores](#provedores)
-   - [Chamados](#chamados)
-   - [Treinamentos](#treinamentos)
-   - [Projetos](#projetos)
-   - [Historico](#historico)
-   - [WhatsApp](#whatsapp)
-   - [Usuarios](#usuarios)
+    - [Dashboard](#dashboard)
+    - [Provedores](#provedores)
+    - [Chamados](#chamados)
+    - [Treinamentos](#treinamentos)
+    - [Projetos](#projetos)
+    - [Historico](#historico)
+    - [WhatsApp](#whatsapp)
+    - [Usuarios](#usuarios)
 8. [WhatsApp - Funcionalidades Detalhadas](#whatsapp---funcionalidades-detalhadas)
 9. [API - Rotas Completas](#api---rotas-completas)
 10. [Docker e WAHA](#docker-e-waha)
@@ -29,15 +29,15 @@ Sistema web para gestao de provedores de internet, chamados, treinamentos, proje
 
 ## Visao Geral
 
-| Item | Detalhe |
-|---|---|
-| **Nome** | Nexus |
-| **Tipo** | Aplicacao Web (SPA-like com server-side rendering) |
-| **Backend** | Node.js v24+ com Express.js |
-| **Banco** | SQLite via sql.js (arquivo `data.db`) |
-| **Frontend** | HTML5, Bootstrap 5.3, Chart.js, JavaScript puro |
-| **WhatsApp** | WAHA (WhatsApp HTTP API) via Docker |
-| **Porta** | 3000 (app) / 3001 (WAHA) |
+| Item         | Detalhe                                            |
+| ------------ | -------------------------------------------------- |
+| **Nome**     | Nexus                                              |
+| **Tipo**     | Aplicacao Web (SPA-like com server-side rendering) |
+| **Backend**  | Node.js v24+ com Express.js                        |
+| **Banco**    | SQLite via sql.js (arquivo `data.db`)              |
+| **Frontend** | HTML5, Bootstrap 5.3, Chart.js, JavaScript puro    |
+| **WhatsApp** | WAHA (WhatsApp HTTP API) via Docker                |
+| **Porta**    | 3000 (app) / 3001 (WAHA)                           |
 
 ### Funcionalidades Principais
 
@@ -62,15 +62,15 @@ Sistema web para gestao de provedores de internet, chamados, treinamentos, proje
 
 ### Dependencias npm
 
-| Pacote | Versao | Funcao |
-|---|---|---|
-| express | ^4.21.0 | Framework web |
-| sql.js | ^1.11.0 | SQLite em JavaScript puro |
-| bcryptjs | ^3.0.3 | Hash de senhas |
-| express-session | ^1.19.0 | Gerenciamento de sessoes |
-| dotenv | ^16.4.0 | Variaveis de ambiente |
-| multer | ^1.4.5 | Upload de arquivos |
-| xlsx | ^0.18.5 | Importacao de planilhas |
+| Pacote          | Versao  | Funcao                    |
+| --------------- | ------- | ------------------------- |
+| express         | ^4.21.0 | Framework web             |
+| sql.js          | ^1.11.0 | SQLite em JavaScript puro |
+| bcryptjs        | ^3.0.3  | Hash de senhas            |
+| express-session | ^1.19.0 | Gerenciamento de sessoes  |
+| dotenv          | ^16.4.0 | Variaveis de ambiente     |
+| multer          | ^1.4.5  | Upload de arquivos        |
+| xlsx            | ^0.18.5 | Importacao de planilhas   |
 
 ---
 
@@ -121,10 +121,10 @@ npm run dev
 
 ### 7. Login padrao
 
-| Campo | Valor |
-|---|---|
+| Campo   | Valor        |
+| ------- | ------------ |
 | Usuario | `caike.luan` |
-| Senha | `admin123` |
+| Senha   | `admin123`   |
 
 ---
 
@@ -178,130 +178,142 @@ O banco e um arquivo SQLite (`data.db`) gerenciado pelo **sql.js**. Todas as tab
 ### Tabelas
 
 #### `provedores`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
-| nome | TEXT UNIQUE | Nome fantasia do provedor |
-| contato | TEXT | Informacoes de contato |
-| observacoes | TEXT | Observacoes gerais |
-| plano | TEXT | Plano contratado |
-| adicionais | TEXT | Servicos adicionais |
-| modelo_integracao | TEXT | Modelo de integracao (IXC, SGP, etc.) |
-| erp | TEXT | Sistema ERP utilizado |
-| responsavel | TEXT | Analista responsavel |
-| logo_url | TEXT | URL da logo |
-| whatsapp | TEXT | Numero de WhatsApp |
-| criado_em | TEXT | Data de criacao |
+
+| Coluna            | Tipo        | Descricao                             |
+| ----------------- | ----------- | ------------------------------------- |
+| id                | INTEGER PK  | ID auto-incremento                    |
+| nome              | TEXT UNIQUE | Nome fantasia do provedor             |
+| contato           | TEXT        | Informacoes de contato                |
+| observacoes       | TEXT        | Observacoes gerais                    |
+| plano             | TEXT        | Plano contratado                      |
+| adicionais        | TEXT        | Servicos adicionais                   |
+| modelo_integracao | TEXT        | Modelo de integracao (IXC, SGP, etc.) |
+| erp               | TEXT        | Sistema ERP utilizado                 |
+| responsavel       | TEXT        | Analista responsavel                  |
+| logo_url          | TEXT        | URL da logo                           |
+| whatsapp          | TEXT        | Numero de WhatsApp                    |
+| criado_em         | TEXT        | Data de criacao                       |
 
 #### `chamados`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
-| provedor_id | INTEGER FK | Referencia ao provedor |
-| titulo | TEXT | Titulo do chamado |
-| descricao | TEXT | Descricao detalhada |
-| categoria | TEXT | usuario, app, integracao, canal, troca_senha, email_ativacao, outro |
-| status | TEXT | pendente, em_andamento, resolvido, fechado |
-| data_abertura | TEXT | Data de abertura |
-| data_resolucao | TEXT | Data de resolucao |
-| resolucao | TEXT | Descricao da resolucao |
-| criado_em | TEXT | Data de criacao |
+
+| Coluna         | Tipo       | Descricao                                                           |
+| -------------- | ---------- | ------------------------------------------------------------------- |
+| id             | INTEGER PK | ID auto-incremento                                                  |
+| provedor_id    | INTEGER FK | Referencia ao provedor                                              |
+| titulo         | TEXT       | Titulo do chamado                                                   |
+| descricao      | TEXT       | Descricao detalhada                                                 |
+| categoria      | TEXT       | usuario, app, integracao, canal, troca_senha, email_ativacao, outro |
+| status         | TEXT       | pendente, em_andamento, resolvido, fechado                          |
+| data_abertura  | TEXT       | Data de abertura                                                    |
+| data_resolucao | TEXT       | Data de resolucao                                                   |
+| resolucao      | TEXT       | Descricao da resolucao                                              |
+| criado_em      | TEXT       | Data de criacao                                                     |
 
 #### `anexos`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
-| chamado_id | INTEGER FK | Referencia ao chamado (CASCADE) |
-| nome_arquivo | TEXT | Nome original do arquivo |
-| caminho | TEXT | Caminho no servidor |
-| tipo_mime | TEXT | Tipo MIME |
-| tamanho | INTEGER | Tamanho em bytes |
+
+| Coluna       | Tipo       | Descricao                       |
+| ------------ | ---------- | ------------------------------- |
+| id           | INTEGER PK | ID auto-incremento              |
+| chamado_id   | INTEGER FK | Referencia ao chamado (CASCADE) |
+| nome_arquivo | TEXT       | Nome original do arquivo        |
+| caminho      | TEXT       | Caminho no servidor             |
+| tipo_mime    | TEXT       | Tipo MIME                       |
+| tamanho      | INTEGER    | Tamanho em bytes                |
 
 #### `treinamentos`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
-| provedor_id | INTEGER FK | Referencia ao provedor |
-| titulo | TEXT | Titulo do treinamento |
-| descricao | TEXT | Descricao |
-| data_treinamento | TEXT | Data agendada |
-| hora_treinamento | TEXT | Hora agendada |
-| status | TEXT | agendado, pendente, realizado |
-| criado_em | TEXT | Data de criacao |
+
+| Coluna           | Tipo       | Descricao                     |
+| ---------------- | ---------- | ----------------------------- |
+| id               | INTEGER PK | ID auto-incremento            |
+| provedor_id      | INTEGER FK | Referencia ao provedor        |
+| titulo           | TEXT       | Titulo do treinamento         |
+| descricao        | TEXT       | Descricao                     |
+| data_treinamento | TEXT       | Data agendada                 |
+| hora_treinamento | TEXT       | Hora agendada                 |
+| status           | TEXT       | agendado, pendente, realizado |
+| criado_em        | TEXT       | Data de criacao               |
 
 #### `projetos`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
-| titulo | TEXT | Titulo do projeto |
-| descricao | TEXT | Descricao |
-| provedor_id | INTEGER FK | Provedor vinculado (opcional) |
-| provedor_manual | TEXT | Nome manual do provedor |
-| status | TEXT | em_andamento, pausado, concluido, cancelado |
-| prioridade | TEXT | baixa, media, alta |
-| data_inicio | TEXT | Data de inicio |
-| data_previsao | TEXT | Data de previsao |
+
+| Coluna          | Tipo       | Descricao                                   |
+| --------------- | ---------- | ------------------------------------------- |
+| id              | INTEGER PK | ID auto-incremento                          |
+| titulo          | TEXT       | Titulo do projeto                           |
+| descricao       | TEXT       | Descricao                                   |
+| provedor_id     | INTEGER FK | Provedor vinculado (opcional)               |
+| provedor_manual | TEXT       | Nome manual do provedor                     |
+| status          | TEXT       | em_andamento, pausado, concluido, cancelado |
+| prioridade      | TEXT       | baixa, media, alta                          |
+| data_inicio     | TEXT       | Data de inicio                              |
+| data_previsao   | TEXT       | Data de previsao                            |
 
 #### `usuarios`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
-| nome | TEXT | Nome completo |
-| usuario | TEXT UNIQUE | Login |
-| senha | TEXT | Hash bcrypt da senha |
-| perfil | TEXT | admin ou analista |
-| ativo | INTEGER | 1 = ativo, 0 = inativo |
+
+| Coluna  | Tipo        | Descricao              |
+| ------- | ----------- | ---------------------- |
+| id      | INTEGER PK  | ID auto-incremento     |
+| nome    | TEXT        | Nome completo          |
+| usuario | TEXT UNIQUE | Login                  |
+| senha   | TEXT        | Hash bcrypt da senha   |
+| perfil  | TEXT        | admin ou analista      |
+| ativo   | INTEGER     | 1 = ativo, 0 = inativo |
 
 #### `whatsapp_templates`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
-| nome | TEXT | Nome do template |
-| texto | TEXT | Texto com variaveis ({provedor}, {titulo}, etc.) |
-| categoria | TEXT | geral, chamados, treinamentos, projetos |
+
+| Coluna    | Tipo       | Descricao                                        |
+| --------- | ---------- | ------------------------------------------------ |
+| id        | INTEGER PK | ID auto-incremento                               |
+| nome      | TEXT       | Nome do template                                 |
+| texto     | TEXT       | Texto com variaveis ({provedor}, {titulo}, etc.) |
+| categoria | TEXT       | geral, chamados, treinamentos, projetos          |
 
 #### `whatsapp_auto_respostas`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
-| palavra_chave | TEXT | Palavras-chave separadas por virgula |
-| resposta | TEXT | Texto da resposta automatica |
-| ativo | INTEGER | 1 = ativo, 0 = inativo |
+
+| Coluna        | Tipo       | Descricao                            |
+| ------------- | ---------- | ------------------------------------ |
+| id            | INTEGER PK | ID auto-incremento                   |
+| palavra_chave | TEXT       | Palavras-chave separadas por virgula |
+| resposta      | TEXT       | Texto da resposta automatica         |
+| ativo         | INTEGER    | 1 = ativo, 0 = inativo               |
 
 #### `whatsapp_notificacoes`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
-| tipo | TEXT | chamado_aberto, chamado_resolvido, treinamento_agendado, projeto_atualizado |
-| ativo | INTEGER | 1 = ativo, 0 = inativo |
-| chat_id | TEXT | Chat ID destino (ex: 5511999999999@c.us) |
-| mensagem_template | TEXT | Template da mensagem |
+
+| Coluna            | Tipo       | Descricao                                                                   |
+| ----------------- | ---------- | --------------------------------------------------------------------------- |
+| id                | INTEGER PK | ID auto-incremento                                                          |
+| tipo              | TEXT       | chamado_aberto, chamado_resolvido, treinamento_agendado, projeto_atualizado |
+| ativo             | INTEGER    | 1 = ativo, 0 = inativo                                                      |
+| chat_id           | TEXT       | Chat ID destino (ex: 5511999999999@c.us)                                    |
+| mensagem_template | TEXT       | Template da mensagem                                                        |
 
 #### `whatsapp_provedores`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
+
+| Coluna      | Tipo              | Descricao                        |
+| ----------- | ----------------- | -------------------------------- |
+| id          | INTEGER PK        | ID auto-incremento               |
 | provedor_id | INTEGER FK UNIQUE | Referencia ao provedor (CASCADE) |
-| chat_id | TEXT | Chat ID do WhatsApp vinculado |
+| chat_id     | TEXT              | Chat ID do WhatsApp vinculado    |
 
 #### `whatsapp_agendamentos`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
-| chat_id | TEXT | Chat ID destino |
-| chat_nome | TEXT | Nome do contato |
-| texto | TEXT | Mensagem a enviar |
-| data_envio | TEXT | Data/hora programada |
-| status | TEXT | pendente, enviado, erro |
+
+| Coluna     | Tipo       | Descricao               |
+| ---------- | ---------- | ----------------------- |
+| id         | INTEGER PK | ID auto-incremento      |
+| chat_id    | TEXT       | Chat ID destino         |
+| chat_nome  | TEXT       | Nome do contato         |
+| texto      | TEXT       | Mensagem a enviar       |
+| data_envio | TEXT       | Data/hora programada    |
+| status     | TEXT       | pendente, enviado, erro |
 
 #### `whatsapp_metricas`
-| Coluna | Tipo | Descricao |
-|---|---|---|
-| id | INTEGER PK | ID auto-incremento |
-| tipo | TEXT | enviada ou recebida |
-| chat_id | TEXT | Chat ID |
-| chat_nome | TEXT | Nome do contato |
-| timestamp | TEXT | Data/hora da mensagem |
+
+| Coluna    | Tipo       | Descricao             |
+| --------- | ---------- | --------------------- |
+| id        | INTEGER PK | ID auto-incremento    |
+| tipo      | TEXT       | enviada ou recebida   |
+| chat_id   | TEXT       | Chat ID               |
+| chat_nome | TEXT       | Nome do contato       |
+| timestamp | TEXT       | Data/hora da mensagem |
 
 ### Indices
 
@@ -334,10 +346,10 @@ O banco e um arquivo SQLite (`data.db`) gerenciado pelo **sql.js**. Todas as tab
 
 ### Perfis
 
-| Perfil | Acesso |
-|---|---|
-| **Admin** | Acesso total + gerenciamento de usuarios |
-| **Analista** | Acesso total exceto gerenciar usuarios |
+| Perfil       | Acesso                                   |
+| ------------ | ---------------------------------------- |
+| **Admin**    | Acesso total + gerenciamento de usuarios |
+| **Analista** | Acesso total exceto gerenciar usuarios   |
 
 ### Rotas Publicas (sem autenticacao)
 
@@ -449,7 +461,7 @@ Interface de conversas estilo WhatsApp:
 
 - **Lista de contatos** com busca, avatar (pessoa/grupo), preview da ultima mensagem, badge de nao-lidas
 - **Area de mensagens** com bolhas enviadas (verde) e recebidas (branco)
-- **Formatacao WhatsApp** renderizada: `*negrito*`, `_italico_`, `~riscado~`, `` ```mono``` ``
+- **Formatacao WhatsApp** renderizada: `*negrito*`, `_italico_`, `~riscado~`, ` ```mono``` `
 - **Responder mensagem** (reply) com preview
 - **Reagir com emoji** (👍 ❤️ 😂 😮 😢 🙏)
 - **Encaminhar mensagem** para outro contato
@@ -545,6 +557,7 @@ Dashboard de uso do WhatsApp:
 ### Infraestrutura Tecnica do WhatsApp
 
 #### WAHA (WhatsApp HTTP API)
+
 - Container Docker `devlikeapro/waha`
 - Engine: WEBJS
 - Porta: 3001
@@ -553,12 +566,14 @@ Dashboard de uso do WhatsApp:
 - Eventos: message, message.reaction, session.status, presence.update
 
 #### Cache de Chats
+
 - Cache server-side de **15 segundos** para a lista de conversas
 - Evita chamadas repetidas ao WAHA (~854KB de dados por request)
 - Timeout de 90 segundos para o primeiro carregamento
 - Ordenacao e limitacao feitas no servidor
 
 #### SSE (Server-Sent Events)
+
 - Conexao persistente `/api/whatsapp/events`
 - Recebe mensagens, reacoes, status de sessao, presenca em tempo real
 - Reconexao automatica em caso de erro (5s delay)
@@ -569,160 +584,160 @@ Dashboard de uso do WhatsApp:
 
 ### Autenticacao
 
-| Metodo | Rota | Descricao | Auth |
-|---|---|---|---|
-| GET | `/login` | Pagina de login | Publica |
-| POST | `/api/login` | Login (usuario + senha) | Publica |
-| POST | `/api/logout` | Logout | Publica |
-| GET | `/api/me` | Info do usuario logado | Auth |
+| Metodo | Rota          | Descricao               | Auth    |
+| ------ | ------------- | ----------------------- | ------- |
+| GET    | `/login`      | Pagina de login         | Publica |
+| POST   | `/api/login`  | Login (usuario + senha) | Publica |
+| POST   | `/api/logout` | Logout                  | Publica |
+| GET    | `/api/me`     | Info do usuario logado  | Auth    |
 
 ### Provedores
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/provedores` | Listar todos (com busca ?busca=) |
-| GET | `/api/provedores/:id` | Detalhes + contagem chamados/treinamentos |
-| POST | `/api/provedores` | Criar provedor |
-| PUT | `/api/provedores/:id` | Editar provedor |
-| DELETE | `/api/provedores/:id` | Excluir (se nao tem chamados) |
+| Metodo | Rota                  | Descricao                                 |
+| ------ | --------------------- | ----------------------------------------- |
+| GET    | `/api/provedores`     | Listar todos (com busca ?busca=)          |
+| GET    | `/api/provedores/:id` | Detalhes + contagem chamados/treinamentos |
+| POST   | `/api/provedores`     | Criar provedor                            |
+| PUT    | `/api/provedores/:id` | Editar provedor                           |
+| DELETE | `/api/provedores/:id` | Excluir (se nao tem chamados)             |
 
 ### Chamados
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/chamados` | Listar (filtros: status, provedor_id, categoria, data_inicio, data_fim) |
-| GET | `/api/chamados/:id` | Detalhes + anexos |
-| POST | `/api/chamados` | Criar chamado (dispara notificacao) |
-| PUT | `/api/chamados/:id` | Editar chamado |
-| DELETE | `/api/chamados/:id` | Excluir (remove anexos) |
+| Metodo | Rota                | Descricao                                                               |
+| ------ | ------------------- | ----------------------------------------------------------------------- |
+| GET    | `/api/chamados`     | Listar (filtros: status, provedor_id, categoria, data_inicio, data_fim) |
+| GET    | `/api/chamados/:id` | Detalhes + anexos                                                       |
+| POST   | `/api/chamados`     | Criar chamado (dispara notificacao)                                     |
+| PUT    | `/api/chamados/:id` | Editar chamado                                                          |
+| DELETE | `/api/chamados/:id` | Excluir (remove anexos)                                                 |
 
 ### Anexos
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| POST | `/api/chamados/:id/anexos` | Upload de ate 10 arquivos |
-| DELETE | `/api/anexos/:id` | Excluir anexo |
+| Metodo | Rota                       | Descricao                 |
+| ------ | -------------------------- | ------------------------- |
+| POST   | `/api/chamados/:id/anexos` | Upload de ate 10 arquivos |
+| DELETE | `/api/anexos/:id`          | Excluir anexo             |
 
 ### Treinamentos
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/treinamentos` | Listar (filtro: provedor_id) |
-| POST | `/api/treinamentos` | Criar (dispara notificacao) |
-| PUT | `/api/treinamentos/:id` | Editar |
-| PATCH | `/api/treinamentos/:id/status` | Atualizar status |
-| DELETE | `/api/treinamentos/:id` | Excluir |
+| Metodo | Rota                           | Descricao                    |
+| ------ | ------------------------------ | ---------------------------- |
+| GET    | `/api/treinamentos`            | Listar (filtro: provedor_id) |
+| POST   | `/api/treinamentos`            | Criar (dispara notificacao)  |
+| PUT    | `/api/treinamentos/:id`        | Editar                       |
+| PATCH  | `/api/treinamentos/:id/status` | Atualizar status             |
+| DELETE | `/api/treinamentos/:id`        | Excluir                      |
 
 ### Projetos
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/projetos` | Listar (filtro: status) |
-| POST | `/api/projetos` | Criar |
-| PUT | `/api/projetos/:id` | Editar (dispara notificacao) |
-| DELETE | `/api/projetos/:id` | Excluir |
+| Metodo | Rota                | Descricao                    |
+| ------ | ------------------- | ---------------------------- |
+| GET    | `/api/projetos`     | Listar (filtro: status)      |
+| POST   | `/api/projetos`     | Criar                        |
+| PUT    | `/api/projetos/:id` | Editar (dispara notificacao) |
+| DELETE | `/api/projetos/:id` | Excluir                      |
 
 ### Dashboard
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/dashboard/resumo` | Cards de resumo |
-| GET | `/api/dashboard/chamados-por-provedor` | Grafico: chamados por provedor |
-| GET | `/api/dashboard/chamados-por-categoria` | Grafico: chamados por categoria |
-| GET | `/api/dashboard/chamados-por-mes` | Grafico: chamados por mes |
-| GET | `/api/dashboard/chamados-recentes` | Ultimos 10 chamados |
-| GET | `/api/dashboard/chamados-abertos-por-provedor` | Chamados abertos agrupados |
-| GET | `/api/dashboard/provedores-por-responsavel` | Grafico: provedores por responsavel |
-| GET | `/api/dashboard/provedores-por-modelo` | Grafico: por modelo integracao |
-| GET | `/api/dashboard/provedores-por-erp` | Grafico: por ERP |
-| GET | `/api/dashboard/provedores-por-plano` | Grafico: por plano |
-| GET | `/api/dashboard/treinamentos-por-status` | Grafico: treinamentos por status |
-| GET | `/api/dashboard/treinamentos-por-mes` | Grafico: treinamentos por mes |
-| GET | `/api/dashboard/projetos-por-status` | Grafico: projetos por status |
-| GET | `/api/dashboard/projetos-por-prioridade` | Grafico: projetos por prioridade |
+| Metodo | Rota                                           | Descricao                           |
+| ------ | ---------------------------------------------- | ----------------------------------- |
+| GET    | `/api/dashboard/resumo`                        | Cards de resumo                     |
+| GET    | `/api/dashboard/chamados-por-provedor`         | Grafico: chamados por provedor      |
+| GET    | `/api/dashboard/chamados-por-categoria`        | Grafico: chamados por categoria     |
+| GET    | `/api/dashboard/chamados-por-mes`              | Grafico: chamados por mes           |
+| GET    | `/api/dashboard/chamados-recentes`             | Ultimos 10 chamados                 |
+| GET    | `/api/dashboard/chamados-abertos-por-provedor` | Chamados abertos agrupados          |
+| GET    | `/api/dashboard/provedores-por-responsavel`    | Grafico: provedores por responsavel |
+| GET    | `/api/dashboard/provedores-por-modelo`         | Grafico: por modelo integracao      |
+| GET    | `/api/dashboard/provedores-por-erp`            | Grafico: por ERP                    |
+| GET    | `/api/dashboard/provedores-por-plano`          | Grafico: por plano                  |
+| GET    | `/api/dashboard/treinamentos-por-status`       | Grafico: treinamentos por status    |
+| GET    | `/api/dashboard/treinamentos-por-mes`          | Grafico: treinamentos por mes       |
+| GET    | `/api/dashboard/projetos-por-status`           | Grafico: projetos por status        |
+| GET    | `/api/dashboard/projetos-por-prioridade`       | Grafico: projetos por prioridade    |
 
 ### Historico
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/historico/:provedor_id` | Timeline completa do provedor |
+| Metodo | Rota                          | Descricao                     |
+| ------ | ----------------------------- | ----------------------------- |
+| GET    | `/api/historico/:provedor_id` | Timeline completa do provedor |
 
 ### Usuarios (Admin only)
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/usuarios` | Listar todos |
-| POST | `/api/usuarios` | Criar usuario |
-| PUT | `/api/usuarios/:id` | Editar usuario |
-| PATCH | `/api/usuarios/:id/ativo` | Ativar/desativar |
+| Metodo | Rota                      | Descricao        |
+| ------ | ------------------------- | ---------------- |
+| GET    | `/api/usuarios`           | Listar todos     |
+| POST   | `/api/usuarios`           | Criar usuario    |
+| PUT    | `/api/usuarios/:id`       | Editar usuario   |
+| PATCH  | `/api/usuarios/:id/ativo` | Ativar/desativar |
 
 ### WhatsApp - Sessao e Status
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/whatsapp/events` | SSE: eventos em tempo real |
-| GET | `/api/whatsapp/status` | Status da sessao WAHA |
-| GET | `/api/whatsapp/qr` | QR Code para parear |
-| POST | `/api/whatsapp/start` | Iniciar sessao |
-| POST | `/api/whatsapp/stop` | Parar sessao |
-| POST | `/api/whatsapp/webhook` | Webhook do WAHA (publica) |
+| Metodo | Rota                    | Descricao                  |
+| ------ | ----------------------- | -------------------------- |
+| GET    | `/api/whatsapp/events`  | SSE: eventos em tempo real |
+| GET    | `/api/whatsapp/status`  | Status da sessao WAHA      |
+| GET    | `/api/whatsapp/qr`      | QR Code para parear        |
+| POST   | `/api/whatsapp/start`   | Iniciar sessao             |
+| POST   | `/api/whatsapp/stop`    | Parar sessao               |
+| POST   | `/api/whatsapp/webhook` | Webhook do WAHA (publica)  |
 
 ### WhatsApp - Chat e Mensagens
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/whatsapp/chats` | Listar conversas (?limit=) |
-| GET | `/api/whatsapp/messages/:chatId` | Mensagens de um chat (?limit=) |
-| GET | `/api/whatsapp/messages-page/:chatId` | Mensagens paginadas (?limit=&offset=) |
-| POST | `/api/whatsapp/send` | Enviar mensagem de texto (com reply) |
-| POST | `/api/whatsapp/send-file` | Enviar arquivo (multipart) |
-| GET | `/api/whatsapp/media/:messageId` | Download de midia |
-| POST | `/api/whatsapp/react` | Reagir a mensagem |
-| POST | `/api/whatsapp/seen` | Marcar chat como lido |
-| POST | `/api/whatsapp/typing` | Enviar indicador de digitando |
-| POST | `/api/whatsapp/forward` | Encaminhar mensagem |
-| POST | `/api/whatsapp/send-mass` | Envio em massa |
-| GET | `/api/whatsapp/unread-count` | Total de nao-lidas |
+| Metodo | Rota                                  | Descricao                             |
+| ------ | ------------------------------------- | ------------------------------------- |
+| GET    | `/api/whatsapp/chats`                 | Listar conversas (?limit=)            |
+| GET    | `/api/whatsapp/messages/:chatId`      | Mensagens de um chat (?limit=)        |
+| GET    | `/api/whatsapp/messages-page/:chatId` | Mensagens paginadas (?limit=&offset=) |
+| POST   | `/api/whatsapp/send`                  | Enviar mensagem de texto (com reply)  |
+| POST   | `/api/whatsapp/send-file`             | Enviar arquivo (multipart)            |
+| GET    | `/api/whatsapp/media/:messageId`      | Download de midia                     |
+| POST   | `/api/whatsapp/react`                 | Reagir a mensagem                     |
+| POST   | `/api/whatsapp/seen`                  | Marcar chat como lido                 |
+| POST   | `/api/whatsapp/typing`                | Enviar indicador de digitando         |
+| POST   | `/api/whatsapp/forward`               | Encaminhar mensagem                   |
+| POST   | `/api/whatsapp/send-mass`             | Envio em massa                        |
+| GET    | `/api/whatsapp/unread-count`          | Total de nao-lidas                    |
 
 ### WhatsApp - Busca e Exportacao
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/whatsapp/search` | Busca de mensagens (?q=&chatId=) |
-| GET | `/api/whatsapp/export/:chatId` | Exportar conversa (?format=txt ou csv) |
+| Metodo | Rota                           | Descricao                              |
+| ------ | ------------------------------ | -------------------------------------- |
+| GET    | `/api/whatsapp/search`         | Busca de mensagens (?q=&chatId=)       |
+| GET    | `/api/whatsapp/export/:chatId` | Exportar conversa (?format=txt ou csv) |
 
 ### WhatsApp - Templates e Bot
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/whatsapp/templates` | Listar templates |
-| POST | `/api/whatsapp/templates` | Criar template |
-| PUT | `/api/whatsapp/templates/:id` | Editar template |
-| DELETE | `/api/whatsapp/templates/:id` | Excluir template |
-| GET | `/api/whatsapp/auto-respostas` | Listar regras do bot |
-| POST | `/api/whatsapp/auto-respostas` | Criar regra |
-| PUT | `/api/whatsapp/auto-respostas/:id` | Editar regra |
-| DELETE | `/api/whatsapp/auto-respostas/:id` | Excluir regra |
+| Metodo | Rota                               | Descricao            |
+| ------ | ---------------------------------- | -------------------- |
+| GET    | `/api/whatsapp/templates`          | Listar templates     |
+| POST   | `/api/whatsapp/templates`          | Criar template       |
+| PUT    | `/api/whatsapp/templates/:id`      | Editar template      |
+| DELETE | `/api/whatsapp/templates/:id`      | Excluir template     |
+| GET    | `/api/whatsapp/auto-respostas`     | Listar regras do bot |
+| POST   | `/api/whatsapp/auto-respostas`     | Criar regra          |
+| PUT    | `/api/whatsapp/auto-respostas/:id` | Editar regra         |
+| DELETE | `/api/whatsapp/auto-respostas/:id` | Excluir regra        |
 
 ### WhatsApp - Notificacoes e Agendamentos
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/whatsapp/notificacoes` | Listar configuracoes |
-| PUT | `/api/whatsapp/notificacoes/:id` | Atualizar notificacao |
-| GET | `/api/whatsapp/agendamentos` | Listar agendamentos |
-| POST | `/api/whatsapp/agendamentos` | Criar agendamento |
-| DELETE | `/api/whatsapp/agendamentos/:id` | Cancelar agendamento |
+| Metodo | Rota                             | Descricao             |
+| ------ | -------------------------------- | --------------------- |
+| GET    | `/api/whatsapp/notificacoes`     | Listar configuracoes  |
+| PUT    | `/api/whatsapp/notificacoes/:id` | Atualizar notificacao |
+| GET    | `/api/whatsapp/agendamentos`     | Listar agendamentos   |
+| POST   | `/api/whatsapp/agendamentos`     | Criar agendamento     |
+| DELETE | `/api/whatsapp/agendamentos/:id` | Cancelar agendamento  |
 
 ### WhatsApp - Vinculos e Metricas
 
-| Metodo | Rota | Descricao |
-|---|---|---|
-| GET | `/api/whatsapp/provedores-vinculados` | Listar vinculos |
-| POST | `/api/whatsapp/vincular-provedor` | Criar/atualizar vinculo |
-| DELETE | `/api/whatsapp/desvincular-provedor/:id` | Remover vinculo |
-| GET | `/api/whatsapp/provedor-por-chat/:chatId` | Buscar provedor por chat |
-| GET | `/api/whatsapp/metricas` | Dashboard de metricas |
+| Metodo | Rota                                      | Descricao                |
+| ------ | ----------------------------------------- | ------------------------ |
+| GET    | `/api/whatsapp/provedores-vinculados`     | Listar vinculos          |
+| POST   | `/api/whatsapp/vincular-provedor`         | Criar/atualizar vinculo  |
+| DELETE | `/api/whatsapp/desvincular-provedor/:id`  | Remover vinculo          |
+| GET    | `/api/whatsapp/provedor-por-chat/:chatId` | Buscar provedor por chat |
+| GET    | `/api/whatsapp/metricas`                  | Dashboard de metricas    |
 
 ---
 
@@ -732,21 +747,21 @@ Dashboard de uso do WhatsApp:
 
 ```yaml
 services:
-  waha:
-    image: devlikeapro/waha
-    container_name: waha
-    restart: unless-stopped
-    ports:
-      - "3001:3001"
-    environment:
-      - WHATSAPP_DEFAULT_ENGINE=WEBJS
-      - WAHA_DASHBOARD_ENABLED=true
-      - WHATSAPP_API_PORT=3001
-      - WHATSAPP_API_KEY=gestao-trabalho-waha-key
-      - WHATSAPP_HOOK_URL=http://host.docker.internal:3000/api/whatsapp/webhook
-      - WHATSAPP_HOOK_EVENTS=message,message.reaction,session.status,presence.update
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    waha:
+        image: devlikeapro/waha
+        container_name: waha
+        restart: unless-stopped
+        ports:
+            - '3001:3001'
+        environment:
+            - WHATSAPP_DEFAULT_ENGINE=WEBJS
+            - WAHA_DASHBOARD_ENABLED=true
+            - WHATSAPP_API_PORT=3001
+            - WHATSAPP_API_KEY=gestao-trabalho-waha-key
+            - WHATSAPP_HOOK_URL=http://host.docker.internal:3000/api/whatsapp/webhook
+            - WHATSAPP_HOOK_EVENTS=message,message.reaction,session.status,presence.update
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
 ```
 
 ### Comandos uteis
@@ -818,5 +833,5 @@ Arquivo `public/js/app.js` com utilitarios usados em todas as paginas:
 
 ---
 
-*Documentacao gerada em Março 2026*
-*Sistema desenvolvido para Caike Luan - Nexus*
+_Documentacao gerada em Março 2026_
+_Sistema desenvolvido para Caike Luan - Nexus_

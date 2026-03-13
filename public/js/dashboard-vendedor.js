@@ -58,8 +58,10 @@ async function carregarDashboard() {
 
         // Periodo label
         const hoje = new Date();
-        document.getElementById('dashPeriodo').textContent =
-            hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        document.getElementById('dashPeriodo').textContent = hoje.toLocaleDateString('pt-BR', {
+            month: 'long',
+            year: 'numeric'
+        });
     } catch (err) {
         console.error('Erro ao carregar dashboard:', err);
         mostrarToast('Erro ao carregar dashboard: ' + err.message, 'error');
@@ -93,7 +95,7 @@ function renderPipelineChart(dados) {
     };
 
     for (const [key, config] of Object.entries(estagioConfig)) {
-        const item = dados.find(d => d.estagio === key);
+        const item = dados.find((d) => d.estagio === key);
         labels.push(config.label);
         values.push(item ? item.total : 0);
         colors.push(config.cor);
@@ -105,12 +107,15 @@ function renderPipelineChart(dados) {
         type: 'doughnut',
         data: {
             labels: labels,
-            datasets: [{
-                data: values,
-                backgroundColor: colors,
-                borderWidth: 2,
-                borderColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#fff'
-            }]
+            datasets: [
+                {
+                    data: values,
+                    backgroundColor: colors,
+                    borderWidth: 2,
+                    borderColor:
+                        getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#fff'
+                }
+            ]
         },
         options: {
             responsive: true,
@@ -119,7 +124,9 @@ function renderPipelineChart(dados) {
                 legend: {
                     position: 'right',
                     labels: {
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() || '#333',
+                        color:
+                            getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() ||
+                            '#333',
                         padding: 12,
                         usePointStyle: true,
                         pointStyleWidth: 12
@@ -134,11 +141,11 @@ function renderAtivacoesMesChart(dados) {
     const ctx = document.getElementById('chartAtivacoesMes');
     if (!ctx) return;
 
-    const labels = dados.map(d => {
+    const labels = dados.map((d) => {
         const [ano, mes] = d.mes.split('-');
         return new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
     });
-    const values = dados.map(d => d.total);
+    const values = dados.map((d) => d.total);
 
     if (chartAtivacoes) chartAtivacoes.destroy();
 
@@ -146,18 +153,20 @@ function renderAtivacoesMesChart(dados) {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Ativações',
-                data: values,
-                borderColor: '#198754',
-                backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: 5,
-                pointBackgroundColor: '#198754',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2
-            }]
+            datasets: [
+                {
+                    label: 'Ativações',
+                    data: values,
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#198754',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }
+            ]
         },
         options: {
             responsive: true,
@@ -167,15 +176,21 @@ function renderAtivacoesMesChart(dados) {
                     beginAtZero: true,
                     ticks: {
                         stepSize: 1,
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#666'
+                        color:
+                            getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() ||
+                            '#666'
                     },
                     grid: {
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim() || '#e9ecef'
+                        color:
+                            getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim() ||
+                            '#e9ecef'
                     }
                 },
                 x: {
                     ticks: {
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#666'
+                        color:
+                            getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() ||
+                            '#666'
                     },
                     grid: { display: false }
                 }
@@ -205,14 +220,15 @@ function renderMetas(metas) {
         valor_contratos: 'Valor Contratos'
     };
 
-    container.innerHTML = metas.map(m => {
-        const pct = Math.min(m.percentual_atingido || 0, 100);
-        const corBarra = pct >= 100 ? 'bg-success' : pct >= 50 ? 'bg-primary' : 'bg-warning';
-        const isValor = m.tipo_meta === 'valor_contratos';
-        const alvo = isValor ? formatarMoeda(m.valor_alvo) : m.valor_alvo;
-        const atingido = isValor ? formatarMoeda(m.valor_atingido || 0) : (m.valor_atingido || 0);
+    container.innerHTML = metas
+        .map((m) => {
+            const pct = Math.min(m.percentual_atingido || 0, 100);
+            const corBarra = pct >= 100 ? 'bg-success' : pct >= 50 ? 'bg-primary' : 'bg-warning';
+            const isValor = m.tipo_meta === 'valor_contratos';
+            const alvo = isValor ? formatarMoeda(m.valor_alvo) : m.valor_alvo;
+            const atingido = isValor ? formatarMoeda(m.valor_atingido || 0) : m.valor_atingido || 0;
 
-        return `
+            return `
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <strong>${TIPO_META_LABELS[m.tipo_meta] || m.tipo_meta}</strong>
@@ -224,7 +240,8 @@ function renderMetas(metas) {
                 ${m.comissao_calculada ? `<small class="text-muted">Comissão estimada: ${formatarMoeda(m.comissao_calculada)}</small>` : ''}
             </div>
         `;
-    }).join('');
+        })
+        .join('');
 }
 
 function renderProximasTarefas(tarefas) {
@@ -246,12 +263,13 @@ function renderProximasTarefas(tarefas) {
 
     container.innerHTML = `
         <div class="list-group list-group-flush">
-            ${tarefas.map(t => {
-                const tipo = TIPO_LABELS[t.tipo] || { cor: 'secondary', icon: 'bi-circle' };
-                const dataHora = t.data_hora ? new Date(t.data_hora.replace(' ', 'T')) : null;
-                const atrasada = dataHora && dataHora < agora;
+            ${tarefas
+                .map((t) => {
+                    const tipo = TIPO_LABELS[t.tipo] || { cor: 'secondary', icon: 'bi-circle' };
+                    const dataHora = t.data_hora ? new Date(t.data_hora.replace(' ', 'T')) : null;
+                    const atrasada = dataHora && dataHora < agora;
 
-                return `
+                    return `
                     <div class="list-group-item d-flex align-items-center gap-3 px-0 ${atrasada ? 'border-start border-danger border-3' : ''}">
                         <span class="badge bg-${tipo.cor}"><i class="bi ${tipo.icon}"></i></span>
                         <div class="flex-grow-1">
@@ -262,7 +280,8 @@ function renderProximasTarefas(tarefas) {
                         </div>
                     </div>
                 `;
-            }).join('')}
+                })
+                .join('')}
         </div>
     `;
 }
@@ -287,21 +306,28 @@ async function carregarRanking() {
             container.innerHTML = '<div class="text-center text-muted py-3">Sem dados</div>';
             return;
         }
-        container.innerHTML = vendedores.map((v, i) => {
-            let badge = '';
-            if (v.percentual_meta >= 100) badge = '<span class="badge bg-warning text-dark">Ouro</span>';
-            else if (v.percentual_meta >= 70) badge = '<span class="badge bg-secondary">Prata</span>';
-            else if (v.percentual_meta >= 50) badge = '<span class="badge" style="background:#cd7f32;color:#fff">Bronze</span>';
+        container.innerHTML = vendedores
+            .map((v, i) => {
+                let badge = '';
+                if (v.percentual_meta >= 100) badge = '<span class="badge bg-warning text-dark">Ouro</span>';
+                else if (v.percentual_meta >= 70) badge = '<span class="badge bg-secondary">Prata</span>';
+                else if (v.percentual_meta >= 50)
+                    badge = '<span class="badge" style="background:#cd7f32;color:#fff">Bronze</span>';
 
-            const medal = i === 0 ? '<i class="bi bi-trophy-fill text-warning fs-5"></i>' :
-                          i === 1 ? '<i class="bi bi-trophy-fill text-secondary fs-5"></i>' :
-                          i === 2 ? '<i class="bi bi-trophy-fill fs-5" style="color:#cd7f32"></i>' :
-                          `<span class="badge bg-light text-dark">${i + 1}</span>`;
+                const medal =
+                    i === 0
+                        ? '<i class="bi bi-trophy-fill text-warning fs-5"></i>'
+                        : i === 1
+                          ? '<i class="bi bi-trophy-fill text-secondary fs-5"></i>'
+                          : i === 2
+                            ? '<i class="bi bi-trophy-fill fs-5" style="color:#cd7f32"></i>'
+                            : `<span class="badge bg-light text-dark">${i + 1}</span>`;
 
-            const foto = v.foto_url ? `<img src="${v.foto_url}" class="rounded-circle" width="32" height="32" style="object-fit:cover">` :
-                `<div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width:32px;height:32px;font-size:.75rem;font-weight:700">${(v.nome || '?')[0].toUpperCase()}</div>`;
+                const foto = v.foto_url
+                    ? `<img src="${v.foto_url}" class="rounded-circle" width="32" height="32" style="object-fit:cover">`
+                    : `<div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width:32px;height:32px;font-size:.75rem;font-weight:700">${(v.nome || '?')[0].toUpperCase()}</div>`;
 
-            return `
+                return `
                 <div class="d-flex align-items-center gap-2 mb-2 p-2 rounded ranking-item" style="background:var(--bg-body,#f8f9fa)">
                     <div style="width:30px;text-align:center">${medal}</div>
                     ${foto}
@@ -312,7 +338,8 @@ async function carregarRanking() {
                     <span class="fw-bold text-success">${formatarMoeda(v.valor_pipeline || 0)}</span>
                 </div>
             `;
-        }).join('');
+            })
+            .join('');
     } catch (err) {
         console.error('Erro ranking:', err);
     }
@@ -325,7 +352,7 @@ function renderProdutividade(data) {
     if (!container) return;
     const stats = data.stats || {};
     const tarefas = data.proximas_tarefas || [];
-    const tarefasHoje = tarefas.filter(t => {
+    const tarefasHoje = tarefas.filter((t) => {
         if (!t.data_hora) return false;
         const d = new Date(t.data_hora.replace(' ', 'T'));
         const hoje = new Date();
@@ -354,13 +381,21 @@ function renderProdutividade(data) {
             </div>
         </div>
         <h6 class="mb-2"><i class="bi bi-list-check me-1"></i>Tarefas de Hoje (${tarefasHoje.length})</h6>
-        ${tarefasHoje.length ? tarefasHoje.map(t => `
+        ${
+            tarefasHoje.length
+                ? tarefasHoje
+                      .map(
+                          (t) => `
             <div class="d-flex align-items-center gap-2 mb-1">
                 <i class="bi bi-circle text-muted" style="font-size:.5rem"></i>
                 <small>${escapeHtml(t.titulo)}</small>
                 <small class="text-muted ms-auto">${t.data_hora ? formatarDataHora(t.data_hora).split(' ')[1] : ''}</small>
             </div>
-        `).join('') : '<small class="text-muted">Nenhuma tarefa para hoje</small>'}
+        `
+                      )
+                      .join('')
+                : '<small class="text-muted">Nenhuma tarefa para hoje</small>'
+        }
     `;
 }
 
@@ -368,7 +403,10 @@ function renderProdutividade(data) {
 
 function renderPerformance(perf, stats) {
     const container = document.getElementById('dashPerformanceContainer');
-    if (!container || !perf) { if (container) container.innerHTML = '<div class="text-center text-muted py-3">Sem dados</div>'; return; }
+    if (!container || !perf) {
+        if (container) container.innerHTML = '<div class="text-center text-muted py-3">Sem dados</div>';
+        return;
+    }
 
     const ativacoes = stats.ativacoes_mes || 0;
     const mediaAtiv = perf.media_equipe_ativacoes || 0;
@@ -410,7 +448,10 @@ function renderNegociosParados(parados) {
     const row = document.getElementById('rowNegociosParados');
     const container = document.getElementById('dashNegociosParadosContainer');
     if (!row || !container) return;
-    if (!parados || !parados.length) { row.style.display = 'none'; return; }
+    if (!parados || !parados.length) {
+        row.style.display = 'none';
+        return;
+    }
     row.style.display = '';
 
     container.innerHTML = `
@@ -418,10 +459,12 @@ function renderNegociosParados(parados) {
             <table class="table table-sm mb-0">
                 <thead><tr><th>Negocio</th><th>Estagio</th><th>Dias Parado</th><th>Valor</th><th>Acao</th></tr></thead>
                 <tbody>
-                    ${parados.map(n => {
-                        const nome = escapeHtml(n.provedor_nome_lead || n.provedor_nome || 'Lead #' + n.id);
-                        const diasCor = n.dias_parado > 14 ? 'text-danger' : n.dias_parado > 7 ? 'text-warning' : '';
-                        return `
+                    ${parados
+                        .map((n) => {
+                            const nome = escapeHtml(n.provedor_nome_lead || n.provedor_nome || 'Lead #' + n.id);
+                            const diasCor =
+                                n.dias_parado > 14 ? 'text-danger' : n.dias_parado > 7 ? 'text-warning' : '';
+                            return `
                             <tr>
                                 <td><strong>${nome}</strong></td>
                                 <td><span class="badge bg-secondary">${n.estagio}</span></td>
@@ -430,7 +473,8 @@ function renderNegociosParados(parados) {
                                 <td><a href="/vendas" class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-right"></i></a></td>
                             </tr>
                         `;
-                    }).join('')}
+                        })
+                        .join('')}
                 </tbody>
             </table>
         </div>
@@ -451,12 +495,12 @@ async function carregarComissoesHistorico() {
 
         // Agrupar por periodo
         const porPeriodo = {};
-        comissoes.forEach(c => {
+        comissoes.forEach((c) => {
             const p = c.periodo || 'Sem periodo';
             if (!porPeriodo[p]) porPeriodo[p] = { total: 0, itens: 0, paga: 0 };
-            porPeriodo[p].total += (c.valor_comissao || 0);
+            porPeriodo[p].total += c.valor_comissao || 0;
             porPeriodo[p].itens++;
-            if (c.status === 'paga') porPeriodo[p].paga += (c.valor_comissao || 0);
+            if (c.status === 'paga') porPeriodo[p].paga += c.valor_comissao || 0;
         });
 
         const totalGeral = comissoes.reduce((s, c) => s + (c.valor_comissao || 0), 0);
@@ -466,14 +510,20 @@ async function carregarComissoesHistorico() {
                 <table class="table table-sm mb-2">
                     <thead><tr><th>Periodo</th><th>Qtd</th><th>Valor</th><th>Status</th></tr></thead>
                     <tbody>
-                        ${Object.entries(porPeriodo).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 6).map(([p, d]) => `
+                        ${Object.entries(porPeriodo)
+                            .sort((a, b) => b[0].localeCompare(a[0]))
+                            .slice(0, 6)
+                            .map(
+                                ([p, d]) => `
                             <tr>
                                 <td>${p}</td>
                                 <td>${d.itens}</td>
                                 <td>${formatarMoeda(d.total)}</td>
                                 <td>${d.paga >= d.total ? '<span class="badge bg-success">Paga</span>' : '<span class="badge bg-warning text-dark">Pendente</span>'}</td>
                             </tr>
-                        `).join('')}
+                        `
+                            )
+                            .join('')}
                     </tbody>
                 </table>
             </div>

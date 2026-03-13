@@ -1,7 +1,6 @@
 const DashboardUtils = require('../public/js/dashboard-utils');
 
 describe('DashboardUtils', () => {
-
     // ===== Atribuicao de cores =====
     describe('getColor', () => {
         test('retorna primeira cor para indice 0', () => {
@@ -101,11 +100,23 @@ describe('DashboardUtils', () => {
     // ===== Preparacao de dados de graficos =====
     describe('prepareDoughnutData', () => {
         test('retorna null para array vazio', () => {
-            expect(DashboardUtils.prepareDoughnutData([], r => r.nome, r => r.total)).toBeNull();
+            expect(
+                DashboardUtils.prepareDoughnutData(
+                    [],
+                    (r) => r.nome,
+                    (r) => r.total
+                )
+            ).toBeNull();
         });
 
         test('retorna null para null', () => {
-            expect(DashboardUtils.prepareDoughnutData(null, r => r.nome, r => r.total)).toBeNull();
+            expect(
+                DashboardUtils.prepareDoughnutData(
+                    null,
+                    (r) => r.nome,
+                    (r) => r.total
+                )
+            ).toBeNull();
         });
 
         test('estrutura dados validos corretamente', () => {
@@ -114,7 +125,11 @@ describe('DashboardUtils', () => {
                 { nome: 'Provedor B', total: 20 },
                 { nome: 'Provedor C', total: 5 }
             ];
-            const result = DashboardUtils.prepareDoughnutData(data, r => r.nome, r => r.total);
+            const result = DashboardUtils.prepareDoughnutData(
+                data,
+                (r) => r.nome,
+                (r) => r.total
+            );
             expect(result.labels).toEqual(['Provedor A', 'Provedor B', 'Provedor C']);
             expect(result.values).toEqual([10, 20, 5]);
             expect(result.colors).toHaveLength(3);
@@ -125,7 +140,13 @@ describe('DashboardUtils', () => {
 
     describe('prepareBarData', () => {
         test('retorna null para array vazio', () => {
-            expect(DashboardUtils.prepareBarData([], r => r.erp, r => r.total)).toBeNull();
+            expect(
+                DashboardUtils.prepareBarData(
+                    [],
+                    (r) => r.erp,
+                    (r) => r.total
+                )
+            ).toBeNull();
         });
 
         test('mapeia labels e valores corretamente', () => {
@@ -135,8 +156,8 @@ describe('DashboardUtils', () => {
             ];
             const result = DashboardUtils.prepareBarData(
                 data,
-                r => DashboardUtils.mapLabel(DashboardUtils.LABELS_ERP, r.erp),
-                r => r.total
+                (r) => DashboardUtils.mapLabel(DashboardUtils.LABELS_ERP, r.erp),
+                (r) => r.total
             );
             expect(result.labels).toEqual(['IXC', 'Hubsoft']);
             expect(result.values).toEqual([15, 8]);
@@ -150,7 +171,7 @@ describe('DashboardUtils', () => {
             const result = DashboardUtils.prepareTendenciaData([]);
             expect(result.labels).toEqual([]);
             expect(result.datasets).toHaveLength(4);
-            result.datasets.forEach(ds => {
+            result.datasets.forEach((ds) => {
                 expect(ds.data).toEqual([]);
             });
         });
@@ -166,16 +187,16 @@ describe('DashboardUtils', () => {
             const result = DashboardUtils.prepareTendenciaData(dados);
             expect(result.labels).toEqual(['2024-01', '2024-02']);
 
-            const pendente = result.datasets.find(d => d.label === 'pendente');
+            const pendente = result.datasets.find((d) => d.label === 'pendente');
             expect(pendente.data).toEqual([5, 2]);
 
-            const emAndamento = result.datasets.find(d => d.label === 'em andamento');
+            const emAndamento = result.datasets.find((d) => d.label === 'em andamento');
             expect(emAndamento.data).toEqual([0, 7]);
 
-            const resolvido = result.datasets.find(d => d.label === 'resolvido');
+            const resolvido = result.datasets.find((d) => d.label === 'resolvido');
             expect(resolvido.data).toEqual([3, 4]);
 
-            const fechado = result.datasets.find(d => d.label === 'fechado');
+            const fechado = result.datasets.find((d) => d.label === 'fechado');
             expect(fechado.data).toEqual([0, 0]);
         });
 
@@ -190,19 +211,15 @@ describe('DashboardUtils', () => {
         });
 
         test('usa 0 como default para status ausente em um mes', () => {
-            const dados = [
-                { mes: '2024-01', status: 'pendente', total: 10 }
-            ];
+            const dados = [{ mes: '2024-01', status: 'pendente', total: 10 }];
             const result = DashboardUtils.prepareTendenciaData(dados);
-            const emAndamento = result.datasets.find(d => d.label === 'em andamento');
+            const emAndamento = result.datasets.find((d) => d.label === 'em andamento');
             expect(emAndamento.data).toEqual([0]);
         });
 
         test('atribui cores corretas aos datasets', () => {
-            const result = DashboardUtils.prepareTendenciaData([
-                { mes: '2024-01', status: 'pendente', total: 1 }
-            ]);
-            const pendente = result.datasets.find(d => d.label === 'pendente');
+            const result = DashboardUtils.prepareTendenciaData([{ mes: '2024-01', status: 'pendente', total: 1 }]);
+            const pendente = result.datasets.find((d) => d.label === 'pendente');
             expect(pendente.borderColor).toBe('#ffc107');
             expect(pendente.backgroundColor).toBe('#ffc10733');
         });
@@ -219,11 +236,11 @@ describe('DashboardUtils', () => {
             const result = DashboardUtils.groupAbertosProvedor(dados);
             expect(result).toHaveLength(2);
 
-            const alpha = result.find(r => r.nome === 'ISP Alpha');
+            const alpha = result.find((r) => r.nome === 'ISP Alpha');
             expect(alpha.total).toBe(5);
             expect(alpha.categorias).toHaveLength(2);
 
-            const beta = result.find(r => r.nome === 'ISP Beta');
+            const beta = result.find((r) => r.nome === 'ISP Beta');
             expect(beta.total).toBe(5);
             expect(beta.categorias).toHaveLength(1);
         });
@@ -248,13 +265,13 @@ describe('DashboardUtils', () => {
         });
 
         test('todas as cores sao strings hex validas', () => {
-            DashboardUtils.CORES.forEach(cor => {
+            DashboardUtils.CORES.forEach((cor) => {
                 expect(cor).toMatch(/^#[0-9a-f]{6}$/i);
             });
         });
 
         test('CORES_CATEGORIA cobre todas as categorias com labelCategoria', () => {
-            Object.keys(DashboardUtils.CORES_CATEGORIA).forEach(key => {
+            Object.keys(DashboardUtils.CORES_CATEGORIA).forEach((key) => {
                 const label = DashboardUtils.labelCategoria(key);
                 expect(label).not.toBe(key);
             });
@@ -273,8 +290,19 @@ describe('DashboardUtils', () => {
         });
 
         test('LABELS_ERP cobre todos os ERPs suportados', () => {
-            const expectedErps = ['ixc', 'hubsoft', 'sgp', 'atlaz', 'ispfy', 'mycore', 'mk_auth', 'radius_net', 'voalle', 'proprio'];
-            expectedErps.forEach(erp => {
+            const expectedErps = [
+                'ixc',
+                'hubsoft',
+                'sgp',
+                'atlaz',
+                'ispfy',
+                'mycore',
+                'mk_auth',
+                'radius_net',
+                'voalle',
+                'proprio'
+            ];
+            expectedErps.forEach((erp) => {
                 expect(DashboardUtils.LABELS_ERP).toHaveProperty(erp);
             });
         });

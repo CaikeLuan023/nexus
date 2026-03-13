@@ -52,7 +52,10 @@ async function gerarRelatorioChamados(params) {
         if (d.chamados.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-3">Nenhum registro</td></tr>';
         } else {
-            tbody.innerHTML = d.chamados.slice(0, 100).map(c => `
+            tbody.innerHTML = d.chamados
+                .slice(0, 100)
+                .map(
+                    (c) => `
                 <tr>
                     <td>${c.id}</td>
                     <td>${c.provedor_nome}</td>
@@ -63,22 +66,41 @@ async function gerarRelatorioChamados(params) {
                     <td><small>${c.data_abertura || '-'}</small></td>
                     <td><small>${c.data_resolucao || '-'}</small></td>
                 </tr>
-            `).join('');
+            `
+                )
+                .join('');
         }
 
         // Chart Categoria
-        createChart('chartChamCategoria', 'doughnut', {
-            labels: Object.keys(d.por_categoria),
-            datasets: [{ data: Object.values(d.por_categoria), backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#C9CBCF'] }]
-        }, 'Chamados por Categoria');
+        createChart(
+            'chartChamCategoria',
+            'doughnut',
+            {
+                labels: Object.keys(d.por_categoria),
+                datasets: [
+                    {
+                        data: Object.values(d.por_categoria),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF']
+                    }
+                ]
+            },
+            'Chamados por Categoria'
+        );
 
         // Chart Mensal
         const meses = Object.keys(d.por_mes).sort();
-        createChart('chartChamMensal', 'bar', {
-            labels: meses,
-            datasets: [{ label: 'Chamados', data: meses.map(m => d.por_mes[m]), backgroundColor: '#36A2EB' }]
-        }, 'Chamados por Mes');
-    } catch (err) { console.error('Rel chamados:', err); }
+        createChart(
+            'chartChamMensal',
+            'bar',
+            {
+                labels: meses,
+                datasets: [{ label: 'Chamados', data: meses.map((m) => d.por_mes[m]), backgroundColor: '#36A2EB' }]
+            },
+            'Chamados por Mes'
+        );
+    } catch (err) {
+        console.error('Rel chamados:', err);
+    }
 }
 
 async function gerarRelatorioVendas(params) {
@@ -87,13 +109,17 @@ async function gerarRelatorioVendas(params) {
         document.getElementById('relVendasTotal').textContent = d.total;
         document.getElementById('relVendasAtivados').textContent = d.ativados;
         document.getElementById('relVendasPipeline').textContent = d.pipeline;
-        document.getElementById('relVendasValor').textContent = 'R$ ' + (d.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        document.getElementById('relVendasValor').textContent =
+            'R$ ' + (d.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 
         const tbody = document.getElementById('relVendasTabela');
         if (d.negocios.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Nenhum registro</td></tr>';
         } else {
-            tbody.innerHTML = d.negocios.slice(0, 100).map(n => `
+            tbody.innerHTML = d.negocios
+                .slice(0, 100)
+                .map(
+                    (n) => `
                 <tr>
                     <td>${n.id}</td>
                     <td>${n.provedor_nome_lead || '-'}</td>
@@ -102,14 +128,29 @@ async function gerarRelatorioVendas(params) {
                     <td>R$ ${(n.valor_estimado || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
                     <td><small>${n.criado_em || '-'}</small></td>
                 </tr>
-            `).join('');
+            `
+                )
+                .join('');
         }
 
-        createChart('chartVendasFunil', 'bar', {
-            labels: Object.keys(d.por_estagio),
-            datasets: [{ label: 'Negocios', data: Object.values(d.por_estagio), backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40'] }]
-        }, 'Funil de Vendas');
-    } catch (err) { console.error('Rel vendas:', err); }
+        createChart(
+            'chartVendasFunil',
+            'bar',
+            {
+                labels: Object.keys(d.por_estagio),
+                datasets: [
+                    {
+                        label: 'Negocios',
+                        data: Object.values(d.por_estagio),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                    }
+                ]
+            },
+            'Funil de Vendas'
+        );
+    } catch (err) {
+        console.error('Rel vendas:', err);
+    }
 }
 
 async function gerarRelatorioTreinamentos(params) {
@@ -123,7 +164,10 @@ async function gerarRelatorioTreinamentos(params) {
         if (d.treinamentos.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">Nenhum registro</td></tr>';
         } else {
-            tbody.innerHTML = d.treinamentos.slice(0, 100).map(t => `
+            tbody.innerHTML = d.treinamentos
+                .slice(0, 100)
+                .map(
+                    (t) => `
                 <tr>
                     <td>${t.id}</td>
                     <td>${t.provedor_nome}</td>
@@ -131,9 +175,13 @@ async function gerarRelatorioTreinamentos(params) {
                     <td><small>${t.data_treinamento}</small></td>
                     <td>${t.status}</td>
                 </tr>
-            `).join('');
+            `
+                )
+                .join('');
         }
-    } catch (err) { console.error('Rel treinamentos:', err); }
+    } catch (err) {
+        console.error('Rel treinamentos:', err);
+    }
 }
 
 async function gerarRelatorioProvedores() {
@@ -145,7 +193,9 @@ async function gerarRelatorioProvedores() {
         if (d.provedores.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Nenhum registro</td></tr>';
         } else {
-            tbody.innerHTML = d.provedores.map(p => `
+            tbody.innerHTML = d.provedores
+                .map(
+                    (p) => `
                 <tr>
                     <td>${p.id}</td>
                     <td>${p.nome}</td>
@@ -154,19 +204,52 @@ async function gerarRelatorioProvedores() {
                     <td>${p.total_chamados}</td>
                     <td>${p.total_treinamentos}</td>
                 </tr>
-            `).join('');
+            `
+                )
+                .join('');
         }
 
-        createChart('chartProvERP', 'pie', {
-            labels: Object.keys(d.por_erp),
-            datasets: [{ data: Object.values(d.por_erp), backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#C9CBCF','#66BB6A'] }]
-        }, 'Por ERP');
+        createChart(
+            'chartProvERP',
+            'pie',
+            {
+                labels: Object.keys(d.por_erp),
+                datasets: [
+                    {
+                        data: Object.values(d.por_erp),
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF',
+                            '#FF9F40',
+                            '#C9CBCF',
+                            '#66BB6A'
+                        ]
+                    }
+                ]
+            },
+            'Por ERP'
+        );
 
-        createChart('chartProvPlano', 'pie', {
-            labels: Object.keys(d.por_plano),
-            datasets: [{ data: Object.values(d.por_plano), backgroundColor: ['#4BC0C0','#FF9F40','#9966FF','#FF6384','#36A2EB','#FFCE56'] }]
-        }, 'Por Plano');
-    } catch (err) { console.error('Rel provedores:', err); }
+        createChart(
+            'chartProvPlano',
+            'pie',
+            {
+                labels: Object.keys(d.por_plano),
+                datasets: [
+                    {
+                        data: Object.values(d.por_plano),
+                        backgroundColor: ['#4BC0C0', '#FF9F40', '#9966FF', '#FF6384', '#36A2EB', '#FFCE56']
+                    }
+                ]
+            },
+            'Por Plano'
+        );
+    } catch (err) {
+        console.error('Rel provedores:', err);
+    }
 }
 
 function createChart(canvasId, type, data, title) {

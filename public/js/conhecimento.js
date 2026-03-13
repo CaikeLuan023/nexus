@@ -15,18 +15,29 @@ async function carregarCategorias() {
         const artigoCat = document.getElementById('artigoCategoria');
 
         const filtroAtual = document.getElementById('kbFiltroCategoria').value;
-        sidebar.innerHTML = `<a href="#" class="kb-cat-item${!filtroAtual ? ' active' : ''}" onclick="event.preventDefault();document.getElementById('kbFiltroCategoria').value='';carregarArtigos()">
+        sidebar.innerHTML =
+            `<a href="#" class="kb-cat-item${!filtroAtual ? ' active' : ''}" onclick="event.preventDefault();document.getElementById('kbFiltroCategoria').value='';carregarArtigos()">
             <div class="kb-cat-icon"><i class="bi bi-grid-3x3-gap"></i></div><span>Categorias</span></a>` +
-            cats.map(c => `<a href="#" class="kb-cat-item${filtroAtual==c.id ? ' active' : ''}" onclick="event.preventDefault();document.getElementById('kbFiltroCategoria').value='${c.id}';carregarArtigos()">
+            cats
+                .map(
+                    (
+                        c
+                    ) => `<a href="#" class="kb-cat-item${filtroAtual == c.id ? ' active' : ''}" onclick="event.preventDefault();document.getElementById('kbFiltroCategoria').value='${c.id}';carregarArtigos()">
                 <div class="kb-cat-icon"><i class="bi ${c.icone || 'bi-folder'}"></i></div><span>${c.nome}</span>
-            </a>`).join('');
+            </a>`
+                )
+                .join('');
 
-        filtro.innerHTML = '<option value="">Todas as categorias</option>' +
-            cats.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+        filtro.innerHTML =
+            '<option value="">Todas as categorias</option>' +
+            cats.map((c) => `<option value="${c.id}">${c.nome}</option>`).join('');
 
-        artigoCat.innerHTML = '<option value="">Sem categoria</option>' +
-            cats.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
-    } catch (err) { console.error('KB categorias:', err); }
+        artigoCat.innerHTML =
+            '<option value="">Sem categoria</option>' +
+            cats.map((c) => `<option value="${c.id}">${c.nome}</option>`).join('');
+    } catch (err) {
+        console.error('KB categorias:', err);
+    }
 }
 
 async function carregarArtigos() {
@@ -36,15 +47,18 @@ async function carregarArtigos() {
         const artigos = await api(`/api/kb/artigos${params}`);
         _kbArtigos = artigos;
         renderArtigos(artigos);
-    } catch (err) { console.error('KB artigos:', err); }
+    } catch (err) {
+        console.error('KB artigos:', err);
+    }
 }
 
 function buscarArtigos() {
     const busca = document.getElementById('kbBusca').value.toLowerCase();
-    const filtrados = _kbArtigos.filter(a =>
-        a.titulo.toLowerCase().includes(busca) ||
-        (a.tags || '').toLowerCase().includes(busca) ||
-        (a.conteudo || '').toLowerCase().includes(busca)
+    const filtrados = _kbArtigos.filter(
+        (a) =>
+            a.titulo.toLowerCase().includes(busca) ||
+            (a.tags || '').toLowerCase().includes(busca) ||
+            (a.conteudo || '').toLowerCase().includes(busca)
     );
     renderArtigos(filtrados);
 }
@@ -55,7 +69,9 @@ function renderArtigos(artigos) {
         container.innerHTML = '<div class="col-12 text-center text-muted py-4">Nenhum artigo encontrado</div>';
         return;
     }
-    container.innerHTML = artigos.map(a => `
+    container.innerHTML = artigos
+        .map(
+            (a) => `
         <div class="col-md-6">
             <div class="kb-article-card" onclick="verArtigo(${a.id})">
                 <div class="kb-article-icon">
@@ -63,16 +79,23 @@ function renderArtigos(artigos) {
                 </div>
                 <div class="kb-article-body">
                     <h6 class="kb-article-title">${a.titulo}</h6>
-                    <p class="kb-article-preview">${stripKBMarkdown((a.conteudo || '')).substring(0, 120)}...</p>
+                    <p class="kb-article-preview">${stripKBMarkdown(a.conteudo || '').substring(0, 120)}...</p>
                     <div class="kb-article-meta">
                         ${a.categoria_nome ? `<span class="badge bg-primary">${a.categoria_nome}</span>` : ''}
-                        ${(a.tags || '').split(',').filter(t=>t.trim()).slice(0,3).map(t => `<span class="badge bg-secondary">${t.trim()}</span>`).join('')}
+                        ${(a.tags || '')
+                            .split(',')
+                            .filter((t) => t.trim())
+                            .slice(0, 3)
+                            .map((t) => `<span class="badge bg-secondary">${t.trim()}</span>`)
+                            .join('')}
                         <span class="kb-article-views"><i class="bi bi-eye"></i> ${a.visualizacoes || 0}</span>
                     </div>
                 </div>
             </div>
         </div>
-    `).join('');
+    `
+        )
+        .join('');
 }
 
 function stripKBMarkdown(text) {
@@ -122,12 +145,15 @@ function formatarConteudoKB(texto) {
     html = html.replace(/`(.+?)`/g, '<code class="kb-code">$1</code>');
 
     // Wrap remaining lines
-    html = html.split('\n').map(line => {
-        const trimmed = line.trim();
-        if (!trimmed) return '<div class="kb-spacer"></div>';
-        if (trimmed.startsWith('<')) return line;
-        return `<div class="kb-line">${line}</div>`;
-    }).join('\n');
+    html = html
+        .split('\n')
+        .map((line) => {
+            const trimmed = line.trim();
+            if (!trimmed) return '<div class="kb-spacer"></div>';
+            if (trimmed.startsWith('<')) return line;
+            return `<div class="kb-line">${line}</div>`;
+        })
+        .join('\n');
 
     return html;
 }
@@ -136,12 +162,15 @@ async function verArtigo(id) {
     try {
         const a = await api(`/api/kb/artigos/${id}`);
         document.getElementById('verArtigoTitulo').textContent = a.titulo;
-        document.getElementById('verArtigoConteudo').innerHTML = `<div class="kb-content">${formatarConteudoKB(a.conteudo)}</div>`;
+        document.getElementById('verArtigoConteudo').innerHTML =
+            `<div class="kb-content">${formatarConteudoKB(a.conteudo)}</div>`;
         document.getElementById('verArtigoMeta').innerHTML = `
             ${a.categoria_nome ? `<span class="badge bg-primary me-2">${a.categoria_nome}</span>` : ''}
             <i class="bi bi-eye me-1"></i>${a.visualizacoes} visualizacoes | Atualizado: ${a.atualizado_em || a.criado_em}`;
         new bootstrap.Modal(document.getElementById('modalVerArtigo')).show();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 function abrirModalArtigo() {
@@ -166,7 +195,9 @@ async function editarArtigo(id) {
         document.getElementById('artigoPublicado').value = a.publicado;
         document.getElementById('modalArtigoTitulo').textContent = 'Editar Artigo';
         new bootstrap.Modal(document.getElementById('modalArtigo')).show();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function salvarArtigo() {
@@ -178,7 +209,10 @@ async function salvarArtigo() {
         categoria_id: document.getElementById('artigoCategoria').value || null,
         publicado: Number(document.getElementById('artigoPublicado').value)
     };
-    if (!data.titulo || !data.conteudo) { mostrarToast('Titulo e conteudo sao obrigatorios', 'warning'); return; }
+    if (!data.titulo || !data.conteudo) {
+        mostrarToast('Titulo e conteudo sao obrigatorios', 'warning');
+        return;
+    }
 
     try {
         if (id) {
@@ -190,7 +224,9 @@ async function salvarArtigo() {
         }
         bootstrap.Modal.getInstance(document.getElementById('modalArtigo')).hide();
         carregarArtigos();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function excluirArtigo(id) {
@@ -199,7 +235,9 @@ async function excluirArtigo(id) {
         await api(`/api/kb/artigos/${id}`, { method: 'DELETE' });
         mostrarToast('Artigo excluido!');
         carregarArtigos();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 function abrirModalCategoria() {
@@ -214,14 +252,19 @@ async function salvarCategoria() {
         nome: document.getElementById('categoriaNome').value.trim(),
         icone: document.getElementById('categoriaIcone').value.trim() || 'bi-folder'
     };
-    if (!data.nome) { mostrarToast('Nome obrigatorio', 'warning'); return; }
+    if (!data.nome) {
+        mostrarToast('Nome obrigatorio', 'warning');
+        return;
+    }
 
     try {
         await api('/api/kb/categorias', { method: 'POST', body: data });
         mostrarToast('Categoria criada!');
         bootstrap.Modal.getInstance(document.getElementById('modalCategoria')).hide();
         carregarCategorias();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }
 
 async function excluirCategoria(id) {
@@ -231,5 +274,7 @@ async function excluirCategoria(id) {
         mostrarToast('Categoria excluida!');
         carregarCategorias();
         carregarArtigos();
-    } catch (err) { mostrarToast(err.message, 'error'); }
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
 }

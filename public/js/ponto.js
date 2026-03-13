@@ -40,7 +40,7 @@ async function pontoInit() {
     // SSE events
     if (window._globalSSE) {
         const origHandler = window._globalSSE.onmessage;
-        window._globalSSE.onmessage = function(e) {
+        window._globalSSE.onmessage = function (e) {
             if (origHandler) origHandler.call(this, e);
             try {
                 const data = JSON.parse(e.data);
@@ -64,7 +64,8 @@ function pontoIniciarRelogio() {
 
         const dias = ['Domingo', 'Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado'];
         const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-        document.getElementById('pontoData').textContent = `${dias[now.getDay()]}, ${now.getDate()} ${meses[now.getMonth()]} ${now.getFullYear()}`;
+        document.getElementById('pontoData').textContent =
+            `${dias[now.getDay()]}, ${now.getDate()} ${meses[now.getMonth()]} ${now.getFullYear()}`;
     }
     tick();
     _pontoRelogioInterval = setInterval(tick, 1000);
@@ -127,7 +128,10 @@ function pontoRenderStatus(data) {
         pontoIniciarPausaTimer(data.pausaAtiva.inicio);
     } else {
         pausaTimerEl.style.display = 'none';
-        if (_pontoPausaInterval) { clearInterval(_pontoPausaInterval); _pontoPausaInterval = null; }
+        if (_pontoPausaInterval) {
+            clearInterval(_pontoPausaInterval);
+            _pontoPausaInterval = null;
+        }
     }
 
     // Jornada
@@ -144,10 +148,11 @@ function pontoRenderStatus(data) {
     document.getElementById('pontoPausasMin').textContent = `${totalPausasMin}min`;
 
     // Progresso
-    const pct = Math.min(100, Math.round(data.tempoTrabalhadoMin / carga * 100));
+    const pct = Math.min(100, Math.round((data.tempoTrabalhadoMin / carga) * 100));
     const bar = document.getElementById('pontoProgressBar');
     bar.style.width = pct + '%';
-    bar.className = 'progress-bar ' + (pct >= 100 ? 'bg-success' : pct >= 75 ? 'bg-primary' : pct >= 50 ? 'bg-info' : 'bg-warning');
+    bar.className =
+        'progress-bar ' + (pct >= 100 ? 'bg-success' : pct >= 75 ? 'bg-primary' : pct >= 50 ? 'bg-info' : 'bg-warning');
 
     // Timeline
     pontoRenderTimeline(data.registros, data.pausasHoje);
@@ -160,7 +165,12 @@ function pontoRenderTimeline(registros, pausas) {
         return;
     }
 
-    const tipoLabels = { entrada: 'Entrada', saida: 'Saida', entrada_almoco: 'Inicio Almoco', saida_almoco: 'Fim Almoco' };
+    const tipoLabels = {
+        entrada: 'Entrada',
+        saida: 'Saida',
+        entrada_almoco: 'Inicio Almoco',
+        saida_almoco: 'Fim Almoco'
+    };
     const tipoClasses = { entrada: 'entrada', saida: 'saida', entrada_almoco: 'almoco', saida_almoco: 'almoco' };
 
     let html = '';
@@ -175,7 +185,13 @@ function pontoRenderTimeline(registros, pausas) {
     if (pausas && pausas.length > 0) {
         for (const p of pausas) {
             const hora = p.inicio ? p.inicio.slice(11, 16) : '';
-            const motivoLabels = { banheiro: 'Banheiro', cafe: 'Cafe', pessoal: 'Pessoal', reuniao: 'Reuniao', outro: 'Outro' };
+            const motivoLabels = {
+                banheiro: 'Banheiro',
+                cafe: 'Cafe',
+                pessoal: 'Pessoal',
+                reuniao: 'Reuniao',
+                outro: 'Outro'
+            };
             html += `<div class="ponto-timeline-item">
                 <div class="ponto-timeline-dot pausa"></div>
                 <div><strong>${hora}</strong> <span class="text-muted small">Pausa: ${motivoLabels[p.motivo] || p.motivo} (${p.duracao_min || 0}min)</span></div>
@@ -200,7 +216,12 @@ function pontoIniciarPausaTimer(inicio) {
 
 // Registrar ponto
 async function pontoRegistrar(tipo) {
-    const labels = { entrada: 'entrada', saida: 'saida', entrada_almoco: 'inicio do almoco', saida_almoco: 'volta do almoco' };
+    const labels = {
+        entrada: 'entrada',
+        saida: 'saida',
+        entrada_almoco: 'inicio do almoco',
+        saida_almoco: 'volta do almoco'
+    };
     if (tipo === 'saida' && !confirm('Deseja registrar sua saida?')) return;
 
     try {
@@ -278,7 +299,8 @@ async function pontoCarregarHistorico() {
         const data = await api(`/api/ponto/historico?dias=${dias}`);
         pontoRenderHistorico(data, 'pontoHistTabela');
     } catch (err) {
-        document.getElementById('pontoHistTabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger">${err.message}</td></tr>`;
+        document.getElementById('pontoHistTabela').innerHTML =
+            `<tr><td colspan="6" class="text-center text-danger">${err.message}</td></tr>`;
     }
 }
 
@@ -287,7 +309,8 @@ function pontoRenderHistorico(data, tabelaId) {
     const { registros, pausas } = data;
 
     if (!registros || registros.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Nenhum registro encontrado</td></tr>';
+        tbody.innerHTML =
+            '<tr><td colspan="6" class="text-center text-muted py-3">Nenhum registro encontrado</td></tr>';
         return;
     }
 
@@ -314,10 +337,10 @@ function pontoRenderHistorico(data, tabelaId) {
 
     for (const dia of diasOrdenados) {
         const regs = diasMap[dia];
-        const entrada = regs.find(r => r.tipo === 'entrada');
-        const saida = regs.filter(r => r.tipo === 'saida').pop();
-        const almocoIni = regs.find(r => r.tipo === 'entrada_almoco');
-        const almocoFim = regs.find(r => r.tipo === 'saida_almoco');
+        const entrada = regs.find((r) => r.tipo === 'entrada');
+        const saida = regs.filter((r) => r.tipo === 'saida').pop();
+        const almocoIni = regs.find((r) => r.tipo === 'entrada_almoco');
+        const almocoFim = regs.find((r) => r.tipo === 'saida_almoco');
         const pausasDia = pausasDiaMap[dia] || [];
         const totalPausas = pausasDia.reduce((s, p) => s + (p.duracao_min || 0), 0);
 
@@ -338,7 +361,11 @@ function pontoRenderHistorico(data, tabelaId) {
         totalMin -= totalPausas;
         totalMin = Math.max(0, Math.round(totalMin));
 
-        const diaFormatado = new Date(dia + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+        const diaFormatado = new Date(dia + 'T12:00:00').toLocaleDateString('pt-BR', {
+            weekday: 'short',
+            day: '2-digit',
+            month: '2-digit'
+        });
 
         html += `<tr>
             <td class="fw-medium">${diaFormatado}</td>
@@ -359,7 +386,8 @@ async function pontoCarregarEquipe() {
         const equipe = await api('/api/ponto/equipe');
         pontoRenderEquipe(equipe);
     } catch (err) {
-        document.getElementById('pontoEquipeGrid').innerHTML = `<div class="col-12 text-center text-danger">${err.message}</div>`;
+        document.getElementById('pontoEquipeGrid').innerHTML =
+            `<div class="col-12 text-center text-danger">${err.message}</div>`;
     }
 }
 
@@ -371,16 +399,30 @@ function pontoRenderEquipe(equipe) {
     }
 
     const estadoLabels = { offline: 'Offline', trabalhando: 'Online', pausa: 'Em Pausa', almoco: 'Almoco' };
-    const perfilLabels = { admin: 'Admin', analista: 'Analista', vendedor: 'Vendedor', gestor_atendimento: 'Gestor Atend.', gerente_noc: 'Gerente NOC', financeiro: 'Financeiro', atendente: 'Atendente' };
+    const perfilLabels = {
+        admin: 'Admin',
+        analista: 'Analista',
+        vendedor: 'Vendedor',
+        gestor_atendimento: 'Gestor Atend.',
+        gerente_noc: 'Gerente NOC',
+        financeiro: 'Financeiro',
+        atendente: 'Atendente'
+    };
 
-    grid.innerHTML = equipe.map(u => {
-        const iniciais = u.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-        const entrada = u.registros.find(r => r.tipo === 'entrada');
-        const avatarHtml = u.foto_url
-            ? `<img src="${u.foto_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">`
-            : `<div class="ponto-equipe-avatar">${iniciais}</div>`;
+    grid.innerHTML = equipe
+        .map((u) => {
+            const iniciais = u.nome
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .substring(0, 2)
+                .toUpperCase();
+            const entrada = u.registros.find((r) => r.tipo === 'entrada');
+            const avatarHtml = u.foto_url
+                ? `<img src="${u.foto_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">`
+                : `<div class="ponto-equipe-avatar">${iniciais}</div>`;
 
-        return `<div class="col-md-6 col-lg-4">
+            return `<div class="col-md-6 col-lg-4">
             <div class="ponto-equipe-card">
                 ${avatarHtml}
                 <div class="flex-grow-1 min-width-0">
@@ -406,20 +448,23 @@ function pontoRenderEquipe(equipe) {
                 </div>
             </div>
         </div>`;
-    }).join('');
+        })
+        .join('');
 }
 
 // Ver historico de colaborador
 async function pontoVerHistColaborador(userId, nome) {
     document.getElementById('modalHistColabTitulo').textContent = `Historico - ${nome}`;
-    document.getElementById('modalHistColabTabela').innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div></td></tr>';
+    document.getElementById('modalHistColabTabela').innerHTML =
+        '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div></td></tr>';
     new bootstrap.Modal(document.getElementById('modalHistColaborador')).show();
 
     try {
         const data = await api(`/api/ponto/equipe/${userId}/historico?dias=30`);
         pontoRenderHistorico(data, 'modalHistColabTabela');
     } catch (err) {
-        document.getElementById('modalHistColabTabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger">${err.message}</td></tr>`;
+        document.getElementById('modalHistColabTabela').innerHTML =
+            `<tr><td colspan="6" class="text-center text-danger">${err.message}</td></tr>`;
     }
 }
 
@@ -479,16 +524,17 @@ async function pontoCarregarConfigGrid() {
         const equipe = await api('/api/ponto/equipe');
         const grid = document.getElementById('pontoConfigGrid');
 
-        grid.innerHTML = equipe.map(u => {
-            const config = u.config || {};
-            const he = config.horario_entrada || '08:00';
-            const hs = config.horario_saida || '18:00';
-            const ai = config.almoco_inicio || '12:00';
-            const ad = config.almoco_duracao_min || 60;
-            const ch = config.carga_horaria_min || 480;
-            const ho = config.home_office ? '<span class="badge bg-info">Home Office</span>' : '';
+        grid.innerHTML = equipe
+            .map((u) => {
+                const config = u.config || {};
+                const he = config.horario_entrada || '08:00';
+                const hs = config.horario_saida || '18:00';
+                const ai = config.almoco_inicio || '12:00';
+                const ad = config.almoco_duracao_min || 60;
+                const ch = config.carga_horaria_min || 480;
+                const ho = config.home_office ? '<span class="badge bg-info">Home Office</span>' : '';
 
-            return `<div class="col-md-6 col-lg-4">
+                return `<div class="col-md-6 col-lg-4">
                 <div class="ponto-card p-3">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
@@ -504,13 +550,15 @@ async function pontoCarregarConfigGrid() {
                         <div class="col-6"><span class="text-muted">Saida:</span> ${hs}</div>
                         <div class="col-6"><span class="text-muted">Almoco:</span> ${ai}</div>
                         <div class="col-6"><span class="text-muted">Dur. Almoco:</span> ${ad}min</div>
-                        <div class="col-6"><span class="text-muted">Carga:</span> ${Math.floor(ch / 60)}h${ch % 60 > 0 ? ch % 60 + 'min' : ''}</div>
+                        <div class="col-6"><span class="text-muted">Carga:</span> ${Math.floor(ch / 60)}h${ch % 60 > 0 ? (ch % 60) + 'min' : ''}</div>
                     </div>
                 </div>
             </div>`;
-        }).join('');
+            })
+            .join('');
     } catch (err) {
-        document.getElementById('pontoConfigGrid').innerHTML = `<div class="col-12 text-center text-danger">${err.message}</div>`;
+        document.getElementById('pontoConfigGrid').innerHTML =
+            `<div class="col-12 text-center text-danger">${err.message}</div>`;
     }
 }
 
@@ -534,8 +582,9 @@ async function pontoPopularSelectUsuarios() {
     try {
         const equipe = await api('/api/ponto/equipe');
         const select = document.getElementById('relPontoUsuario');
-        select.innerHTML = '<option value="">Todos</option>' +
-            equipe.map(u => `<option value="${u.id}">${u.nome} (${u.perfil})</option>`).join('');
+        select.innerHTML =
+            '<option value="">Todos</option>' +
+            equipe.map((u) => `<option value="${u.id}">${u.nome} (${u.perfil})</option>`).join('');
     } catch {}
 }
 
@@ -550,7 +599,8 @@ async function pontoCarregarRelatorio() {
     }
 
     const tbody = document.getElementById('relPontoTabela');
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="spinner-border spinner-border-sm"></div> Carregando...</td></tr>';
+    tbody.innerHTML =
+        '<tr><td colspan="7" class="text-center"><div class="spinner-border spinner-border-sm"></div> Carregando...</td></tr>';
 
     try {
         const data = await api(`/api/ponto/relatorio?de=${de}&ate=${ate}`);
@@ -558,7 +608,7 @@ async function pontoCarregarRelatorio() {
 
         // Filtrar por usuario se selecionado
         if (usuarioId) {
-            relatorio = relatorio.filter(r => r.id === parseInt(usuarioId));
+            relatorio = relatorio.filter((r) => r.id === parseInt(usuarioId));
         }
 
         _pontoRelatorioData = relatorio;
@@ -571,19 +621,29 @@ async function pontoCarregarRelatorio() {
 function pontoRenderRelatorio(relatorio, de, ate) {
     const tbody = document.getElementById('relPontoTabela');
     const resumoDiv = document.getElementById('relPontoResumo');
-    const perfilLabels = { admin: 'Admin', analista: 'Analista', vendedor: 'Vendedor', gestor_atendimento: 'Gestor Atend.', gerente_noc: 'Gerente NOC', financeiro: 'Financeiro', atendente: 'Atendente' };
+    const perfilLabels = {
+        admin: 'Admin',
+        analista: 'Analista',
+        vendedor: 'Vendedor',
+        gestor_atendimento: 'Gestor Atend.',
+        gerente_noc: 'Gerente NOC',
+        financeiro: 'Financeiro',
+        atendente: 'Atendente'
+    };
 
     if (!relatorio || relatorio.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">Nenhum registro encontrado</td></tr>';
+        tbody.innerHTML =
+            '<tr><td colspan="7" class="text-center text-muted py-3">Nenhum registro encontrado</td></tr>';
         resumoDiv.innerHTML = '';
         return;
     }
 
     // Resumo
-    const totalColab = relatorio.filter(r => r.dias_trabalhados > 0).length;
+    const totalColab = relatorio.filter((r) => r.dias_trabalhados > 0).length;
     const totalHoras = relatorio.reduce((s, r) => s + r.horas_totais, 0);
     const totalPausas = relatorio.reduce((s, r) => s + r.pausas_min, 0);
-    const mediaDia = totalColab > 0 ? (totalHoras / relatorio.reduce((s, r) => s + r.dias_trabalhados, 0) || 0).toFixed(1) : 0;
+    const mediaDia =
+        totalColab > 0 ? (totalHoras / relatorio.reduce((s, r) => s + r.dias_trabalhados, 0) || 0).toFixed(1) : 0;
 
     resumoDiv.innerHTML = `
         <div class="col-6 col-md-3"><div class="ponto-card p-3 text-center"><div class="text-muted small">Colaboradores</div><div class="fs-4 fw-bold">${totalColab}</div></div></div>
@@ -593,9 +653,10 @@ function pontoRenderRelatorio(relatorio, de, ate) {
     `;
 
     // Tabela
-    tbody.innerHTML = relatorio.map(r => {
-        const media = r.dias_trabalhados > 0 ? (r.horas_totais / r.dias_trabalhados).toFixed(1) : '0';
-        return `<tr>
+    tbody.innerHTML = relatorio
+        .map((r) => {
+            const media = r.dias_trabalhados > 0 ? (r.horas_totais / r.dias_trabalhados).toFixed(1) : '0';
+            return `<tr>
             <td class="fw-medium">${r.nome}</td>
             <td><span class="badge bg-secondary">${perfilLabels[r.perfil] || r.perfil}</span></td>
             <td>${r.dias_trabalhados}</td>
@@ -608,7 +669,8 @@ function pontoRenderRelatorio(relatorio, de, ate) {
                 </button>
             </td>
         </tr>`;
-    }).join('');
+        })
+        .join('');
 }
 
 async function pontoVerDetalhesRelatorio(userId, nome) {
@@ -616,15 +678,18 @@ async function pontoVerDetalhesRelatorio(userId, nome) {
     const ate = document.getElementById('relPontoAte').value;
     const dias = Math.ceil((new Date(ate) - new Date(de)) / 86400000) + 1;
 
-    document.getElementById('modalHistColabTitulo').textContent = `Relatorio - ${nome} (${new Date(de).toLocaleDateString('pt-BR')} a ${new Date(ate).toLocaleDateString('pt-BR')})`;
-    document.getElementById('modalHistColabTabela').innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div></td></tr>';
+    document.getElementById('modalHistColabTitulo').textContent =
+        `Relatorio - ${nome} (${new Date(de).toLocaleDateString('pt-BR')} a ${new Date(ate).toLocaleDateString('pt-BR')})`;
+    document.getElementById('modalHistColabTabela').innerHTML =
+        '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div></td></tr>';
     new bootstrap.Modal(document.getElementById('modalHistColaborador')).show();
 
     try {
         const data = await api(`/api/ponto/equipe/${userId}/historico?dias=${dias}`);
         pontoRenderHistorico(data, 'modalHistColabTabela');
     } catch (err) {
-        document.getElementById('modalHistColabTabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger">${err.message}</td></tr>`;
+        document.getElementById('modalHistColabTabela').innerHTML =
+            `<tr><td colspan="6" class="text-center text-danger">${err.message}</td></tr>`;
     }
 }
 
@@ -636,7 +701,15 @@ function pontoExportarCSV() {
 
     const de = document.getElementById('relPontoDe').value;
     const ate = document.getElementById('relPontoAte').value;
-    const perfilLabels = { admin: 'Administrador', analista: 'Analista', vendedor: 'Vendedor', gestor_atendimento: 'Gestor Atendimento', gerente_noc: 'Gerente NOC', financeiro: 'Financeiro', atendente: 'Atendente' };
+    const perfilLabels = {
+        admin: 'Administrador',
+        analista: 'Analista',
+        vendedor: 'Vendedor',
+        gestor_atendimento: 'Gestor Atendimento',
+        gerente_noc: 'Gerente NOC',
+        financeiro: 'Financeiro',
+        atendente: 'Atendente'
+    };
 
     let csv = '\uFEFF'; // BOM for Excel UTF-8
     csv += 'Colaborador;Perfil;Dias Trabalhados;Horas Totais;Pausas (min);Media por Dia (h)\n';
@@ -672,7 +745,15 @@ function pontoExportarPDF() {
 
     const de = document.getElementById('relPontoDe').value;
     const ate = document.getElementById('relPontoAte').value;
-    const perfilLabels = { admin: 'Administrador', analista: 'Analista', vendedor: 'Vendedor', gestor_atendimento: 'Gestor Atendimento', gerente_noc: 'Gerente NOC', financeiro: 'Financeiro', atendente: 'Atendente' };
+    const perfilLabels = {
+        admin: 'Administrador',
+        analista: 'Analista',
+        vendedor: 'Vendedor',
+        gestor_atendimento: 'Gestor Atendimento',
+        gerente_noc: 'Gerente NOC',
+        financeiro: 'Financeiro',
+        atendente: 'Atendente'
+    };
 
     const totalHoras = _pontoRelatorioData.reduce((s, r) => s + r.horas_totais, 0);
     const totalPausas = _pontoRelatorioData.reduce((s, r) => s + r.pausas_min, 0);
@@ -698,7 +779,7 @@ function pontoExportarPDF() {
     <h1>Relatorio de Ponto</h1>
     <div class="subtitle">Periodo: ${new Date(de).toLocaleDateString('pt-BR')} a ${new Date(ate).toLocaleDateString('pt-BR')} | Gerado em: ${new Date().toLocaleString('pt-BR')}</div>
     <div class="resumo">
-        <div class="resumo-item"><div class="valor">${_pontoRelatorioData.filter(r => r.dias_trabalhados > 0).length}</div><div class="label">Colaboradores</div></div>
+        <div class="resumo-item"><div class="valor">${_pontoRelatorioData.filter((r) => r.dias_trabalhados > 0).length}</div><div class="label">Colaboradores</div></div>
         <div class="resumo-item"><div class="valor">${totalHoras.toFixed(1)}h</div><div class="label">Total Horas</div></div>
         <div class="resumo-item"><div class="valor">${totalPausas}min</div><div class="label">Total Pausas</div></div>
         <div class="resumo-item"><div class="valor">${totalDias > 0 ? (totalHoras / totalDias).toFixed(1) : 0}h</div><div class="label">Media/Dia</div></div>
@@ -706,15 +787,19 @@ function pontoExportarPDF() {
     <table>
         <thead><tr><th>Colaborador</th><th>Perfil</th><th>Dias Trab.</th><th>Horas Totais</th><th>Pausas (min)</th><th>Media/Dia</th></tr></thead>
         <tbody>
-        ${_pontoRelatorioData.map(r => {
-            const media = r.dias_trabalhados > 0 ? (r.horas_totais / r.dias_trabalhados).toFixed(1) : '0';
-            return `<tr><td>${r.nome}</td><td>${perfilLabels[r.perfil] || r.perfil}</td><td>${r.dias_trabalhados}</td><td>${r.horas_totais}h</td><td>${r.pausas_min}min</td><td>${media}h</td></tr>`;
-        }).join('')}
+        ${_pontoRelatorioData
+            .map((r) => {
+                const media = r.dias_trabalhados > 0 ? (r.horas_totais / r.dias_trabalhados).toFixed(1) : '0';
+                return `<tr><td>${r.nome}</td><td>${perfilLabels[r.perfil] || r.perfil}</td><td>${r.dias_trabalhados}</td><td>${r.horas_totais}h</td><td>${r.pausas_min}min</td><td>${media}h</td></tr>`;
+            })
+            .join('')}
         <tr class="total-row"><td>TOTAL</td><td></td><td>${totalDias}</td><td>${totalHoras.toFixed(1)}h</td><td>${totalPausas}min</td><td>${totalDias > 0 ? (totalHoras / totalDias).toFixed(1) : 0}h</td></tr>
         </tbody>
     </table>
     <div class="footer">Nexus - Relatorio gerado automaticamente</div>
     </body></html>`);
     printWin.document.close();
-    setTimeout(() => { printWin.print(); }, 500);
+    setTimeout(() => {
+        printWin.print();
+    }, 500);
 }
