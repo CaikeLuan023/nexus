@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financeiro - Nexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <nav class="sidebar" id="mainSidebar"></nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h2><i class="bi bi-currency-dollar me-2"></i>Financeiro</h2>
+            <button class="btn btn-primary" onclick="abrirModalFatura()"><i class="bi bi-plus-lg me-1"></i>Nova Fatura</button>
+        </div>
+
+        <!-- Cards Resumo -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <div class="fs-3 fw-bold text-success" id="finReceitas">R$ 0</div>
+                    <small class="text-muted">Receitas (mes)</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <div class="fs-3 fw-bold text-danger" id="finDespesas">R$ 0</div>
+                    <small class="text-muted">Despesas (mes)</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <div class="fs-3 fw-bold text-primary" id="finSaldo">R$ 0</div>
+                    <small class="text-muted">Saldo</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <div class="fs-3 fw-bold text-warning" id="finInadimplencia">R$ 0</div>
+                    <small class="text-muted">Inadimplencia</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filter-bar mb-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label form-label-sm">Tipo</label>
+                    <select class="form-select form-select-sm" id="finFiltroTipo" onchange="carregarFaturas()">
+                        <option value="">Todos</option>
+                        <option value="receita">Receita</option>
+                        <option value="despesa">Despesa</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label form-label-sm">Status</label>
+                    <select class="form-select form-select-sm" id="finFiltroStatus" onchange="carregarFaturas()">
+                        <option value="">Todos</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="pago">Pago</option>
+                        <option value="vencido">Vencido</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label form-label-sm">Provedor</label>
+                    <select class="form-select form-select-sm" id="finFiltroProvedor" onchange="carregarFaturas()">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label form-label-sm">Mes</label>
+                    <input type="month" class="form-control form-control-sm" id="finFiltroMes" onchange="carregarFaturas()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela Faturas -->
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Provedor</th>
+                            <th>Descricao</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Vencimento</th>
+                            <th>Status</th>
+                            <th>Acoes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaFaturas">
+                        <tr><td colspan="8" class="text-center text-muted py-4">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Fatura -->
+    <div class="modal fade" id="modalFatura" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalFaturaTitulo">Nova Fatura</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="faturaId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Provedor *</label>
+                            <select class="form-select" id="faturaProvedor" required></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo *</label>
+                            <select class="form-select" id="faturaTipo">
+                                <option value="receita">Receita</option>
+                                <option value="despesa">Despesa</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Descricao</label>
+                            <input type="text" class="form-control" id="faturaDescricao">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Valor (R$) *</label>
+                            <input type="number" class="form-control" id="faturaValor" step="0.01" min="0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Vencimento *</label>
+                            <input type="date" class="form-control" id="faturaVencimento" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="faturaStatus">
+                                <option value="pendente">Pendente</option>
+                                <option value="pago">Pago</option>
+                                <option value="vencido">Vencido</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Forma Pagamento</label>
+                            <select class="form-select" id="faturaFormaPagamento">
+                                <option value="">-</option>
+                                <option value="pix">PIX</option>
+                                <option value="boleto">Boleto</option>
+                                <option value="cartao">Cartao</option>
+                                <option value="transferencia">Transferencia</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Observacoes</label>
+                            <textarea class="form-control" id="faturaObs" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarFatura()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/financeiro.js"></script>
+</body>
+</html>

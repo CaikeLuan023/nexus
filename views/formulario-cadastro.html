@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Cadastro - Zapping</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --zap-pink: #D93B63;
+            --zap-mid: #E26E47;
+            --zap-orange: #E6883A;
+            --zap-gold: #F2CC1A;
+        }
+        * { box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            color: #e0e0e0;
+            margin: 0;
+        }
+        .form-wrapper { max-width: 680px; margin: 0 auto; padding: 2rem 1rem; }
+
+        /* Header */
+        .form-header {
+            text-align: center;
+            padding: 2.5rem 1rem 2rem;
+            background: #1E2028;
+            border-radius: 16px 16px 0 0;
+            border: 1px solid #2a2a35;
+            border-bottom: none;
+            position: relative;
+            overflow: hidden;
+        }
+        .form-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #D93B63, #DE5555, #E26E47, #E6883A, #EAA02E, #EEB824, #F2CC1A);
+        }
+
+        /* Logo estilo exato do Zapping */
+        .zapping-logo {
+            font-family: 'Nunito', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: 5px;
+            text-transform: lowercase;
+            background: linear-gradient(90deg, #D93B63 0%, #DE5555 16%, #E26E47 32%, #E6883A 48%, #EAA02E 64%, #EEB824 80%, #F2CC1A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+            margin-bottom: 0.25rem;
+        }
+        .form-header .subtitle {
+            color: rgba(255,255,255,0.45);
+            margin: 0;
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .provedor-badge {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.35rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #D93B63, #E6883A);
+            color: #fff;
+        }
+
+        /* Form Body */
+        .form-body {
+            background: #141416;
+            padding: 2rem;
+            border-radius: 0 0 16px 16px;
+            border: 1px solid #2a2a35;
+            border-top: none;
+        }
+        .form-body .form-label {
+            font-weight: 700;
+            color: #bbb;
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+        .form-body .form-control,
+        .form-body .form-select {
+            background: #1a1a1e;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 8px;
+            padding: 0.6rem 0.75rem;
+            font-family: 'Nunito', sans-serif;
+        }
+        .form-body .form-control::placeholder { color: #555; }
+        .form-body .form-control:focus,
+        .form-body .form-select:focus {
+            background: #1a1a1e;
+            border-color: var(--zap-pink);
+            color: #e0e0e0;
+            box-shadow: 0 0 0 0.15rem rgba(217, 59, 99, 0.25);
+        }
+        .form-body .form-select option { background: #1a1a1e; color: #e0e0e0; }
+        .form-body .text-muted { color: #777 !important; }
+
+        /* Submit Button */
+        .btn-submit {
+            background: linear-gradient(135deg, #D93B63, #E26E47, #E6883A, #F2CC1A);
+            border: none;
+            color: #fff;
+            padding: 0.75rem 2.5rem;
+            font-weight: 800;
+            font-size: 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            font-family: 'Nunito', sans-serif;
+        }
+        .btn-submit:hover {
+            opacity: 0.9;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(217, 59, 99, 0.4);
+        }
+        .btn-submit:disabled { opacity: 0.6; transform: none; box-shadow: none; }
+
+        /* Success Panel */
+        .success-panel { text-align: center; padding: 3rem 1rem; }
+        .success-panel .success-icon {
+            font-size: 4rem;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .success-panel h3 { color: #22c55e; margin-top: 0.5rem; }
+        .success-panel p { color: #888; }
+
+        /* Info Panel */
+        .info-icon { color: #38bdf8; font-size: 4rem; }
+
+        /* Footer */
+        .footer-text {
+            text-align: center;
+            padding: 1.5rem 1rem 1rem;
+            font-size: 0.8rem;
+        }
+        .footer-text .foot-logo {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: 0.95rem;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, #D93B63, #E26E47, #E6883A, #F2CC1A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .footer-text .copy { color: #444; }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .form-body { padding: 1.25rem; }
+            .zapping-logo { font-size: 2.4rem; letter-spacing: 3px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-wrapper">
+        <div class="form-header">
+            <div class="zapping-logo">zapping</div>
+            <p class="subtitle">Formulario de Cadastro</p>
+            <div id="provedorNomeHeader"></div>
+        </div>
+
+        <!-- Formulario -->
+        <div class="form-body" id="formPanel">
+            <p class="text-muted mb-4">Preencha os dados abaixo para prosseguir com a ativacao do servico.</p>
+            <form id="formCadastro">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Razao Social / Nome da Empresa *</label>
+                        <input type="text" class="form-control" id="razaoSocial" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">CNPJ *</label>
+                        <input type="text" class="form-control" id="cnpj" required placeholder="00.000.000/0000-00" maxlength="18">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nome do Responsavel *</label>
+                        <input type="text" class="form-control" id="responsavel" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Telefone / WhatsApp *</label>
+                        <input type="text" class="form-control" id="telefone" required placeholder="(00) 00000-0000">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Endereco Completo</label>
+                        <input type="text" class="form-control" id="endereco" placeholder="Rua, numero, bairro, cidade - UF">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Quantidade Estimada de Assinantes</label>
+                        <input type="number" class="form-control" id="qtdAssinantes" min="0" placeholder="Ex: 5000">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">ERP Utilizado</label>
+                        <select class="form-select" id="erp">
+                            <option value="">Selecione...</option>
+                            <option value="ixc">IXC</option>
+                            <option value="hubsoft">Hubsoft</option>
+                            <option value="radius_net">Radius NET</option>
+                            <option value="sgp">SGP</option>
+                            <option value="atlaz">Atlaz</option>
+                            <option value="ispfy">ISPFY</option>
+                            <option value="mycore">MYCORE</option>
+                            <option value="mk_auth">Mk-auth</option>
+                            <option value="voalle">Voalle</option>
+                            <option value="proprio">Proprio</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Observacoes</label>
+                        <textarea class="form-control" id="observacoes" rows="3" placeholder="Informacoes adicionais..."></textarea>
+                    </div>
+                    <div class="col-12 text-center mt-4">
+                        <button type="submit" class="btn btn-submit" id="btnSubmit">
+                            <i class="bi bi-send me-2"></i>Enviar Cadastro
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sucesso -->
+        <div class="form-body d-none" id="successPanel">
+            <div class="success-panel">
+                <i class="bi bi-check-circle-fill d-block mb-3 success-icon"></i>
+                <h3>Cadastro Enviado!</h3>
+                <p>Seus dados foram recebidos com sucesso. Nossa equipe entrara em contato em breve para prosseguir com a ativacao.</p>
+            </div>
+        </div>
+
+        <!-- Ja preenchido -->
+        <div class="form-body d-none" id="filledPanel">
+            <div class="success-panel">
+                <i class="bi bi-info-circle-fill d-block mb-3 info-icon"></i>
+                <h3 style="color:#ccc">Formulario ja Preenchido</h3>
+                <p>Este formulario ja foi preenchido anteriormente. Caso precise alterar algum dado, entre em contato com nosso time de vendas.</p>
+            </div>
+        </div>
+
+        <div class="footer-text">
+            <span class="foot-logo">zapping</span> <span class="copy">- Nexus</span>
+        </div>
+    </div>
+
+    <script src="/js/formulario-cadastro.js"></script>
+</body>
+</html>

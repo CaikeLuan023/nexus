@@ -1,0 +1,9 @@
+node_modules/
+uploads/
+data.db
+.env
+server.log
+server-err.log
+backups/
+nul
+*.bak

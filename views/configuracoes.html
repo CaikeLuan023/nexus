@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuracoes - Nexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <nav class="sidebar" id="mainSidebar"></nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h2><i class="bi bi-gear me-2"></i>Configuracoes</h2>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4" id="configTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabGeral">
+                    <i class="bi bi-sliders me-1"></i> Geral
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabBackups">
+                    <i class="bi bi-database me-1"></i> Backups
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAtividades">
+                    <i class="bi bi-journal-text me-1"></i> Log de Atividades
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabRegras">
+                    <i class="bi bi-lightning me-1"></i> Regras
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabRecorrentes">
+                    <i class="bi bi-arrow-repeat me-1"></i> Recorrentes
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabIntegracoes">
+                    <i class="bi bi-plug me-1"></i> Integracoes
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabERP">
+                    <i class="bi bi-cloud-arrow-up me-1"></i> ERPs
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSLA">
+                    <i class="bi bi-stopwatch me-1"></i> SLA
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabWhatsAppIA">
+                    <i class="bi bi-robot me-1"></i> WhatsApp IA
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabLGPD">
+                    <i class="bi bi-shield-lock me-1"></i> LGPD
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabIntegExternas">
+                    <i class="bi bi-diagram-3 me-1"></i> Integ. Externas
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Tab Geral -->
+            <div class="tab-pane fade show active" id="tabGeral">
+                <div class="table-container">
+                    <h5 class="mb-3"><i class="bi bi-sliders me-2"></i>Configuracoes Gerais</h5>
+                    <form id="formConfig" onsubmit="salvarConfig(event)">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nome do Sistema</label>
+                                <input type="text" class="form-control" id="cfgNomeSistema" placeholder="Nexus">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Timezone</label>
+                                <select class="form-select" id="cfgTimezone">
+                                    <option value="America/Sao_Paulo">America/Sao_Paulo</option>
+                                    <option value="America/Fortaleza">America/Fortaleza</option>
+                                    <option value="America/Manaus">America/Manaus</option>
+                                    <option value="America/Belem">America/Belem</option>
+                                    <option value="America/Cuiaba">America/Cuiaba</option>
+                                    <option value="America/Rio_Branco">America/Rio_Branco</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Itens por Pagina</label>
+                                <select class="form-select" id="cfgItensPorPagina">
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Logo do Sistema</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img id="cfgLogoPreview" src="" alt="" style="max-height:48px;display:none" class="rounded">
+                                    <input type="file" class="form-control" id="cfgLogoFile" accept="image/*" onchange="uploadLogo()">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i> Salvar Configuracoes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tab Backups -->
+            <div class="tab-pane fade" id="tabBackups">
+                <div class="table-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-database me-2"></i>Backups do Banco de Dados</h5>
+                        <button class="btn btn-primary" onclick="criarBackup()">
+                            <i class="bi bi-plus-lg me-1"></i> Criar Backup Agora
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Arquivo</th>
+                                    <th>Tamanho</th>
+                                    <th>Tipo</th>
+                                    <th>Criado por</th>
+                                    <th>Data</th>
+                                    <th>Acoes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaBackups">
+                                <tr><td colspan="7" class="text-center text-muted py-4">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Atividades -->
+            <div class="tab-pane fade" id="tabAtividades">
+                <div class="table-container">
+                    <h5 class="mb-3"><i class="bi bi-journal-text me-2"></i>Log de Atividades</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" id="filtroModulo" onchange="carregarAtividades()">
+                                <option value="">Todos os Modulos</option>
+                                <option value="chamados">Chamados</option>
+                                <option value="provedores">Provedores</option>
+                                <option value="projetos">Projetos</option>
+                                <option value="treinamentos">Treinamentos</option>
+                                <option value="vendas">Vendas</option>
+                                <option value="usuarios">Usuarios</option>
+                                <option value="auth">Autenticacao</option>
+                                <option value="configuracoes">Configuracoes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" id="filtroUsuarioAtiv" onchange="carregarAtividades()">
+                                <option value="">Todos os Usuarios</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="date" class="form-control form-control-sm" id="filtroDataInicio" onchange="carregarAtividades()">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="date" class="form-control form-control-sm" id="filtroDataFim" onchange="carregarAtividades()">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-sm btn-outline-secondary w-100" onclick="limparFiltrosAtiv()">
+                                <i class="bi bi-x-lg me-1"></i> Limpar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Usuario</th>
+                                    <th>Acao</th>
+                                    <th>Modulo</th>
+                                    <th>Detalhes</th>
+                                    <th>IP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaAtividades">
+                                <tr><td colspan="6" class="text-center text-muted py-4">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-center mt-3">
+                        <button class="btn btn-sm btn-outline-primary" id="btnMaisAtividades" onclick="carregarMaisAtividades()" style="display:none">
+                            Carregar mais...
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Regras Automaticas -->
+            <div class="tab-pane fade" id="tabRegras">
+                <div class="table-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Regras Automaticas</h5>
+                        <button class="btn btn-primary btn-sm" onclick="abrirModalRegra()"><i class="bi bi-plus-lg me-1"></i>Nova Regra</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead><tr><th>#</th><th>Nome</th><th>Gatilho</th><th>Acao</th><th>Status</th><th>Ultima Exec.</th><th>Acoes</th></tr></thead>
+                            <tbody id="tabelaRegras"><tr><td colspan="7" class="text-center text-muted py-4">Carregando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Tarefas Recorrentes -->
+            <div class="tab-pane fade" id="tabRecorrentes">
+                <div class="table-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-arrow-repeat me-2"></i>Tarefas Recorrentes</h5>
+                        <button class="btn btn-primary btn-sm" onclick="abrirModalRecorrente()"><i class="bi bi-plus-lg me-1"></i>Nova Tarefa</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead><tr><th>#</th><th>Titulo</th><th>Modulo</th><th>Frequencia</th><th>Status</th><th>Proxima Exec.</th><th>Acoes</th></tr></thead>
+                            <tbody id="tabelaRecorrentes"><tr><td colspan="7" class="text-center text-muted py-4">Carregando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Integracoes -->
+            <div class="tab-pane fade" id="tabIntegracoes">
+                <div class="table-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-key me-2"></i>API Tokens</h5>
+                        <button class="btn btn-primary btn-sm" onclick="criarApiToken()"><i class="bi bi-plus-lg me-1"></i>Novo Token</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead><tr><th>Nome</th><th>Token</th><th>Status</th><th>Ultimo Uso</th><th>Acoes</th></tr></thead>
+                            <tbody id="tabelaTokens"><tr><td colspan="5" class="text-center text-muted py-4">Carregando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-container mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-broadcast me-2"></i>Webhooks</h5>
+                        <button class="btn btn-primary btn-sm" onclick="criarWebhook()"><i class="bi bi-plus-lg me-1"></i>Novo Webhook</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead><tr><th>Nome</th><th>URL</th><th>Eventos</th><th>Status</th><th>Acoes</th></tr></thead>
+                            <tbody id="tabelaWebhooks"><tr><td colspan="5" class="text-center text-muted py-4">Carregando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-container mt-3">
+                    <h5 class="mb-3"><i class="bi bi-book me-2"></i>Documentacao API</h5>
+                    <div class="small">
+                        <p>Base URL: <code>/api/v1/</code> | Autenticacao: <code>Bearer TOKEN</code></p>
+                        <ul>
+                            <li><code>GET /api/v1/chamados</code> - Lista chamados</li>
+                            <li><code>GET /api/v1/provedores</code> - Lista provedores</li>
+                            <li><code>GET /api/v1/projetos</code> - Lista projetos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab ERPs -->
+            <div class="tab-pane fade" id="tabERP">
+                <div class="table-container">
+                    <h5 class="mb-3"><i class="bi bi-cloud-arrow-up me-2"></i>Integracoes ERP</h5>
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Configure a conexao com os ERPs dos provedores para sincronizar clientes, contratos e planos.
+                        Selecione o ERP abaixo para configurar.
+                    </div>
+
+                    <!-- ERP Status Cards -->
+                    <div class="row g-3 mb-4" id="erpStatusCards">
+                        <div class="text-center text-muted py-3">Carregando...</div>
+                    </div>
+
+                    <!-- ERP Config Form -->
+                    <div id="erpConfigPanel" style="display:none">
+                        <hr>
+                        <h5 id="erpConfigTitle" class="mb-3"></h5>
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label fw-bold">URL Base da API</label>
+                                <input type="url" class="form-control" id="erpUrlBase">
+                                <small class="text-muted" id="erpUrlHint"></small>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Status</label>
+                                <div id="erpStatus" class="mt-2">
+                                    <span class="badge bg-secondary">Nao configurado</span>
+                                </div>
+                            </div>
+
+                            <!-- Token field -->
+                            <div class="col-12" id="erpTokenGroup">
+                                <label class="form-label fw-bold">Token API</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="erpToken" placeholder="Cole o token de acesso">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="toggleErpToken()">
+                                        <i class="bi bi-eye" id="erpTokenIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Extra fields container -->
+                            <div class="col-12" id="erpExtraFields"></div>
+
+                            <div class="col-12">
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary" onclick="salvarErpConfig()">
+                                        <i class="bi bi-save me-1"></i>Salvar Configuracao
+                                    </button>
+                                    <button class="btn btn-outline-info" onclick="testarErpConexao()">
+                                        <i class="bi bi-plug me-1"></i>Testar Conexao
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="fecharErpConfig()">
+                                        <i class="bi bi-x-lg me-1"></i>Fechar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-12" id="erpTesteResultado"></div>
+                        </div>
+                        <hr class="my-4">
+                        <h6><i class="bi bi-arrow-repeat me-2"></i>Ultima Sincronizacao</h6>
+                        <p id="erpUltimoSync" class="text-muted">Nenhuma sincronizacao realizada</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab SLA -->
+            <div class="tab-pane fade" id="tabSLA">
+                <div class="table-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-stopwatch me-2"></i>Regras de SLA</h5>
+                        <button class="btn btn-primary btn-sm" onclick="abrirModalSLA()">
+                            <i class="bi bi-plus-lg me-1"></i> Nova Regra
+                        </button>
+                    </div>
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Configure os tempos de resposta e resolucao por categoria e prioridade dos chamados.
+                        Quando um chamado e criado, os prazos SLA sao calculados automaticamente.
+                    </div>
+
+                    <!-- SLA Dashboard Resumido -->
+                    <div class="row g-3 mb-4" id="slaDashboard">
+                        <div class="col-md-3">
+                            <div class="card text-center p-3">
+                                <div class="fs-3 fw-bold text-primary" id="slaTotalAbertos">-</div>
+                                <small class="text-muted">Chamados Abertos</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center p-3">
+                                <div class="fs-3 fw-bold text-success" id="slaDentro">-</div>
+                                <small class="text-muted">Dentro do SLA</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center p-3">
+                                <div class="fs-3 fw-bold text-warning" id="slaCriticos">-</div>
+                                <small class="text-muted">Proximo de Estourar</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center p-3">
+                                <div class="fs-3 fw-bold text-danger" id="slaEstourados">-</div>
+                                <small class="text-muted">SLA Estourado</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Prioridade</th>
+                                    <th>Tempo Resposta</th>
+                                    <th>Tempo Resolucao</th>
+                                    <th>Status</th>
+                                    <th>Acoes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaSLA">
+                                <tr><td colspan="6" class="text-center text-muted py-3">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab WhatsApp IA -->
+            <div class="tab-pane fade" id="tabWhatsAppIA">
+                <div class="table-container">
+                    <h5 class="mb-3"><i class="bi bi-robot me-2"></i>Automacao WhatsApp com IA</h5>
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Configure uma IA para responder automaticamente mensagens do WhatsApp, usando a Base de Conhecimento como contexto.
+                        Suporta OpenAI (GPT) ou Anthropic (Claude).
+                    </div>
+                    <form id="formWhatsAppIA" onsubmit="salvarWhatsAppIA(event)">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Status</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="iaAtivo">
+                                    <label class="form-check-label" for="iaAtivo">IA Ativa</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Usar Base de Conhecimento</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="iaContextoKB" checked>
+                                    <label class="form-check-label" for="iaContextoKB">Incluir artigos como contexto</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Provedor de IA</label>
+                                <select class="form-select" id="iaModelo">
+                                    <option value="gpt-3.5-turbo">OpenAI GPT-3.5 Turbo</option>
+                                    <option value="gpt-4">OpenAI GPT-4</option>
+                                    <option value="gpt-4o">OpenAI GPT-4o</option>
+                                    <option value="claude-sonnet-4-5-20250929">Anthropic Claude Sonnet</option>
+                                    <option value="claude-haiku-4-5-20251001">Anthropic Claude Haiku</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Max Tokens</label>
+                                <input type="number" class="form-control" id="iaMaxTokens" value="500" min="50" max="4000">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">API Key</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="iaApiKey" placeholder="sk-... ou sk-ant-...">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="toggleIAKey()">
+                                        <i class="bi bi-eye" id="iaKeyIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Prompt do Sistema</label>
+                                <textarea class="form-control" id="iaPromptSistema" rows="4" placeholder="Voce e um assistente de suporte tecnico para provedores de internet..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Salvar Configuracao</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-container mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Historico de Respostas IA</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead><tr><th>Data</th><th>Chat</th><th>Mensagem</th><th>Resposta IA</th><th>Classificacao</th><th>Aprovado</th></tr></thead>
+                            <tbody id="tabelaIAHistorico"><tr><td colspan="6" class="text-center text-muted py-3">Carregando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab LGPD -->
+            <div class="tab-pane fade" id="tabLGPD">
+                <div class="table-container">
+                    <h5 class="mb-3"><i class="bi bi-shield-lock me-2"></i>Conformidade LGPD</h5>
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Gerencie consentimentos, retencao de dados e solicitacoes de titulares conforme a Lei Geral de Protecao de Dados.
+                    </div>
+
+                    <!-- Consulta Titular -->
+                    <div class="card p-3 mb-4">
+                        <h6><i class="bi bi-person-badge me-2"></i>Consulta de Dados do Titular</h6>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label form-label-sm">Documento (CNPJ/CPF)</label>
+                                <input type="text" class="form-control form-control-sm" id="lgpdDocumento" placeholder="00.000.000/0000-00">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label form-label-sm">Nome</label>
+                                <input type="text" class="form-control form-control-sm" id="lgpdNome" placeholder="Nome do titular">
+                            </div>
+                            <div class="col-md-4 d-flex gap-2">
+                                <button class="btn btn-sm btn-primary" onclick="consultarTitular()"><i class="bi bi-search me-1"></i>Consultar Local</button>
+                                <button class="btn btn-sm btn-outline-info" onclick="consultarTitularERP()" title="Consultar em tempo real nos ERPs configurados"><i class="bi bi-cloud-arrow-down me-1"></i>Consultar ERP</button>
+                            </div>
+                        </div>
+                        <div id="lgpdResultadoTitular" class="mt-3" style="display:none"></div>
+                    </div>
+
+                    <!-- Regras de Retencao -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Regras de Retencao de Dados</h6>
+                        <button class="btn btn-sm btn-primary" onclick="abrirModalRetencao()"><i class="bi bi-plus-lg me-1"></i>Nova Regra</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead><tr><th>Tabela</th><th>Campo</th><th>Retencao (dias)</th><th>Acao</th><th>Status</th><th>Acoes</th></tr></thead>
+                            <tbody id="tabelaRetencao"><tr><td colspan="6" class="text-center text-muted py-3">Carregando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-container mt-3">
+                    <h5 class="mb-3"><i class="bi bi-file-earmark-text me-2"></i>Relatorio de Conformidade</h5>
+                    <button class="btn btn-sm btn-outline-primary mb-3" onclick="gerarRelatorioLGPD()"><i class="bi bi-file-earmark-pdf me-1"></i>Gerar Relatorio</button>
+                    <div id="lgpdRelatorio"></div>
+                </div>
+            </div>
+
+            <!-- Tab Integracoes Externas -->
+            <div class="tab-pane fade" id="tabIntegExternas">
+                <div class="table-container">
+                    <h5 class="mb-3"><i class="bi bi-diagram-3 me-2"></i>Integracoes Externas</h5>
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Configure integracoes com servicos externos como Google Calendar, Slack, Discord, N8N e Zapier.
+                    </div>
+                    <div class="d-flex justify-content-end mb-3">
+                        <button class="btn btn-sm btn-primary" onclick="abrirModalIntegExt()"><i class="bi bi-plus-lg me-1"></i>Nova Integracao</button>
+                    </div>
+                    <div class="row g-3" id="integExternasCards">
+                        <div class="text-center text-muted py-3">Carregando...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal SLA -->
+    <div class="modal fade" id="modalSLA" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalSLATitulo">Nova Regra SLA</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="slaId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Categoria *</label>
+                            <select class="form-select" id="slaCategoria">
+                                <option value="usuario">Usuario</option>
+                                <option value="app">App</option>
+                                <option value="integracao">Integracao</option>
+                                <option value="canal">Canal</option>
+                                <option value="troca_senha">Troca de Senha</option>
+                                <option value="email_ativacao">Email Ativacao</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Prioridade *</label>
+                            <select class="form-select" id="slaPrioridade">
+                                <option value="baixa">Baixa</option>
+                                <option value="normal" selected>Normal</option>
+                                <option value="alta">Alta</option>
+                                <option value="critica">Critica</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tempo Resposta (horas) *</label>
+                            <input type="number" class="form-control" id="slaTempoResposta" min="1" value="24">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tempo Resolucao (horas) *</label>
+                            <input type="number" class="form-control" id="slaTempoResolucao" min="1" value="72">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarSLA()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Retencao LGPD -->
+    <div class="modal fade" id="modalRetencao" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nova Regra de Retencao</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Tabela *</label>
+                            <select class="form-select" id="retTabela">
+                                <option value="provedores">Provedores</option>
+                                <option value="chamados">Chamados</option>
+                                <option value="negocios">Negocios</option>
+                                <option value="treinamentos">Treinamentos</option>
+                                <option value="whatsapp_mensagens">WhatsApp Mensagens</option>
+                                <option value="atividades_log">Log de Atividades</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Campo (opcional)</label>
+                            <input type="text" class="form-control" id="retCampo" placeholder="Ex: telefone, email">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tempo de Retencao (dias) *</label>
+                            <input type="number" class="form-control" id="retDias" min="30" value="365">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Acao *</label>
+                            <select class="form-select" id="retAcao">
+                                <option value="anonimizar">Anonimizar</option>
+                                <option value="excluir">Excluir</option>
+                                <option value="arquivar">Arquivar</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarRetencao()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Integracao Externa -->
+    <div class="modal fade" id="modalIntegExt" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalIntegExtTitulo">Nova Integracao</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="integExtId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo *</label>
+                            <select class="form-select" id="integExtTipo">
+                                <option value="google_calendar">Google Calendar</option>
+                                <option value="slack">Slack</option>
+                                <option value="discord">Discord</option>
+                                <option value="n8n">N8N</option>
+                                <option value="zapier">Zapier</option>
+                                <option value="webhook_generico">Webhook Generico</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nome *</label>
+                            <input type="text" class="form-control" id="integExtNome" placeholder="Nome da integracao">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">URL / Webhook</label>
+                            <input type="url" class="form-control" id="integExtUrl" placeholder="https://...">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Token / API Key</label>
+                            <input type="password" class="form-control" id="integExtToken" placeholder="Token de autenticacao">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarIntegExt()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/configuracoes.js"></script>
+</body>
+</html>

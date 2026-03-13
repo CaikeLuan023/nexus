@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atendimento - Nexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <nav class="sidebar" id="mainSidebar"></nav>
+
+    <main class="main-content" style="padding:0;height:100vh;display:flex;flex-direction:column">
+        <!-- Header -->
+        <div class="atd-page-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-headset fs-4"></i>
+                <h5 class="mb-0 fw-bold">Central de Atendimento</h5>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="atd-status-indicator" id="atdStatusDot"></div>
+                <span class="atd-status-text" id="atdStatusText">Verificando...</span>
+                <button class="btn btn-sm atd-btn-refresh" onclick="atdCheckStatus()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- QR Code Panel (when not connected) -->
+        <div class="atd-qr-panel" id="atdQrPanel" style="display:none">
+            <div class="atd-qr-content">
+                <div class="atd-qr-icon">
+                    <i class="bi bi-qr-code-scan"></i>
+                </div>
+                <h4>Conectar ao Atendimento</h4>
+                <p class="text-muted">Escaneie o QR Code abaixo com seu celular para ativar o atendimento</p>
+                <div id="atdQrContainer" class="atd-qr-image">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-primary" onclick="atdStartSession()" id="atdBtnStart">
+                        <i class="bi bi-play-circle me-1"></i>Iniciar Sessao
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="atdRefreshQR()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Atualizar QR
+                    </button>
+                </div>
+                <button class="btn btn-outline-danger btn-sm mt-2" onclick="atdStopSession()" id="atdBtnStop" style="display:none">
+                    <i class="bi bi-stop-circle me-1"></i>Desconectar
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Layout -->
+        <div class="atd-layout" id="atdLayout">
+            <!-- Contacts Panel -->
+            <div class="atd-contacts-panel">
+                <div class="atd-contacts-search">
+                    <div class="atd-search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="atdSearchInput" placeholder="Buscar conversa..." oninput="atdFilterChats()">
+                    </div>
+                </div>
+                <!-- Queue Filter Bar -->
+                <div class="atd-queue-filters" id="atdQueueFilters" style="display:none">
+                    <div class="d-flex gap-1 px-2 py-2" id="atdFilterBtns"></div>
+                </div>
+                <div class="atd-contacts-list" id="atdChatsList">
+                    <div class="atd-contacts-empty">
+                        <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                        Carregando conversas...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Panel -->
+            <div class="atd-messages-panel">
+                <!-- Empty State -->
+                <div class="atd-empty-state" id="atdEmptyState">
+                    <div class="atd-empty-icon">
+                        <i class="bi bi-chat-square-text"></i>
+                    </div>
+                    <h5>Central de Atendimento</h5>
+                    <p>Selecione uma conversa para iniciar o atendimento</p>
+                </div>
+
+                <!-- Active Chat -->
+                <div id="atdActiveChat" style="display:none;flex-direction:column;flex:1;min-height:0">
+                    <!-- Chat Header -->
+                    <div class="atd-chat-header" id="atdChatHeader">
+                        <button class="btn btn-sm atd-btn-back d-md-none" onclick="atdVoltarLista()">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <div class="atd-chat-avatar" id="atdChatAvatar">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div class="atd-chat-info">
+                            <div class="atd-chat-name" id="atdChatName">-</div>
+                            <div class="atd-chat-status" id="atdChatStatus">Online</div>
+                        </div>
+                        <div class="ms-auto d-flex gap-1 align-items-center">
+                            <div id="atdChatActions" class="d-flex gap-1"></div>
+                            <button class="btn btn-sm atd-header-btn" onclick="atdToggleSearch()" title="Buscar mensagens">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search in chat -->
+                    <div class="atd-chat-search" id="atdChatSearchBar" style="display:none">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" id="atdChatSearchInput" placeholder="Buscar nesta conversa..." onkeydown="if(event.key==='Enter')atdSearchInChat()">
+                            <button class="btn btn-primary" onclick="atdSearchInChat()"><i class="bi bi-search"></i></button>
+                            <button class="btn btn-outline-secondary" onclick="atdToggleSearch()"><i class="bi bi-x"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Typing indicator -->
+                    <div class="atd-typing" id="atdTyping" style="display:none">
+                        <div class="atd-typing-dots"><span></span><span></span><span></span></div>
+                        <span id="atdTypingText">digitando...</span>
+                    </div>
+
+                    <!-- Messages Body -->
+                    <div class="atd-messages-body" id="atdMessagesBody"></div>
+
+                    <!-- Reply Preview -->
+                    <div class="atd-reply-preview" id="atdReplyPreview" style="display:none">
+                        <div class="atd-reply-content">
+                            <div class="atd-reply-name" id="atdReplyName"></div>
+                            <div class="atd-reply-text" id="atdReplyText"></div>
+                        </div>
+                        <button class="btn-close btn-close-sm" onclick="atdCancelReply()"></button>
+                    </div>
+
+                    <!-- Input Bar -->
+                    <div class="atd-input-bar">
+                        <button class="atd-input-action" onclick="document.getElementById('atdFileInput').click()" title="Enviar arquivo">
+                            <i class="bi bi-paperclip"></i>
+                        </button>
+                        <input type="file" id="atdFileInput" style="display:none" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx" onchange="atdSendFile(this)">
+                        <input type="text" class="atd-input-field" id="atdMessageInput" placeholder="Digite sua mensagem..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();atdSendMessage()}">
+                        <button class="atd-send-btn" onclick="atdSendMessage()" id="atdBtnSend">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Transfer Modal -->
+    <div class="modal fade" id="atdModalTransferir" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title"><i class="bi bi-arrow-left-right me-1"></i>Transferir Chat</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label small">Transferir para:</label>
+                    <select class="form-select form-select-sm" id="atdTransferAgente">
+                        <option value="">Carregando agentes...</option>
+                    </select>
+                    <div class="mt-2">
+                        <label class="form-label small">Observação (opcional):</label>
+                        <input type="text" class="form-control form-control-sm" id="atdTransferNota" placeholder="Motivo da transferência...">
+                    </div>
+                </div>
+                <div class="modal-footer py-1">
+                    <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-sm btn-primary" onclick="atdConfirmarTransferencia()">Transferir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Media Viewer Modal -->
+    <div class="modal fade" id="atdModalMedia" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-header border-0 pb-0">
+                    <div class="ms-auto d-flex gap-2">
+                        <a id="atdMediaDownload" href="#" download class="btn btn-sm btn-light"><i class="bi bi-download me-1"></i>Baixar</a>
+                        <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                </div>
+                <div class="modal-body text-center p-2">
+                    <div id="atdMediaLoading" class="py-5">
+                        <div class="spinner-border text-light"></div>
+                        <p class="text-light mt-2">Carregando...</p>
+                    </div>
+                    <img id="atdMediaImg" src="" class="img-fluid rounded" style="max-height:80vh;display:none">
+                    <video id="atdMediaVideo" controls class="img-fluid rounded" style="max-height:80vh;display:none"></video>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio notification -->
+    <audio id="atdNotifSound" preload="auto">
+        <source src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYh5RwRAAAAAAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYh5RwRAAAAAAAAAAAAAAAAAAAA" type="audio/mpeg">
+    </audio>
+
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/atendimento.js"></script>
+</body>
+</html>

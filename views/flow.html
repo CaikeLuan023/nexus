@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluxos - Nexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/drawflow@0.0.60/dist/drawflow.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">
+        <i class="bi bi-list"></i>
+    </button>
+    <nav class="sidebar" id="mainSidebar"></nav>
+
+    <main class="main-content" style="padding-bottom:0">
+
+        <!-- VIEW 1: Lista de Fluxos -->
+        <div id="viewLista">
+            <div class="page-header">
+                <h2><i class="bi bi-diagram-3 me-2"></i>Fluxos WhatsApp</h2>
+                <button class="btn btn-primary" onclick="novoFluxo()">
+                    <i class="bi bi-plus-lg me-1"></i> Novo Fluxo
+                </button>
+            </div>
+            <div class="alert alert-info mb-3">
+                <i class="bi bi-info-circle me-1"></i>
+                Crie fluxos de atendimento automatizado para WhatsApp. Apenas <strong>um fluxo</strong> pode estar ativo por vez.
+            </div>
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Descricao</th>
+                                <th>Status</th>
+                                <th>Sessoes</th>
+                                <th>Versao</th>
+                                <th>Atualizado</th>
+                                <th>Acoes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaFluxos">
+                            <tr><td colspan="7" class="text-center text-muted py-4">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: Editor de Fluxo -->
+        <div id="viewEditor" style="display:none">
+            <!-- Top bar -->
+            <div class="flow-editor-topbar">
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="voltarLista()">
+                        <i class="bi bi-arrow-left me-1"></i>Voltar
+                    </button>
+                    <input type="text" class="form-control form-control-sm" id="flowNome"
+                           placeholder="Nome do fluxo" style="max-width:250px">
+                    <input type="text" class="form-control form-control-sm" id="flowDescricao"
+                           placeholder="Descricao (opcional)" style="max-width:250px">
+                </div>
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="flowAtivo" onchange="toggleFlowAtivo()">
+                        <label class="form-check-label small" for="flowAtivo">Ativo</label>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="limparCanvas()">
+                        <i class="bi bi-trash me-1"></i>Limpar
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="salvarFluxo()">
+                        <i class="bi bi-save me-1"></i>Salvar
+                    </button>
+                </div>
+            </div>
+
+            <div class="flow-editor-layout">
+                <!-- Esquerda: Paleta de Nos -->
+                <div class="flow-palette">
+                    <h6 class="mb-2 fw-bold">Nos</h6>
+                    <div class="flow-palette-node" draggable="true" data-node="inicio">
+                        <i class="bi bi-play-circle text-success"></i> Inicio
+                    </div>
+                    <div class="flow-palette-node" draggable="true" data-node="mensagem">
+                        <i class="bi bi-chat-left-text text-primary"></i> Mensagem
+                    </div>
+                    <div class="flow-palette-node" draggable="true" data-node="menu">
+                        <i class="bi bi-list-ol text-warning"></i> Menu
+                    </div>
+                    <div class="flow-palette-node" draggable="true" data-node="condicao">
+                        <i class="bi bi-signpost-split text-info"></i> Condicao
+                    </div>
+                    <div class="flow-palette-node" draggable="true" data-node="entrada">
+                        <i class="bi bi-input-cursor-text"></i> Entrada
+                    </div>
+                    <div class="flow-palette-node" draggable="true" data-node="integracao">
+                        <i class="bi bi-plug" style="color:#6f42c1"></i> Integracao
+                    </div>
+                    <div class="flow-palette-node" draggable="true" data-node="transferir">
+                        <i class="bi bi-headset" style="color:#fd7e14"></i> Transferir
+                    </div>
+                    <div class="flow-palette-node" draggable="true" data-node="fim">
+                        <i class="bi bi-stop-circle text-danger"></i> Fim
+                    </div>
+                </div>
+
+                <!-- Centro: Canvas Drawflow -->
+                <div class="flow-canvas-wrapper">
+                    <div id="drawflow"></div>
+                </div>
+
+                <!-- Direita: Painel de Config -->
+                <div class="flow-config-panel" id="flowConfigPanel" style="display:none">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 fw-bold" id="configPanelTitle">Configurar No</h6>
+                        <button class="btn btn-sm btn-outline-danger" onclick="excluirNodeSelecionado()" title="Excluir no">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    <hr class="my-2">
+                    <div id="configPanelBody"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/drawflow@0.0.60/dist/drawflow.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/flow.js"></script>
+</body>
+</html>

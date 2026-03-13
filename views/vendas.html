@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendas - Nexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <nav class="sidebar" id="mainSidebar"></nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h2><i class="bi bi-cash-coin me-2"></i>Vendas</h2>
+            <div class="d-flex gap-2 align-items-center">
+                <select class="form-select form-select-sm" id="filtroVendedorGlobal" style="width:180px;display:none">
+                    <option value="">Todos vendedores</option>
+                </select>
+                <button class="btn btn-outline-danger btn-sm" onclick="window.open('/api/relatorios/vendas/pdf','_blank')"><i class="bi bi-file-pdf me-1"></i>PDF</button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-3" id="vendasTabs">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabDashboard">
+                    <i class="bi bi-graph-up me-1"></i>Dashboard
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabPipeline">
+                    <i class="bi bi-funnel me-1"></i>Pipeline
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabMetas">
+                    <i class="bi bi-trophy me-1"></i>Metas
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAgenda">
+                    <i class="bi bi-calendar-check me-1"></i>Agenda
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabVisitas">
+                    <i class="bi bi-geo-alt me-1"></i>Visitas
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabPropostas">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>Propostas
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabContratos">
+                    <i class="bi bi-file-earmark-text me-1"></i>Contratos
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabComissoes" id="tabComissoesBtn" style="display:none">
+                    <i class="bi bi-currency-dollar me-1"></i>Comissoes
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- ==================== TAB DASHBOARD ==================== -->
+            <div class="tab-pane fade show active" id="tabDashboard">
+                <!-- Follow-up Alertas -->
+                <div id="followupAlertas" class="mb-3"></div>
+
+                <!-- KPIs -->
+                <div class="row g-3 mb-4" id="dashKpis">
+                    <div class="col-md-3 col-6">
+                        <div class="card stat-card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-funnel fs-3 text-primary"></i>
+                                <h3 class="mb-0 mt-1" id="kpiTotalNegocios">-</h3>
+                                <small class="text-muted">Negocios</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="card stat-card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-check-circle fs-3 text-success"></i>
+                                <h3 class="mb-0 mt-1" id="kpiAtivacoes">-</h3>
+                                <small class="text-muted">Ativacoes</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="card stat-card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-percent fs-3 text-info"></i>
+                                <h3 class="mb-0 mt-1" id="kpiTaxaConversao">-</h3>
+                                <small class="text-muted">Taxa Conversao</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="card stat-card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-cash-stack fs-3 text-warning"></i>
+                                <h3 class="mb-0 mt-1" id="kpiValorPipeline">-</h3>
+                                <small class="text-muted">Pipeline</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-6">
+                        <div class="card stat-card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-rocket-takeoff fs-3" style="color:#D93B63"></i>
+                                <h3 class="mb-0 mt-1" id="kpiAtivMes">-</h3>
+                                <small class="text-muted">Ativacoes (mes)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="card stat-card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-file-earmark-pdf fs-3 text-danger"></i>
+                                <h3 class="mb-0 mt-1" id="kpiPropostas">-</h3>
+                                <small class="text-muted">Propostas enviadas</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="card stat-card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-hand-thumbs-up fs-3 text-success"></i>
+                                <h3 class="mb-0 mt-1" id="kpiPropostasAceitas">-</h3>
+                                <small class="text-muted">Aceitas</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="card stat-card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-geo-alt fs-3 text-primary"></i>
+                                <h3 class="mb-0 mt-1" id="kpiVisitasMes">-</h3>
+                                <small class="text-muted">Visitas (mes)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <!-- Funil -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header"><i class="bi bi-filter me-1"></i>Funil de Conversao</div>
+                            <div class="card-body" id="dashFunil">
+                                <div class="text-center text-muted py-3">Carregando...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ativacoes por mes -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header"><i class="bi bi-bar-chart me-1"></i>Ativacoes por Mes</div>
+                            <div class="card-body" id="dashAtivacoesMes">
+                                <div class="text-center text-muted py-3">Carregando...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ranking Vendedores -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header"><i class="bi bi-trophy me-1"></i>Ranking Vendedores</div>
+                            <div class="card-body" id="dashRanking">
+                                <div class="text-center text-muted py-3">Carregando...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Negocios por Origem -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header"><i class="bi bi-diagram-3 me-1"></i>Negocios por Origem</div>
+                            <div class="card-body" id="dashOrigem">
+                                <div class="text-center text-muted py-3">Carregando...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Propostas Stats -->
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header"><i class="bi bi-file-earmark-pdf me-1"></i>Propostas - Resumo</div>
+                            <div class="card-body" id="dashPropostas">
+                                <div class="text-center text-muted py-3">Carregando...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB PIPELINE ==================== -->
+            <div class="tab-pane fade" id="tabPipeline">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex gap-2 align-items-center">
+                        <small class="text-muted" id="pipelineResumo"></small>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="abrirModalNegocio()">
+                        <i class="bi bi-plus-lg me-1"></i>Novo Negócio
+                    </button>
+                </div>
+                <div class="kanban-board" id="kanbanBoard">
+                    <div class="text-center text-muted py-5 w-100">Carregando pipeline...</div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB METAS ==================== -->
+            <div class="tab-pane fade" id="tabMetas">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex gap-2 align-items-center">
+                        <label class="form-label mb-0 me-1">Período:</label>
+                        <input type="month" class="form-control form-control-sm" id="metaPeriodo" style="width:180px">
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="btnNovaMeta" style="display:none" onclick="abrirModalMeta()">
+                        <i class="bi bi-plus-lg me-1"></i>Nova Meta
+                    </button>
+                </div>
+                <div id="metasContainer">
+                    <div class="text-center text-muted py-5">Carregando metas...</div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB AGENDA ==================== -->
+            <div class="tab-pane fade" id="tabAgenda">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex gap-2 align-items-center">
+                        <select class="form-select form-select-sm" id="filtroTarefaStatus" style="width:150px" onchange="carregarTarefas()">
+                            <option value="">Todos status</option>
+                            <option value="pendente" selected>Pendentes</option>
+                            <option value="concluida">Concluídas</option>
+                            <option value="cancelada">Canceladas</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="abrirModalTarefa()">
+                        <i class="bi bi-plus-lg me-1"></i>Nova Tarefa
+                    </button>
+                </div>
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Título</th>
+                                    <th>Provedor / Negócio</th>
+                                    <th>Data/Hora</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaTarefas">
+                                <tr><td colspan="6" class="text-center text-muted py-4">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB VISITAS ==================== -->
+            <div class="tab-pane fade" id="tabVisitas">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex gap-2 align-items-center">
+                        <select class="form-select form-select-sm" id="filtroVisitaStatus" style="width:150px" onchange="carregarVisitas()">
+                            <option value="">Todos status</option>
+                            <option value="agendada">Agendadas</option>
+                            <option value="realizada">Realizadas</option>
+                            <option value="cancelada">Canceladas</option>
+                            <option value="remarcada">Remarcadas</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="abrirModalVisita()">
+                        <i class="bi bi-plus-lg me-1"></i>Nova Visita
+                    </button>
+                </div>
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Provedor</th>
+                                    <th>Data</th>
+                                    <th>Hora</th>
+                                    <th>Tipo</th>
+                                    <th>Status</th>
+                                    <th>Endereço</th>
+                                    <th>Responsável</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaVisitas">
+                                <tr><td colspan="8" class="text-center text-muted py-4">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB PROPOSTAS ==================== -->
+            <div class="tab-pane fade" id="tabPropostas">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex gap-2 align-items-center">
+                        <select class="form-select form-select-sm" id="filtroPropostaStatus" style="width:150px" onchange="carregarPropostas()">
+                            <option value="">Todos status</option>
+                            <option value="rascunho">Rascunho</option>
+                            <option value="enviada">Enviada</option>
+                            <option value="aceita">Aceita</option>
+                            <option value="recusada">Recusada</option>
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" id="btnConfigEmail" style="display:none" onclick="abrirConfigEmail()" title="Config Email">
+                            <i class="bi bi-gear me-1"></i>Email
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" id="btnFollowUpConfig" style="display:none" onclick="abrirFollowUpConfig()" title="Config Follow-up">
+                            <i class="bi bi-bell me-1"></i>Follow-up
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="abrirTemplates()" title="Templates de proposta">
+                            <i class="bi bi-bookmark me-1"></i>Templates
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="abrirFormulariosPreenchidos()" title="Ver formularios preenchidos">
+                            <i class="bi bi-file-text me-1"></i>Formularios
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="abrirModalProposta()">
+                            <i class="bi bi-plus-lg me-1"></i>Nova Proposta
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Provedor</th>
+                                    <th>Título</th>
+                                    <th>Planos</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                    <th>Enviada via</th>
+                                    <th>Data</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaPropostas">
+                                <tr><td colspan="8" class="text-center text-muted py-4">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB CONTRATOS ==================== -->
+            <div class="tab-pane fade" id="tabContratos">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex gap-2 align-items-center">
+                        <select class="form-select form-select-sm" id="filtroContratoStatus" style="width:150px" onchange="carregarContratos()">
+                            <option value="">Todos status</option>
+                            <option value="pendente">Pendente</option>
+                            <option value="enviado">Enviado</option>
+                            <option value="assinado">Assinado</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="abrirModalContrato()">
+                        <i class="bi bi-plus-lg me-1"></i>Novo Contrato
+                    </button>
+                </div>
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Provedor</th>
+                                    <th>Titulo</th>
+                                    <th>Valor Mensal</th>
+                                    <th>Status</th>
+                                    <th>Assinado por</th>
+                                    <th>Data</th>
+                                    <th>Acoes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaContratos">
+                                <tr><td colspan="7" class="text-center text-muted py-4">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB COMISSOES ==================== -->
+            <div class="tab-pane fade" id="tabComissoes">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex gap-2 align-items-center">
+                        <label class="form-label mb-0 me-1">Periodo:</label>
+                        <input type="month" class="form-control form-control-sm" id="comissaoPeriodo" style="width:180px">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="abrirRegrasComissao()">
+                            <i class="bi bi-gear me-1"></i>Regras
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="calcularComissoes()">
+                            <i class="bi bi-calculator me-1"></i>Calcular Comissoes
+                        </button>
+                    </div>
+                </div>
+                <!-- Resumo -->
+                <div id="comissaoResumo" class="mb-3"></div>
+                <!-- Lista -->
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Vendedor</th>
+                                    <th>Descricao</th>
+                                    <th>Valor Base</th>
+                                    <th>%</th>
+                                    <th>Comissao</th>
+                                    <th>Status</th>
+                                    <th>Acoes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaComissoes">
+                                <tr><td colspan="7" class="text-center text-muted py-4">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ==================== MODAL HISTORICO POR PROVEDOR ==================== -->
+    <div class="modal fade" id="modalHistoricoProvedor" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-clock-history me-2"></i>Historico de Interacoes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="historicoProvedorConteudo">
+                        <div class="text-center text-muted py-4">Carregando...</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL TEMPLATES PROPOSTA ==================== -->
+    <div class="modal fade" id="modalTemplates" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-bookmark me-2"></i>Templates de Proposta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="listaTemplates">
+                        <div class="text-center text-muted py-4">Carregando...</div>
+                    </div>
+                    <hr>
+                    <h6>Salvar Template Atual</h6>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="templateNome" placeholder="Nome do template...">
+                        <button class="btn btn-primary" onclick="salvarTemplate()">
+                            <i class="bi bi-save me-1"></i>Salvar
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL RASTREAMENTO ==================== -->
+    <div class="modal fade" id="modalRastreamento" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-eye me-2"></i>Rastreamento da Proposta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="rastreamentoConteudo">
+                        <div class="text-center text-muted py-4">Carregando...</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL REGRAS COMISSAO ==================== -->
+    <div class="modal fade" id="modalRegrasComissao" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-gear me-2"></i>Regras de Comissao</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="listaRegrasComissao" class="mb-3">
+                        <div class="text-center text-muted py-4">Carregando...</div>
+                    </div>
+                    <hr>
+                    <h6>Nova Regra</h6>
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" id="regraVendedor">
+                                <option value="">Vendedor...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" id="regraTipo">
+                                <option value="por_ativacao">Por Ativacao</option>
+                                <option value="por_valor">% do Valor</option>
+                                <option value="por_plano">Por Plano</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" class="form-control form-control-sm" id="regraPercentual" placeholder="%" step="0.1" min="0">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" class="form-control form-control-sm" id="regraValorFixo" placeholder="R$ fixo" step="0.01" min="0">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary btn-sm w-100" onclick="salvarRegraComissao()">
+                                <i class="bi bi-plus-lg"></i> Adicionar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL FOLLOW-UP CONFIG ==================== -->
+    <div class="modal fade" id="modalFollowUpConfig" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-bell me-2"></i>Configurar Follow-up Automatico</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="followupConfigLista">
+                        <div class="text-center text-muted py-4">Carregando...</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL NEGOCIO ==================== -->
+    <div class="modal fade" id="modalNegocio" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalNegocioTitulo">Novo Negócio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="negocioId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Provedor (existente)</label>
+                            <select class="form-select" id="negocioProvedorId">
+                                <option value="">Nenhum (lead novo)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nome do Lead *</label>
+                            <input type="text" class="form-control" id="negocioNomeLead" placeholder="Nome se não for provedor cadastrado">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contato</label>
+                            <input type="text" class="form-control" id="negocioContato" placeholder="Telefone ou email">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Estágio</label>
+                            <select class="form-select" id="negocioEstagio">
+                                <option value="lead">Lead</option>
+                                <option value="contato">Contato</option>
+                                <option value="proposta">Proposta</option>
+                                <option value="negociacao">Negociação</option>
+                                <option value="ativado">Ativado</option>
+                                <option value="perdido">Perdido</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Plano de Interesse</label>
+                            <select class="form-select" id="negocioPlano">
+                                <option value="">Selecione...</option>
+                                <option value="zapping_lite_plus">Zapping Lite Plus</option>
+                                <option value="zapping_full">Zapping Full</option>
+                                <option value="liteplus_full">Lite Plus + Full</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Valor Estimado (R$)</label>
+                            <input type="number" class="form-control" id="negocioValor" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Origem</label>
+                            <select class="form-select" id="negocioOrigem">
+                                <option value="">Selecione...</option>
+                                <option value="indicacao">Indicação</option>
+                                <option value="prospeccao">Prospecção Ativa</option>
+                                <option value="inbound">Inbound (site/marketing)</option>
+                                <option value="evento">Evento</option>
+                                <option value="parceiro">Parceiro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="campoMotivoPerdaContainer" style="display:none">
+                            <label class="form-label">Motivo da Perda</label>
+                            <input type="text" class="form-control" id="negocioMotivo">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-control" id="negocioObs" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarNegocio()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL DETALHE NEGOCIO ==================== -->
+    <div class="modal fade" id="modalDetalheNegocio" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detalheNegocioTitulo">Detalhes do Negócio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="detalheNegocioConteudo"></div>
+                    <hr>
+                    <h6><i class="bi bi-chat-dots me-1"></i>Interações</h6>
+                    <div id="listaInteracoes" class="mb-3" style="max-height:300px;overflow-y:auto"></div>
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm" id="interacaoTipo" style="width:130px">
+                            <option value="nota">Nota</option>
+                            <option value="ligacao">Ligação</option>
+                            <option value="email">Email</option>
+                            <option value="reuniao">Reunião</option>
+                            <option value="whatsapp">WhatsApp</option>
+                        </select>
+                        <input type="text" class="form-control form-control-sm" id="interacaoTexto" placeholder="Adicionar interação...">
+                        <button class="btn btn-sm btn-primary" onclick="adicionarInteracao()">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL META ==================== -->
+    <div class="modal fade" id="modalMeta" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalMetaTitulo">Nova Meta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="metaId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Vendedor *</label>
+                            <select class="form-select" id="metaVendedor"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Período *</label>
+                            <input type="month" class="form-control" id="metaPeriodoInput" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de Meta *</label>
+                            <select class="form-select" id="metaTipo">
+                                <option value="quantidade_ativacoes">Qtd. Ativações</option>
+                                <option value="quantidade_upsells">Qtd. Upsells</option>
+                                <option value="valor_contratos">Valor Contratos (R$)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Valor Alvo *</label>
+                            <input type="number" class="form-control" id="metaValorAlvo" step="0.01" min="0" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">% Comissão</label>
+                            <input type="number" class="form-control" id="metaComissao" step="0.01" min="0" max="100" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarMeta()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL TAREFA ==================== -->
+    <div class="modal fade" id="modalTarefa" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTarefaTitulo">Nova Tarefa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="tarefaId">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Título *</label>
+                            <input type="text" class="form-control" id="tarefaTitulo" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="tarefaTipo">
+                                <option value="follow_up">Follow-up</option>
+                                <option value="ligacao">Ligação</option>
+                                <option value="reuniao">Reunião</option>
+                                <option value="email">Email</option>
+                                <option value="whatsapp">WhatsApp</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Data/Hora *</label>
+                            <input type="datetime-local" class="form-control" id="tarefaDataHora" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Provedor</label>
+                            <select class="form-select" id="tarefaProvedor">
+                                <option value="">Nenhum</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Negócio</label>
+                            <select class="form-select" id="tarefaNegocio">
+                                <option value="">Nenhum</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Descrição</label>
+                            <textarea class="form-control" id="tarefaDescricao" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarTarefa()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL VISITA ==================== -->
+    <div class="modal fade" id="modalVisita" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalVisitaTitulo">Nova Visita</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="visitaId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Provedor *</label>
+                            <select class="form-select" id="visitaProvedor" required></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Negócio</label>
+                            <select class="form-select" id="visitaNegocio">
+                                <option value="">Nenhum</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Data *</label>
+                            <input type="date" class="form-control" id="visitaData" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Hora</label>
+                            <input type="time" class="form-control" id="visitaHora">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="visitaTipo">
+                                <option value="presencial">Presencial</option>
+                                <option value="remota">Remota</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="visitaStatus">
+                                <option value="agendada">Agendada</option>
+                                <option value="realizada">Realizada</option>
+                                <option value="cancelada">Cancelada</option>
+                                <option value="remarcada">Remarcada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Endereço</label>
+                            <input type="text" class="form-control" id="visitaEndereco">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-control" id="visitaObs" rows="2"></textarea>
+                        </div>
+                        <div class="col-12" id="visitaResultadoContainer" style="display:none">
+                            <label class="form-label">Resultado</label>
+                            <textarea class="form-control" id="visitaResultado" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarVisita()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL PROPOSTA ==================== -->
+    <div class="modal fade" id="modalProposta" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPropostaTitulo">Nova Proposta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="propostaId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Provedor (existente)</label>
+                            <select class="form-select" id="propostaProvedorId" onchange="propostaProvedorChange()">
+                                <option value="">Selecione ou digite abaixo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nome do Provedor *</label>
+                            <input type="text" class="form-control" id="propostaProvedorNome" placeholder="Nome do provedor">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Título da Proposta *</label>
+                            <input type="text" class="form-control" id="propostaTitulo" placeholder="Ex: Proposta Comercial - Zapping TV">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Vincular Negócio</label>
+                            <select class="form-select" id="propostaNegocioId">
+                                <option value="">Nenhum</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Planos e Preços</label>
+                            <div class="row g-2" id="propostaPlanos">
+                                <div class="col-md-4">
+                                    <div class="proposta-plano-card" data-plano="zapping_lite_plus">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="planoLitePlus" onchange="calcularValorTotal()">
+                                            <label class="form-check-label fw-bold" for="planoLitePlus">Zapping Lite Plus</label>
+                                        </div>
+                                        <input type="number" class="form-control form-control-sm mt-1" id="precoLitePlus" placeholder="Preço R$" step="0.01" min="0" onchange="calcularValorTotal()">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="proposta-plano-card" data-plano="zapping_full">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="planoFull" onchange="calcularValorTotal()">
+                                            <label class="form-check-label fw-bold" for="planoFull">Zapping Full</label>
+                                        </div>
+                                        <input type="number" class="form-control form-control-sm mt-1" id="precoFull" placeholder="Preço R$" step="0.01" min="0" onchange="calcularValorTotal()">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="proposta-plano-card" data-plano="liteplus_full">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="planoCombo" onchange="calcularValorTotal()">
+                                            <label class="form-check-label fw-bold" for="planoCombo">Lite Plus + Full</label>
+                                        </div>
+                                        <input type="number" class="form-control form-control-sm mt-1" id="precoCombo" placeholder="Preço R$" step="0.01" min="0" onchange="calcularValorTotal()">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <label class="form-label">Adicionais</label>
+                                <div class="row g-2" id="propostaAdicionais">
+                                    <div class="col-md-3">
+                                        <div class="proposta-plano-card adicional">
+                                            <div class="form-check">
+                                                <input class="form-check-input adicional-check" type="checkbox" data-nome="Telecine" onchange="calcularValorTotal()">
+                                                <label class="form-check-label">Telecine</label>
+                                            </div>
+                                            <input type="number" class="form-control form-control-sm mt-1 adicional-preco" placeholder="R$" step="0.01" min="0" onchange="calcularValorTotal()">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="proposta-plano-card adicional">
+                                            <div class="form-check">
+                                                <input class="form-check-input adicional-check" type="checkbox" data-nome="Combate" onchange="calcularValorTotal()">
+                                                <label class="form-check-label">Combate</label>
+                                            </div>
+                                            <input type="number" class="form-control form-control-sm mt-1 adicional-preco" placeholder="R$" step="0.01" min="0" onchange="calcularValorTotal()">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="proposta-plano-card adicional">
+                                            <div class="form-check">
+                                                <input class="form-check-input adicional-check" type="checkbox" data-nome="Premiere" onchange="calcularValorTotal()">
+                                                <label class="form-check-label">Premiere</label>
+                                            </div>
+                                            <input type="number" class="form-control form-control-sm mt-1 adicional-preco" placeholder="R$" step="0.01" min="0" onchange="calcularValorTotal()">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="proposta-plano-card adicional">
+                                            <div class="form-check">
+                                                <input class="form-check-input adicional-check" type="checkbox" data-nome="HBO Max" onchange="calcularValorTotal()">
+                                                <label class="form-check-label">HBO Max</label>
+                                            </div>
+                                            <input type="number" class="form-control form-control-sm mt-1 adicional-preco" placeholder="R$" step="0.01" min="0" onchange="calcularValorTotal()">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Valor Total (R$)</label>
+                            <input type="number" class="form-control" id="propostaValorTotal" step="0.01" min="0" readonly style="font-weight:700;font-size:1.1rem">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Validade (dias)</label>
+                            <input type="number" class="form-control" id="propostaValidade" value="30" min="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="propostaStatus">
+                                <option value="rascunho">Rascunho</option>
+                                <option value="enviada">Enviada</option>
+                                <option value="aceita">Aceita</option>
+                                <option value="recusada">Recusada</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Condições Comerciais</label>
+                            <textarea class="form-control" id="propostaCondicoes" rows="3" placeholder="Condições especiais, prazo de pagamento, observações..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarProposta()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL ENVIAR PROPOSTA ==================== -->
+    <div class="modal fade" id="modalEnviarProposta" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-send me-2"></i>Enviar Proposta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="enviarPropostaId">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Enviar via</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="enviarViaWhatsApp" checked>
+                                    <label class="form-check-label" for="enviarViaWhatsApp">
+                                        <i class="bi bi-whatsapp text-success me-1"></i>WhatsApp
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="enviarViaEmail">
+                                    <label class="form-check-label" for="enviarViaEmail">
+                                        <i class="bi bi-envelope text-primary me-1"></i>Email
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12" id="campoWhatsApp">
+                            <label class="form-label">Número WhatsApp *</label>
+                            <input type="text" class="form-control" id="enviarWhatsAppNumero" placeholder="5511999999999">
+                            <small class="text-muted">Formato: 55 + DDD + número (sem espaços ou traços)</small>
+                        </div>
+                        <div class="col-12 d-none" id="campoEmail">
+                            <label class="form-label">Email destino *</label>
+                            <input type="email" class="form-control" id="enviarEmailDestino" placeholder="email@provedor.com">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Mensagem personalizada</label>
+                            <textarea class="form-control" id="enviarMensagem" rows="3" placeholder="Mensagem que acompanhará a proposta...">Olá! Segue a proposta comercial da Zapping TV conforme conversamos. Qualquer dúvida estamos à disposição!</textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="enviarIncluirPDF" checked>
+                                <label class="form-check-label" for="enviarIncluirPDF">
+                                    <i class="bi bi-file-earmark-pdf text-danger me-1"></i>Enviar proposta em PDF
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="enviarIncluirFormulario">
+                                <label class="form-check-label" for="enviarIncluirFormulario">
+                                    <i class="bi bi-file-text me-1"></i>Incluir link do formulário de cadastro
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btnEnviarProposta" onclick="executarEnvio()">
+                        <i class="bi bi-send me-1"></i>Enviar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL CONFIG EMAIL ==================== -->
+    <div class="modal fade" id="modalConfigEmail" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-gear me-2"></i>Configuração de Email (SMTP)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Para usar Gmail: ative a verificação em 2 etapas, acesse
+                        <strong>Configurações Google > Segurança > Senhas de App</strong>,
+                        gere uma senha de 16 caracteres e cole no campo "Senha de App".
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Host SMTP</label>
+                            <input type="text" class="form-control" id="configSmtpHost" value="smtp.gmail.com">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Porta</label>
+                            <input type="number" class="form-control" id="configSmtpPort" value="587">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Email (usuário SMTP) *</label>
+                            <input type="email" class="form-control" id="configSmtpUser" placeholder="seuemail@gmail.com">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Senha de App *</label>
+                            <input type="password" class="form-control" id="configSmtpPass" placeholder="Senha de 16 caracteres do Google">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Nome do Remetente</label>
+                            <input type="text" class="form-control" id="configNomeRemetente" value="Nexus">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="configEmailAtivo">
+                                <label class="form-check-label" for="configEmailAtivo">Email ativo</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-info" onclick="testarEmail()">
+                        <i class="bi bi-envelope-check me-1"></i>Testar
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarConfigEmail()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL FORMULARIOS PREENCHIDOS ==================== -->
+    <div class="modal fade" id="modalFormularios" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-file-text me-2"></i>Formulários de Cadastro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="listaFormularios">
+                        <div class="text-center text-muted py-4">Carregando...</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL CONTRATO ==================== -->
+    <div class="modal fade" id="modalContrato" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalContratoTitulo">Novo Contrato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="contratoId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Provedor *</label>
+                            <select class="form-select" id="contratoProvedorId" onchange="contratoProvedorChange()">
+                                <option value="">Selecione ou digite abaixo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nome do Provedor *</label>
+                            <input type="text" class="form-control" id="contratoProvedorNome" placeholder="Nome do provedor">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Titulo do Contrato *</label>
+                            <input type="text" class="form-control" id="contratoTitulo" placeholder="Ex: Contrato de Servico - Zapping TV">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Numero Contrato</label>
+                            <input type="text" class="form-control" id="contratoNumero" placeholder="Opcional">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Vincular Negocio</label>
+                            <select class="form-select" id="contratoNegocioId">
+                                <option value="">Nenhum</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Vincular Proposta</label>
+                            <select class="form-select" id="contratoPropostaId">
+                                <option value="">Nenhuma</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="contratoStatus">
+                                <option value="pendente">Pendente</option>
+                                <option value="enviado">Enviado</option>
+                                <option value="assinado">Assinado</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Valor Mensal (R$)</label>
+                            <input type="number" class="form-control" id="contratoValorMensal" step="0.01" min="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Valor Total (R$)</label>
+                            <input type="number" class="form-control" id="contratoValorTotal" step="0.01" min="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Data Inicio</label>
+                            <input type="date" class="form-control" id="contratoDataInicio">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Data Fim</label>
+                            <input type="date" class="form-control" id="contratoDataFim">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Conteudo / Termos</label>
+                            <textarea class="form-control" id="contratoConteudo" rows="5" placeholder="Descreva os termos e condicoes do contrato..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarContrato()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL ACEITE CONTRATO ==================== -->
+    <div class="modal fade" id="modalAceiteLink" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-link-45deg me-2"></i>Link de Aceite Digital</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Envie este link para o cliente assinar o contrato digitalmente:</p>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="aceiteLinkUrl" readonly>
+                        <button class="btn btn-outline-primary" onclick="copiarAceiteLink()">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted mt-2 d-block">O cliente podera visualizar o contrato e assinar digitalmente informando seu nome.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmação -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="bi bi-exclamation-triangle text-warning fs-1 mb-3 d-block"></i>
+                    <p id="confirmMessage"></p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmBtn">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/vendas.js"></script>
+</body>
+</html>

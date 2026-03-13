@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Nexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <nav class="sidebar" id="mainSidebar"></nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h2><i class="bi bi-speedometer2 me-2"></i>Dashboard</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" id="btnEditarDash" onclick="toggleEditDashboard()">
+                    <i class="bi bi-pencil-square me-1"></i> Personalizar
+                </button>
+                <div id="editDashActions" style="display:none" class="d-flex gap-2">
+                    <button class="btn btn-success btn-sm" onclick="salvarLayoutDash()">
+                        <i class="bi bi-check-lg me-1"></i> Salvar
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="cancelarEditDash()">
+                        <i class="bi bi-x-lg me-1"></i> Cancelar
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="resetarLayoutDash()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Resetar
+                    </button>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-download me-1"></i> Exportar
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="exportarDashboardCSV()"><i class="bi bi-filetype-csv me-2"></i>CSV</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="exportarDashboardExcel()"><i class="bi bi-file-earmark-excel me-2"></i>Excel</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="exportarDashboardPDF()"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>PDF</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget Container - reordenado via JS -->
+        <div id="dashboardWidgets" class="row g-3">
+
+            <!-- Widget: Cards Resumo -->
+            <div class="dash-widget col-12" data-widget="cards_resumo" data-label="Cards Resumo">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="row g-3">
+                        <div class="col-6 col-xl-2">
+                            <div class="card stat-card h-100">
+                                <div class="card-body d-flex align-items-center gap-3">
+                                    <div class="stat-icon bg-info bg-opacity-10 text-info"><i class="bi bi-building"></i></div>
+                                    <div><div class="stat-number" id="totalProvedores">0</div><div class="stat-label">Provedores</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-xl-2">
+                            <div class="card stat-card h-100">
+                                <div class="card-body d-flex align-items-center gap-3">
+                                    <div class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-ticket-detailed"></i></div>
+                                    <div><div class="stat-number" id="totalChamados">0</div><div class="stat-label">Chamados</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-xl-2">
+                            <div class="card stat-card h-100">
+                                <div class="card-body d-flex align-items-center gap-3">
+                                    <div class="stat-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-exclamation-triangle"></i></div>
+                                    <div><div class="stat-number" id="pendentes">0</div><div class="stat-label">Pendentes</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-xl-2">
+                            <div class="card stat-card h-100">
+                                <div class="card-body d-flex align-items-center gap-3">
+                                    <div class="stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle"></i></div>
+                                    <div><div class="stat-number" id="resolvidos">0</div><div class="stat-label">Resolvidos</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-xl-2">
+                            <div class="card stat-card h-100">
+                                <div class="card-body d-flex align-items-center gap-3">
+                                    <div class="stat-icon" style="background:rgba(114,9,183,0.1);color:#7209b7"><i class="bi bi-mortarboard"></i></div>
+                                    <div><div class="stat-number" id="totalTreinamentos">0</div><div class="stat-label">Treinamentos</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-xl-2">
+                            <div class="card stat-card h-100">
+                                <div class="card-body d-flex align-items-center gap-3">
+                                    <div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="bi bi-kanban"></i></div>
+                                    <div><div class="stat-number" id="projetosAtivos">0</div><div class="stat-label">Projetos Ativos</div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Provedores por Responsavel -->
+            <div class="dash-widget col-lg-4" data-widget="provedores_responsavel" data-label="Provedores por Responsavel">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card h-100">
+                        <h6><i class="bi bi-people me-2"></i>Provedores por Responsavel</h6>
+                        <div class="chart-container"><canvas id="chartResponsavel"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Provedores por Modelo -->
+            <div class="dash-widget col-lg-4" data-widget="provedores_modelo" data-label="Provedores por Modelo">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card h-100">
+                        <h6><i class="bi bi-diagram-3 me-2"></i>Provedores por Modelo</h6>
+                        <div class="chart-container"><canvas id="chartModelo"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Provedores por ERP -->
+            <div class="dash-widget col-lg-4" data-widget="provedores_erp" data-label="Provedores por ERP">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card h-100">
+                        <h6><i class="bi bi-hdd-stack me-2"></i>Provedores por ERP</h6>
+                        <div class="chart-container"><canvas id="chartERP"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Provedores por Plano -->
+            <div class="dash-widget col-lg-4" data-widget="provedores_plano" data-label="Provedores por Plano">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card h-100">
+                        <h6><i class="bi bi-credit-card me-2"></i>Provedores por Plano</h6>
+                        <div class="chart-container"><canvas id="chartPlano"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Treinamentos por Status -->
+            <div class="dash-widget col-lg-4" data-widget="treinamentos_status" data-label="Treinamentos por Status">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card h-100">
+                        <h6><i class="bi bi-mortarboard me-2"></i>Treinamentos por Status</h6>
+                        <div class="chart-container"><canvas id="chartTreinStatus"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Treinamentos por Mes -->
+            <div class="dash-widget col-lg-4" data-widget="treinamentos_mes" data-label="Treinamentos por Mes">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card h-100">
+                        <h6><i class="bi bi-calendar3 me-2"></i>Treinamentos por Mes</h6>
+                        <div class="chart-container"><canvas id="chartTreinMes"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Chamados por Provedor -->
+            <div class="dash-widget col-lg-7" data-widget="chamados_provedor" data-label="Chamados por Provedor">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card h-100">
+                        <h6><i class="bi bi-bar-chart me-2"></i>Chamados por Provedor</h6>
+                        <div class="chart-container chart-container-lg">
+                            <canvas id="chartProvedor"></canvas>
+                            <div id="emptyChartProvedor" class="text-center text-muted py-4" style="display:none">
+                                <i class="bi bi-inbox" style="font-size:2rem"></i>
+                                <p class="mt-2 mb-0">Nenhum chamado registrado</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Chamados por Categoria -->
+            <div class="dash-widget col-lg-5" data-widget="chamados_categoria" data-label="Chamados por Categoria">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card h-100">
+                        <h6><i class="bi bi-pie-chart me-2"></i>Chamados por Categoria</h6>
+                        <div class="chart-container">
+                            <canvas id="chartCategoria"></canvas>
+                            <div id="emptyChartCategoria" class="text-center text-muted py-4" style="display:none">
+                                <i class="bi bi-inbox" style="font-size:2rem"></i>
+                                <p class="mt-2 mb-0">Nenhum chamado registrado</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Chamados por Mes -->
+            <div class="dash-widget col-lg-5" data-widget="chamados_mes" data-label="Chamados por Mes">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card h-100">
+                        <h6><i class="bi bi-graph-up me-2"></i>Chamados por Mes (ultimos 12 meses)</h6>
+                        <div class="chart-container">
+                            <canvas id="chartMes"></canvas>
+                            <div id="emptyChartMes" class="text-center text-muted py-4" style="display:none">
+                                <i class="bi bi-inbox" style="font-size:2rem"></i>
+                                <p class="mt-2 mb-0">Nenhum chamado registrado</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Projetos por Status -->
+            <div class="dash-widget col-lg-3" data-widget="projetos_status" data-label="Projetos por Status">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card h-100">
+                        <h6><i class="bi bi-kanban me-2"></i>Projetos por Status</h6>
+                        <div class="chart-container chart-container-sm">
+                            <canvas id="chartProjStatus"></canvas>
+                            <div id="emptyChartProjStatus" class="text-center text-muted py-4" style="display:none">
+                                <i class="bi bi-inbox" style="font-size:2rem"></i>
+                                <p class="mt-2 mb-0">Nenhum projeto registrado</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Chamados Abertos por Provedor -->
+            <div class="dash-widget col-lg-4" data-widget="chamados_abertos_provedor" data-label="Chamados Abertos por Provedor">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card h-100">
+                        <h6><i class="bi bi-exclamation-circle me-2"></i>Chamados Abertos por Provedor</h6>
+                        <div id="tabelaAbertosProvedor" style="max-height:300px;overflow-y:auto">
+                            <div class="text-center text-muted py-3">Carregando...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Chamados Recentes -->
+            <div class="dash-widget col-12" data-widget="chamados_recentes" data-label="Chamados Recentes">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="chart-card">
+                        <h6><i class="bi bi-clock-history me-2"></i>Ultimos 10 Chamados</h6>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
+                                <thead><tr><th>#</th><th>Provedor</th><th>Titulo</th><th>Categoria</th><th>Status</th><th>Data</th></tr></thead>
+                                <tbody id="tabelaRecentes"><tr><td colspan="6" class="text-center text-muted py-3">Carregando...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Analytics Tendencia -->
+            <div class="dash-widget col-md-6" data-widget="analytics_tendencia" data-label="Chamados Tendencia">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="table-container p-3">
+                        <h6><i class="bi bi-graph-up me-2"></i>Chamados por Mes (12 meses)</h6>
+                        <canvas id="chartChamadosTendencia" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Analytics Resolucao -->
+            <div class="dash-widget col-md-6" data-widget="analytics_resolucao" data-label="Tempo Resolucao">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="table-container p-3">
+                        <h6><i class="bi bi-stopwatch me-2"></i>Tempo Medio de Resolucao (dias)</h6>
+                        <canvas id="chartTempoResolucao" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Analytics Conversao -->
+            <div class="dash-widget col-md-6" data-widget="analytics_conversao" data-label="Taxa Conversao">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="table-container p-3">
+                        <h6><i class="bi bi-funnel me-2"></i>Taxa de Conversao Vendas</h6>
+                        <canvas id="chartTaxaConversao" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget: Analytics Desempenho -->
+            <div class="dash-widget col-md-6" data-widget="analytics_desempenho" data-label="Desempenho Vendedores">
+                <div class="dash-widget-inner">
+                    <div class="dash-widget-handle" style="display:none"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="table-container p-3">
+                        <h6><i class="bi bi-trophy me-2"></i>Desempenho Vendedores</h6>
+                        <canvas id="chartDesempenho" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

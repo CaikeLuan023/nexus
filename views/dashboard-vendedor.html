@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Vendedor - Nexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <nav class="sidebar" id="mainSidebar"></nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h2><i class="bi bi-graph-up-arrow me-2"></i>Meu Dashboard</h2>
+            <div class="d-flex gap-2 align-items-center">
+                <select class="form-select form-select-sm" id="dashFiltroPeriodo" style="width:180px" onchange="aplicarFiltroPeriodo()">
+                    <option value="este_mes">Este Mes</option>
+                    <option value="mes_anterior">Mes Anterior</option>
+                    <option value="3_meses">Ultimos 3 Meses</option>
+                    <option value="custom">Customizado</option>
+                </select>
+                <input type="date" class="form-control form-control-sm d-none" id="dashFiltroInicio" style="width:140px" onchange="aplicarFiltroPeriodo()">
+                <input type="date" class="form-control form-control-sm d-none" id="dashFiltroFim" style="width:140px" onchange="aplicarFiltroPeriodo()">
+                <small class="text-muted" id="dashPeriodo"></small>
+            </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-number" id="statNegociosAtivos">-</div>
+                                <div class="stat-label">Negócios Ativos</div>
+                            </div>
+                            <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-briefcase"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-number" id="statAtivacoesMes">-</div>
+                                <div class="stat-label">Ativações (Mês)</div>
+                            </div>
+                            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-number" id="statTarefasPendentes">-</div>
+                                <div class="stat-label">Tarefas Pendentes</div>
+                            </div>
+                            <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                                <i class="bi bi-list-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stat-number" id="statTaxaConversao">-</div>
+                                <div class="stat-label">Taxa Conversão</div>
+                            </div>
+                            <div class="stat-icon bg-info bg-opacity-10 text-info">
+                                <i class="bi bi-percent"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-5">
+                <div class="chart-card">
+                    <h6><i class="bi bi-pie-chart me-1"></i>Pipeline por Estágio</h6>
+                    <div class="chart-container">
+                        <canvas id="chartPipelineEstagio"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="chart-card">
+                    <h6><i class="bi bi-graph-up me-1"></i>Ativações por Mês</h6>
+                    <div class="chart-container">
+                        <canvas id="chartAtivacoesMes"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance vs Equipe -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="chart-card">
+                    <h6><i class="bi bi-currency-dollar me-1"></i>Valor do Pipeline</h6>
+                    <div class="text-center py-3">
+                        <div class="display-6 fw-bold text-success" id="valorPipeline">R$ 0,00</div>
+                        <small class="text-muted">Total em aberto</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="chart-card">
+                    <h6><i class="bi bi-speedometer me-1"></i>Performance</h6>
+                    <div id="dashPerformanceContainer" class="py-2">
+                        <div class="text-center text-muted py-3">Carregando...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h6><i class="bi bi-trophy me-1"></i>Metas do Mes</h6>
+                    <div id="dashMetasContainer">
+                        <div class="text-center text-muted py-3">Nenhuma meta definida</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Negocios Parados Alert -->
+        <div class="row g-3 mb-4" id="rowNegociosParados" style="display:none">
+            <div class="col-12">
+                <div class="chart-card border-warning">
+                    <h6><i class="bi bi-exclamation-triangle text-warning me-1"></i>Negocios Parados - Requerem Atencao</h6>
+                    <div id="dashNegociosParadosContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ranking + Produtividade Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h6><i class="bi bi-trophy me-1"></i>Ranking de Vendedores</h6>
+                    <div id="dashRankingContainer">
+                        <div class="text-center text-muted py-3">Carregando...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h6><i class="bi bi-lightning me-1"></i>Produtividade Hoje</h6>
+                    <div id="dashProdutividadeContainer">
+                        <div class="text-center text-muted py-3">Carregando...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Proximas Tarefas + Comissoes Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h6><i class="bi bi-calendar-check me-1"></i>Proximas Tarefas</h6>
+                    <div id="dashTarefasContainer">
+                        <div class="text-center text-muted py-3">Nenhuma tarefa pendente</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h6><i class="bi bi-currency-dollar me-1"></i>Historico de Comissoes</h6>
+                    <div id="dashComissoesContainer">
+                        <div class="text-center text-muted py-3">Carregando...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Confirmação -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="bi bi-exclamation-triangle text-warning fs-1 mb-3 d-block"></i>
+                    <p id="confirmMessage"></p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmBtn">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/dashboard-vendedor.js"></script>
+</body>
+</html>
