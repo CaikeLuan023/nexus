@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const _sidebarItems = [
     { id: 'navDashboard', modulo: 'dashboard', icon: 'bi-speedometer2', label: 'Dashboard', href: '/' },
-    { id: 'navProvedores', modulo: 'provedores', icon: 'bi-building', label: 'Provedores', href: '/provedores' },
+    { id: 'navProvedores', modulo: 'provedores', icon: 'bi-people', label: 'Clientes', href: '/provedores' },
     { id: 'navVendas', modulo: 'vendas', icon: 'bi-cash-coin', label: 'Vendas', href: '/vendas' },
     {
         id: 'navDashboardVendedor',
@@ -1213,7 +1213,7 @@ function _injectBuscaModal() {
         <div class="busca-global-container">
             <div class="busca-global-input-wrapper">
                 <i class="bi bi-search"></i>
-                <input type="text" id="buscaGlobalInput" placeholder="Buscar chamados, provedores, projetos..." autocomplete="off" oninput="debounceBusca()">
+                <input type="text" id="buscaGlobalInput" placeholder="Buscar chamados, clientes, projetos..." autocomplete="off" oninput="debounceBusca()">
                 <kbd>ESC</kbd>
             </div>
             <div class="busca-global-results" id="buscaGlobalResults" style="display:none"></div>
@@ -1254,14 +1254,14 @@ async function executarBuscaGlobal() {
         const sections = [];
         const icons = {
             chamados: 'bi-ticket-detailed',
-            provedores: 'bi-building',
+            provedores: 'bi-people',
             projetos: 'bi-kanban',
             treinamentos: 'bi-mortarboard',
             vendas: 'bi-cash-coin'
         };
         const labels = {
             chamados: 'Chamados',
-            provedores: 'Provedores',
+            provedores: 'Clientes',
             projetos: 'Projetos',
             treinamentos: 'Treinamentos',
             vendas: 'Vendas'

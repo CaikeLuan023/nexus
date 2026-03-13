@@ -2915,13 +2915,17 @@ app.post('/api/provedores', requireModuleAccess('provedores'), (req, res) => {
         erp,
         responsavel,
         logo_url,
-        token_integracao
+        token_integracao,
+        cnpj,
+        email,
+        telefone,
+        endereco
     } = req.body;
     if (!nome) return res.status(400).json({ erro: 'Nome é obrigatório' });
 
     try {
         const result = db.queryRun(
-            'INSERT INTO provedores (nome, contato, observacoes, plano, adicionais, modelo_integracao, erp, responsavel, logo_url, token_integracao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO provedores (nome, contato, observacoes, plano, adicionais, modelo_integracao, erp, responsavel, logo_url, token_integracao, cnpj, email, telefone, endereco) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 nome,
                 contato || null,
@@ -2932,15 +2936,19 @@ app.post('/api/provedores', requireModuleAccess('provedores'), (req, res) => {
                 erp || null,
                 responsavel || null,
                 logo_url || null,
-                token_integracao || null
+                token_integracao || null,
+                cnpj || null,
+                email || null,
+                telefone || null,
+                endereco || null
             ]
         );
         const provedor = db.queryGet('SELECT * FROM provedores WHERE id = ?', [result.lastInsertRowid]);
-        registrarAtividade(req, 'criar', 'provedores', provedor.id, `Provedor criado: ${nome}`);
+        registrarAtividade(req, 'criar', 'provedores', provedor.id, `Cliente criado: ${nome}`);
         res.status(201).json(provedor);
     } catch (err) {
         if (err.message && err.message.includes('UNIQUE'))
-            return res.status(400).json({ erro: 'Já existe um provedor com esse nome' });
+            return res.status(400).json({ erro: 'Já existe um cliente com esse nome' });
         handleError(res, err, 'operacao');
     }
 });
@@ -2957,11 +2965,15 @@ app.put('/api/provedores/:id', requireModuleAccess('provedores'), (req, res) => 
         erp,
         responsavel,
         logo_url,
-        token_integracao
+        token_integracao,
+        cnpj,
+        email,
+        telefone,
+        endereco
     } = req.body;
     try {
         db.queryRun(
-            'UPDATE provedores SET nome = ?, contato = ?, observacoes = ?, plano = ?, adicionais = ?, modelo_integracao = ?, erp = ?, responsavel = ?, logo_url = ?, token_integracao = ? WHERE id = ?',
+            'UPDATE provedores SET nome = ?, contato = ?, observacoes = ?, plano = ?, adicionais = ?, modelo_integracao = ?, erp = ?, responsavel = ?, logo_url = ?, token_integracao = ?, cnpj = ?, email = ?, telefone = ?, endereco = ? WHERE id = ?',
             [
                 nome,
                 contato || null,
@@ -2973,15 +2985,19 @@ app.put('/api/provedores/:id', requireModuleAccess('provedores'), (req, res) => 
                 responsavel || null,
                 logo_url || null,
                 token_integracao || null,
+                cnpj || null,
+                email || null,
+                telefone || null,
+                endereco || null,
                 Number(req.params.id)
             ]
         );
         const provedor = db.queryGet('SELECT * FROM provedores WHERE id = ?', [Number(req.params.id)]);
-        registrarAtividade(req, 'editar', 'provedores', Number(req.params.id), `Provedor editado: ${nome}`);
+        registrarAtividade(req, 'editar', 'provedores', Number(req.params.id), `Cliente editado: ${nome}`);
         res.json(provedor);
     } catch (err) {
         if (err.message && err.message.includes('UNIQUE'))
-            return res.status(400).json({ erro: 'Já existe um provedor com esse nome' });
+            return res.status(400).json({ erro: 'Já existe um cliente com esse nome' });
         handleError(res, err, 'operacao');
     }
 });
