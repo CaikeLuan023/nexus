@@ -8317,6 +8317,15 @@ app.post('/api/erp/:tipo/config', requireAdmin, (req, res) => {
     res.json({ ok: true });
 });
 
+app.delete('/api/erp/:tipo/config', requireAdmin, (req, res) => {
+    const { tipo } = req.params;
+    if (!VALID_ERP_TYPES.includes(tipo)) return res.status(400).json({ erro: 'Tipo de ERP invalido' });
+    const db = getDB();
+    db.queryRun('DELETE FROM config_erp WHERE tipo = ?', [tipo]);
+    registrarAtividade(req, 'delete', 'erp', null, `Integracao ${tipo} removida`);
+    res.json({ ok: true });
+});
+
 app.get('/api/erp/:tipo/testar', requireAdmin, async (req, res) => {
     const { tipo } = req.params;
     if (!VALID_ERP_TYPES.includes(tipo)) return res.status(400).json({ erro: 'Tipo de ERP invalido' });

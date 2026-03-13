@@ -783,6 +783,20 @@ async function sincronizarErp() {
     }
 }
 
+async function removerErpConfig() {
+    if (!_erpSelecionado) return;
+    const ui = ERP_UI_CONFIG[_erpSelecionado];
+    if (!confirm('Remover integracao ' + ui.label + '? Isso apaga a configuracao salva.')) return;
+    try {
+        await api('/api/erp/' + _erpSelecionado + '/config', { method: 'DELETE' });
+        mostrarToast('Integracao ' + ui.label + ' removida!');
+        fecharErpConfig();
+        carregarErpStatus();
+    } catch (err) {
+        mostrarToast('Erro: ' + err.message, 'error');
+    }
+}
+
 function toggleErpToken() {
     const input = document.getElementById('erpToken');
     const icon = document.getElementById('erpTokenIcon');
