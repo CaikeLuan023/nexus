@@ -2819,6 +2819,33 @@ app.patch('/api/usuarios/:id/ativo', requireAdmin, (req, res) => {
     res.json(updated);
 });
 
+app.delete('/api/usuarios/:id', requireAdmin, (req, res) => {
+    const db = getDB();
+    const id = Number(req.params.id);
+    const perfil = req.session.usuario.perfil;
+
+    if (!['admin', 'gestor_atendimento', 'gerente_noc'].includes(perfil)) {
+        return res.status(403).json({ erro: 'Apenas administradores ou gestores podem excluir usuarios' });
+    }
+
+    if (req.session.usuario.id === id) {
+        return res.status(400).json({ erro: 'Voce nao pode excluir sua propria conta' });
+    }
+
+    const user = db.queryGet('SELECT id, nome, perfil FROM usuarios WHERE id = ?', [id]);
+    if (!user) return res.status(404).json({ erro: 'Usuario nao encontrado' });
+
+    if (user.perfil === 'admin' && perfil !== 'admin') {
+        return res.status(403).json({ erro: 'Apenas administradores podem excluir outros administradores' });
+    }
+
+    db.queryRun('DELETE FROM notificacoes WHERE usuario_id = ?', [id]);
+    db.queryRun('DELETE FROM dashboard_widgets WHERE usuario_id = ?', [id]);
+    db.queryRun('DELETE FROM usuarios WHERE id = ?', [id]);
+    registrarAtividade(req, 'excluir', 'usuarios', id, `Usuario excluido: ${user.nome}`);
+    res.json({ sucesso: true });
+});
+
 // ==================== API: PERMISSOES (ADMIN ONLY) ====================
 
 app.get('/api/permissoes', requireAdmin, (req, res) => {

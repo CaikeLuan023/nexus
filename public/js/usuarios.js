@@ -53,6 +53,9 @@ function renderTabela(usuarios) {
                         <button class="btn btn-sm btn-outline-${u.ativo ? 'warning' : 'success'} btn-action" onclick="toggleAtivo(${u.id}, ${u.ativo ? 0 : 1})" title="${u.ativo ? 'Desativar' : 'Ativar'}">
                             <i class="bi bi-${u.ativo ? 'pause-circle' : 'play-circle'}"></i>
                         </button>
+                        <button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirUsuario(${u.id})" title="Excluir">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -141,6 +144,17 @@ async function toggleAtivo(id, ativo) {
             body: { ativo: ativo === 1 }
         });
         mostrarToast(`Usuario ${ativo ? 'ativado' : 'desativado'}!`);
+        carregarUsuarios();
+    } catch (err) {
+        mostrarToast(err.message, 'error');
+    }
+}
+
+async function excluirUsuario(id) {
+    if (!(await confirmar('Tem certeza que deseja EXCLUIR este usuario? Esta acao nao pode ser desfeita.'))) return;
+    try {
+        await api(`/api/usuarios/${id}`, { method: 'DELETE' });
+        mostrarToast('Usuario excluido com sucesso!');
         carregarUsuarios();
     } catch (err) {
         mostrarToast(err.message, 'error');
