@@ -44,17 +44,17 @@ async function atdInitQueue() {
 
     if (_atdIsAdmin) {
         btnsDiv.innerHTML = `
-            <button class="btn btn-sm btn-primary atd-filter-btn active" data-filtro="todos" onclick="atdSetFiltro('todos')">Todos</button>
-            <button class="btn btn-sm btn-outline-secondary atd-filter-btn" data-filtro="fila" onclick="atdSetFiltro('fila')">
+            <button class="btn btn-sm atd-filter-btn active" data-filtro="todos" onclick="atdSetFiltro('todos')">Todos</button>
+            <button class="btn btn-sm atd-filter-btn" data-filtro="fila" onclick="atdSetFiltro('fila')">
                 <i class="bi bi-hourglass-split me-1"></i>Fila <span class="badge bg-warning text-dark ms-1" id="atdBadgeFila">0</span>
             </button>
-            <button class="btn btn-sm btn-outline-secondary atd-filter-btn" data-filtro="em_atendimento" onclick="atdSetFiltro('em_atendimento')">Atendendo</button>`;
+            <button class="btn btn-sm atd-filter-btn" data-filtro="em_atendimento" onclick="atdSetFiltro('em_atendimento')">Atendendo</button>`;
     } else {
         btnsDiv.innerHTML = `
-            <button class="btn btn-sm btn-outline-warning atd-filter-btn" data-filtro="fila" onclick="atdSetFiltro('fila')">
+            <button class="btn btn-sm atd-filter-btn" data-filtro="fila" onclick="atdSetFiltro('fila')">
                 <i class="bi bi-hourglass-split me-1"></i>Fila <span class="badge bg-warning text-dark ms-1" id="atdBadgeFila">0</span>
             </button>
-            <button class="btn btn-sm btn-primary atd-filter-btn active" data-filtro="meus" onclick="atdSetFiltro('meus')">
+            <button class="btn btn-sm atd-filter-btn active" data-filtro="meus" onclick="atdSetFiltro('meus')">
                 <i class="bi bi-person-check me-1"></i>Meus <span class="badge bg-light text-dark ms-1" id="atdBadgeMeus">0</span>
             </button>`;
         _atdFiltro = 'meus';
@@ -64,13 +64,11 @@ async function atdInitQueue() {
 function atdSetFiltro(filtro) {
     _atdFiltro = filtro;
     document.querySelectorAll('.atd-filter-btn').forEach((b) => {
-        b.classList.remove('btn-primary', 'active');
-        b.classList.add('btn-outline-secondary');
+        b.classList.remove('active');
     });
     const activeBtn = document.querySelector(`.atd-filter-btn[data-filtro="${filtro}"]`);
     if (activeBtn) {
-        activeBtn.classList.remove('btn-outline-secondary');
-        activeBtn.classList.add('btn-primary', 'active');
+        activeBtn.classList.add('active');
     }
     atdRenderChats(_atdChats);
 }

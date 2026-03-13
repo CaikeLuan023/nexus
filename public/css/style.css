@@ -4446,10 +4446,11 @@ mark {
     border: none !important;
     margin-bottom: 1.5rem !important;
 }
-#configTabs .nav-item {
+/* ==================== NEXUS TABS (shared pill style) ==================== */
+.nexus-tabs .nav-item {
     margin: 0;
 }
-#configTabs .nav-link {
+.nexus-tabs .nav-link {
     border-radius: 8px;
     padding: 8px 16px;
     font-size: 0.82rem;
@@ -4460,31 +4461,65 @@ mark {
     transition: all 0.2s;
     white-space: nowrap;
 }
-#configTabs .nav-link:hover {
+.nexus-tabs .nav-link:hover {
     background: #ffe0eb;
     color: var(--primary-color, #ff2d78);
     border-color: transparent;
 }
-#configTabs .nav-link.active {
+.nexus-tabs .nav-link.active {
     background: var(--primary-color, #ff2d78);
     color: #fff;
     border-color: transparent;
     box-shadow: 0 2px 8px rgba(255, 45, 120, 0.25);
 }
-#configTabs .nav-link i {
+.nexus-tabs .nav-link i {
     font-size: 0.9rem;
 }
-[data-theme='dark'] #configTabs .nav-link {
+[data-theme='dark'] .nexus-tabs .nav-link {
     background: #2a2a3e;
     color: #b0b0c0;
 }
-[data-theme='dark'] #configTabs .nav-link:hover {
+[data-theme='dark'] .nexus-tabs .nav-link:hover {
     background: #3a2040;
     color: #ff6ba0;
 }
-[data-theme='dark'] #configTabs .nav-link.active {
+[data-theme='dark'] .nexus-tabs .nav-link.active {
     background: var(--primary-color, #ff2d78);
     color: #fff;
+}
+
+/* Atendimento filter buttons - same pill style */
+.atd-queue-filters .atd-filter-btn {
+    border-radius: 8px !important;
+    padding: 6px 14px !important;
+    font-size: 0.8rem !important;
+    font-weight: 500;
+    background: #f0f2f5;
+    color: #495057;
+    border: 1px solid transparent !important;
+    transition: all 0.2s;
+}
+.atd-queue-filters .atd-filter-btn:hover {
+    background: #ffe0eb;
+    color: var(--primary-color, #ff2d78);
+}
+.atd-queue-filters .atd-filter-btn.active {
+    background: var(--primary-color, #ff2d78) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+    box-shadow: 0 2px 8px rgba(255, 45, 120, 0.25);
+}
+[data-theme='dark'] .atd-queue-filters .atd-filter-btn {
+    background: #2a2a3e;
+    color: #b0b0c0;
+}
+[data-theme='dark'] .atd-queue-filters .atd-filter-btn:hover {
+    background: #3a2040;
+    color: #ff6ba0;
+}
+[data-theme='dark'] .atd-queue-filters .atd-filter-btn.active {
+    background: var(--primary-color, #ff2d78) !important;
+    color: #fff !important;
 }
 
 /* ==================== PONTO PAGE ==================== */
