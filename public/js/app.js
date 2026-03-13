@@ -477,7 +477,8 @@ async function uploadFotoPerfil(input) {
     const form = new FormData();
     form.append('foto', input.files[0]);
     try {
-        const r = await fetch('/api/me/foto', { method: 'POST', body: form });
+        const token = await getCsrfToken();
+        const r = await fetch('/api/me/foto', { method: 'POST', body: form, headers: { 'X-CSRF-Token': token } });
         const data = await r.json();
         if (data.foto_url) {
             window._currentUser.foto_url = data.foto_url;
@@ -495,7 +496,8 @@ async function uploadFotoPerfil(input) {
 
 async function removerFotoPerfil() {
     try {
-        await fetch('/api/me/foto', { method: 'DELETE' });
+        const token = await getCsrfToken();
+        await fetch('/api/me/foto', { method: 'DELETE', headers: { 'X-CSRF-Token': token } });
         window._currentUser.foto_url = null;
         mostrarToast('Foto removida', 'success');
         abrirModalPerfil();

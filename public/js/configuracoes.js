@@ -752,6 +752,37 @@ async function testarErpConexao() {
     }
 }
 
+async function sincronizarErp() {
+    if (!_erpSelecionado) return;
+    const resultado = document.getElementById('erpTesteResultado');
+    resultado.innerHTML =
+        '<div class="spinner-border spinner-border-sm text-success me-2"></div>Sincronizando dados...';
+    try {
+        const r = await api('/api/erp/' + _erpSelecionado + '/sync', { method: 'POST' });
+        if (r.sucesso) {
+            resultado.innerHTML =
+                '<div class="alert alert-success mt-2">' +
+                '<i class="bi bi-check-circle me-1"></i><strong>Sincronizacao concluida!</strong><br>' +
+                'Total: ' + r.total + ' registros | ' +
+                'Novos: ' + r.novos + ' | ' +
+                'Atualizados: ' + r.atualizados + ' | ' +
+                'Erros: ' + r.erros + ' | ' +
+                'Duracao: ' + (r.duracao_ms / 1000).toFixed(1) + 's</div>';
+            document.getElementById('erpUltimoSync').textContent =
+                'Ultima sincronizacao: ' + new Date().toLocaleString('pt-BR');
+            carregarErpStatus();
+        } else {
+            resultado.innerHTML =
+                '<div class="alert alert-danger mt-2"><i class="bi bi-x-circle me-1"></i>Falha: ' +
+                (r.erro || 'Erro desconhecido') +
+                '</div>';
+        }
+    } catch (err) {
+        resultado.innerHTML =
+            '<div class="alert alert-danger mt-2"><i class="bi bi-x-circle me-1"></i>Erro: ' + err.message + '</div>';
+    }
+}
+
 function toggleErpToken() {
     const input = document.getElementById('erpToken');
     const icon = document.getElementById('erpTokenIcon');

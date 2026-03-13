@@ -7812,7 +7812,7 @@ const ERP_ADAPTERS = {
         httpMethod: 'POST',
         testEndpoint: '/cliente',
         buildHeaders(config) {
-            const tokenB64 = Buffer.from(config.token + ':').toString('base64');
+            const tokenB64 = Buffer.from(config.token).toString('base64');
             return { Authorization: `Basic ${tokenB64}`, 'Content-Type': 'application/json', ixctoken: config.token };
         },
         buildBody(config) {
