@@ -1,5 +1,120 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="77" fill="#007bff"/>
-  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" 
-        font-family="Arial, sans-serif" font-weight="bold" font-size="179" fill="white">GT</text>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0a1628"/>
+      <stop offset="100%" stop-color="#111d33"/>
+    </linearGradient>
+    <linearGradient id="nxG" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3a7bd5"/>
+      <stop offset="100%" stop-color="#00D2FF"/>
+    </linearGradient>
+    <linearGradient id="nxGL" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3a7bd5" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#00D2FF" stop-opacity="0.4"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowStrong">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="77" fill="url(#bg)"/>
+
+  <g transform="translate(106, 40)">
+    <!-- N main strokes -->
+    <g stroke="url(#nxG)" stroke-width="7" stroke-linecap="round" fill="none" filter="url(#glow)">
+      <line x1="50" y1="310" x2="50" y2="40"/>
+      <line x1="50" y1="40" x2="250" y2="310"/>
+      <line x1="250" y1="310" x2="250" y2="40"/>
+    </g>
+
+    <!-- Network branches -->
+    <g stroke="url(#nxGL)" stroke-width="3.5" stroke-linecap="round" fill="none">
+      <!-- Top-left branches -->
+      <line x1="50" y1="40" x2="16" y2="12"/>
+      <line x1="50" y1="40" x2="100" y2="8"/>
+      <line x1="16" y1="12" x2="48" y2="0"/>
+      <!-- Top-right branches -->
+      <line x1="250" y1="40" x2="200" y2="8"/>
+      <line x1="250" y1="40" x2="284" y2="12"/>
+      <line x1="284" y1="12" x2="252" y2="0"/>
+      <!-- Top cross-connection -->
+      <line x1="100" y1="8" x2="200" y2="8"/>
+      <!-- Mid-left branches -->
+      <line x1="50" y1="175" x2="16" y2="148"/>
+      <line x1="50" y1="175" x2="18" y2="202"/>
+      <!-- Mid-right branches -->
+      <line x1="250" y1="175" x2="284" y2="148"/>
+      <line x1="250" y1="175" x2="282" y2="202"/>
+      <!-- Diagonal mid branches -->
+      <line x1="115" y1="125" x2="78" y2="95"/>
+      <line x1="185" y1="225" x2="222" y2="255"/>
+      <!-- Bottom branches -->
+      <line x1="50" y1="310" x2="22" y2="334"/>
+      <line x1="250" y1="310" x2="278" y2="334"/>
+      <line x1="22" y1="334" x2="50" y2="350"/>
+      <line x1="278" y1="334" x2="250" y2="350"/>
+    </g>
+
+    <!-- Arrow/diamond markers -->
+    <g fill="url(#nxG)" opacity="0.5">
+      <polygon points="14,10 22,5 21,17"/>
+      <polygon points="286,10 278,5 279,17"/>
+      <polygon points="46,-2 54,5 38,5"/>
+      <polygon points="254,-2 246,5 262,5"/>
+      <polygon points="20,333 28,326 28,340"/>
+      <polygon points="280,333 272,326 272,340"/>
+    </g>
+
+    <!-- Main N vertex nodes -->
+    <g filter="url(#glowStrong)">
+      <circle cx="50" cy="310" r="12" fill="#3a7bd5"/>
+      <circle cx="50" cy="40" r="13" fill="#00B4D8"/>
+      <circle cx="250" cy="310" r="12" fill="#3a7bd5"/>
+      <circle cx="250" cy="40" r="13" fill="#00D2FF"/>
+    </g>
+
+    <!-- Mid nodes on N strokes -->
+    <g filter="url(#glow)">
+      <circle cx="50" cy="175" r="8" fill="#00B4D8"/>
+      <circle cx="250" cy="175" r="8" fill="#3a7bd5"/>
+      <circle cx="150" cy="175" r="9" fill="#00A8CC"/>
+      <circle cx="115" cy="125" r="7" fill="#00C2E0"/>
+      <circle cx="185" cy="225" r="7" fill="#3a7bd5"/>
+    </g>
+
+    <!-- Branch endpoint nodes -->
+    <circle cx="16" cy="12" r="6" fill="#00D2FF" opacity="0.8"/>
+    <circle cx="100" cy="8" r="6" fill="#00C2E0" opacity="0.8"/>
+    <circle cx="200" cy="8" r="6" fill="#00A8CC" opacity="0.8"/>
+    <circle cx="284" cy="12" r="6" fill="#3a7bd5" opacity="0.8"/>
+    <circle cx="16" cy="148" r="5" fill="#00D2FF" opacity="0.6"/>
+    <circle cx="18" cy="202" r="4.5" fill="#00D2FF" opacity="0.5"/>
+    <circle cx="284" cy="148" r="5" fill="#3a7bd5" opacity="0.6"/>
+    <circle cx="282" cy="202" r="4.5" fill="#3a7bd5" opacity="0.5"/>
+    <circle cx="78" cy="95" r="4.5" fill="#00C2E0" opacity="0.5"/>
+    <circle cx="222" cy="255" r="4.5" fill="#3a7bd5" opacity="0.5"/>
+    <circle cx="22" cy="334" r="5" fill="#3a7bd5" opacity="0.6"/>
+    <circle cx="278" cy="334" r="5" fill="#3a7bd5" opacity="0.6"/>
+    <circle cx="48" cy="0" r="4" fill="#00D2FF" opacity="0.4"/>
+    <circle cx="252" cy="0" r="4" fill="#00D2FF" opacity="0.4"/>
+    <circle cx="50" cy="350" r="4" fill="#3a7bd5" opacity="0.4"/>
+    <circle cx="250" cy="350" r="4" fill="#3a7bd5" opacity="0.4"/>
+  </g>
+
+  <!-- NEXUS text -->
+  <text x="256" y="462" text-anchor="middle"
+    font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif"
+    font-weight="800" font-size="58" letter-spacing="10"
+    fill="url(#nxG)">NEXUS</text>
 </svg>

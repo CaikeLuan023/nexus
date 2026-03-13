@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 340">
+  <defs>
+    <linearGradient id="nxGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3a7bd5"/>
+      <stop offset="100%" stop-color="#00D2FF"/>
+    </linearGradient>
+    <linearGradient id="nxGradLight" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3a7bd5" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#00D2FF" stop-opacity="0.4"/>
+    </linearGradient>
+    <filter id="nxGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="nxGlowStrong">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- === N ICON (network/constellation) === -->
+  <g transform="translate(50, 10)">
+    <!-- N main strokes: left vertical, diagonal, right vertical -->
+    <g stroke="url(#nxGrad)" stroke-width="3.5" stroke-linecap="round" fill="none" filter="url(#nxGlow)">
+      <line x1="40" y1="210" x2="40" y2="30"/>
+      <line x1="40" y1="30" x2="160" y2="210"/>
+      <line x1="160" y1="210" x2="160" y2="30"/>
+    </g>
+
+    <!-- Network branch lines -->
+    <g stroke="url(#nxGradLight)" stroke-width="2" stroke-linecap="round" fill="none">
+      <!-- Top-left branches -->
+      <line x1="40" y1="30" x2="12" y2="8"/>
+      <line x1="40" y1="30" x2="78" y2="6"/>
+      <line x1="12" y1="8" x2="38" y2="0"/>
+      <!-- Top-right branches -->
+      <line x1="160" y1="30" x2="122" y2="6"/>
+      <line x1="160" y1="30" x2="188" y2="8"/>
+      <line x1="188" y1="8" x2="162" y2="0"/>
+      <!-- Top cross-connection -->
+      <line x1="78" y1="6" x2="122" y2="6"/>
+      <!-- Mid-left branches -->
+      <line x1="40" y1="120" x2="12" y2="100"/>
+      <line x1="40" y1="120" x2="14" y2="140"/>
+      <!-- Mid-right branches -->
+      <line x1="160" y1="120" x2="188" y2="100"/>
+      <line x1="160" y1="120" x2="186" y2="140"/>
+      <!-- Diagonal mid branches -->
+      <line x1="80" y1="85" x2="55" y2="65"/>
+      <line x1="120" y1="155" x2="145" y2="175"/>
+      <!-- Bottom branches -->
+      <line x1="40" y1="210" x2="16" y2="228"/>
+      <line x1="160" y1="210" x2="184" y2="228"/>
+      <line x1="16" y1="228" x2="40" y2="238"/>
+      <line x1="184" y1="228" x2="160" y2="238"/>
+    </g>
+
+    <!-- Arrow/diamond markers at branch tips -->
+    <g fill="url(#nxGrad)" opacity="0.5">
+      <polygon points="10,6 16,3 15,11"/>
+      <polygon points="190,6 184,3 185,11"/>
+      <polygon points="36,-1 42,4 30,4"/>
+      <polygon points="164,-1 158,4 170,4"/>
+      <polygon points="14,227 20,222 20,232"/>
+      <polygon points="186,227 180,222 180,232"/>
+    </g>
+
+    <!-- Main N vertex nodes (large, with glow) -->
+    <g filter="url(#nxGlowStrong)">
+      <circle cx="40" cy="210" r="8" fill="#3a7bd5"/>
+      <circle cx="40" cy="30" r="9" fill="#00B4D8"/>
+      <circle cx="160" cy="210" r="8" fill="#3a7bd5"/>
+      <circle cx="160" cy="30" r="9" fill="#00D2FF"/>
+    </g>
+
+    <!-- Mid nodes on N strokes -->
+    <g filter="url(#nxGlow)">
+      <circle cx="40" cy="120" r="5.5" fill="#00B4D8"/>
+      <circle cx="160" cy="120" r="5.5" fill="#3a7bd5"/>
+      <circle cx="100" cy="120" r="6" fill="#00A8CC"/>
+      <circle cx="80" cy="85" r="4.5" fill="#00C2E0"/>
+      <circle cx="120" cy="155" r="4.5" fill="#3a7bd5"/>
+    </g>
+
+    <!-- Branch endpoint nodes -->
+    <circle cx="12" cy="8" r="4.5" fill="#00D2FF" opacity="0.8"/>
+    <circle cx="78" cy="6" r="4.5" fill="#00C2E0" opacity="0.8"/>
+    <circle cx="122" cy="6" r="4.5" fill="#00A8CC" opacity="0.8"/>
+    <circle cx="188" cy="8" r="4.5" fill="#3a7bd5" opacity="0.8"/>
+    <circle cx="12" cy="100" r="3.5" fill="#00D2FF" opacity="0.6"/>
+    <circle cx="14" cy="140" r="3" fill="#00D2FF" opacity="0.5"/>
+    <circle cx="188" cy="100" r="3.5" fill="#3a7bd5" opacity="0.6"/>
+    <circle cx="186" cy="140" r="3" fill="#3a7bd5" opacity="0.5"/>
+    <circle cx="55" cy="65" r="3" fill="#00C2E0" opacity="0.5"/>
+    <circle cx="145" cy="175" r="3" fill="#3a7bd5" opacity="0.5"/>
+    <circle cx="16" cy="228" r="3.5" fill="#3a7bd5" opacity="0.6"/>
+    <circle cx="184" cy="228" r="3.5" fill="#3a7bd5" opacity="0.6"/>
+    <circle cx="38" cy="0" r="2.5" fill="#00D2FF" opacity="0.4"/>
+    <circle cx="162" cy="0" r="2.5" fill="#00D2FF" opacity="0.4"/>
+    <circle cx="40" cy="238" r="2.5" fill="#3a7bd5" opacity="0.4"/>
+    <circle cx="160" cy="238" r="2.5" fill="#3a7bd5" opacity="0.4"/>
+  </g>
+
+  <!-- === NEXUS text === -->
+  <text x="150" y="310" text-anchor="middle"
+    font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif"
+    font-weight="800" font-size="52" letter-spacing="10"
+    fill="url(#nxGrad)" filter="url(#nxGlow)">NEXUS</text>
+</svg>

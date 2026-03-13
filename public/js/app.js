@@ -299,11 +299,11 @@ function gerarSidebar(permissoes) {
         <div class="sidebar-brand">
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="sidebar-logo">
                 <defs>
-                    <linearGradient id="sng" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ff2d78"/><stop offset="50%" stop-color="#a855f7"/><stop offset="100%" stop-color="#0d6efd"/></linearGradient>
-                    <linearGradient id="snb" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ff2d78" stop-opacity="0.5"/><stop offset="100%" stop-color="#0d6efd" stop-opacity="0.5"/></linearGradient>
+                    <linearGradient id="sng" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3a7bd5"/><stop offset="100%" stop-color="#00D2FF"/></linearGradient>
+                    <linearGradient id="snb" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3a7bd5" stop-opacity="0.45"/><stop offset="100%" stop-color="#00D2FF" stop-opacity="0.45"/></linearGradient>
                     <filter id="sg"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                 </defs>
-                <g stroke="url(#sng)" stroke-width="2" stroke-linecap="round" fill="none" filter="url(#sg)">
+                <g stroke="url(#sng)" stroke-width="2.2" stroke-linecap="round" fill="none" filter="url(#sg)">
                     <line x1="24" y1="88" x2="24" y2="16"/><line x1="24" y1="16" x2="76" y2="88"/><line x1="76" y1="88" x2="76" y2="16"/>
                 </g>
                 <g stroke="url(#snb)" stroke-width="1.2" stroke-linecap="round" fill="none">
@@ -315,13 +315,13 @@ function gerarSidebar(permissoes) {
                     <line x1="24" y1="88" x2="12" y2="96"/><line x1="76" y1="88" x2="88" y2="96"/>
                 </g>
                 <g fill="url(#sng)" opacity="0.5"><polygon points="9,4 13,2 12,7"/><polygon points="91,4 87,2 88,7"/><polygon points="21,1 24,4 18,4"/><polygon points="79,1 76,4 82,4"/></g>
-                <g filter="url(#sg)"><circle cx="24" cy="88" r="4.5" fill="#ff2d78"/><circle cx="24" cy="16" r="5" fill="#e91e63"/><circle cx="76" cy="88" r="4.5" fill="#6366f1"/><circle cx="76" cy="16" r="5" fill="#0d6efd"/></g>
-                <circle cx="24" cy="52" r="3" fill="#e91e63"/><circle cx="76" cy="52" r="3" fill="#3b82f6"/><circle cx="50" cy="52" r="3.5" fill="#8b5cf6"/>
-                <circle cx="40" cy="38" r="2.5" fill="#c026d3" opacity="0.8"/><circle cx="60" cy="66" r="2.5" fill="#6366f1" opacity="0.8"/>
-                <circle cx="10" cy="5" r="2.5" fill="#ff2d78" opacity="0.8"/><circle cx="42" cy="5" r="2.5" fill="#e91e63" opacity="0.8"/>
-                <circle cx="58" cy="5" r="2.5" fill="#3b82f6" opacity="0.8"/><circle cx="90" cy="5" r="2.5" fill="#0d6efd" opacity="0.8"/>
-                <circle cx="10" cy="44" r="2" fill="#ff2d78" opacity="0.6"/><circle cx="90" cy="44" r="2" fill="#0d6efd" opacity="0.6"/>
-                <circle cx="12" cy="96" r="2" fill="#ff2d78" opacity="0.6"/><circle cx="88" cy="96" r="2" fill="#6366f1" opacity="0.6"/>
+                <g filter="url(#sg)"><circle cx="24" cy="88" r="4.5" fill="#3a7bd5"/><circle cx="24" cy="16" r="5" fill="#00B4D8"/><circle cx="76" cy="88" r="4.5" fill="#3a7bd5"/><circle cx="76" cy="16" r="5" fill="#00D2FF"/></g>
+                <circle cx="24" cy="52" r="3" fill="#00B4D8"/><circle cx="76" cy="52" r="3" fill="#3a7bd5"/><circle cx="50" cy="52" r="3.5" fill="#00A8CC"/>
+                <circle cx="40" cy="38" r="2.5" fill="#00C2E0" opacity="0.8"/><circle cx="60" cy="66" r="2.5" fill="#3a7bd5" opacity="0.8"/>
+                <circle cx="10" cy="5" r="2.5" fill="#00D2FF" opacity="0.8"/><circle cx="42" cy="5" r="2.5" fill="#00C2E0" opacity="0.8"/>
+                <circle cx="58" cy="5" r="2.5" fill="#00A8CC" opacity="0.8"/><circle cx="90" cy="5" r="2.5" fill="#3a7bd5" opacity="0.8"/>
+                <circle cx="10" cy="44" r="2" fill="#00D2FF" opacity="0.6"/><circle cx="90" cy="44" r="2" fill="#3a7bd5" opacity="0.6"/>
+                <circle cx="12" cy="96" r="2" fill="#3a7bd5" opacity="0.6"/><circle cx="88" cy="96" r="2" fill="#3a7bd5" opacity="0.6"/>
             </svg>
             <h5>Nexus</h5>
         </div>
