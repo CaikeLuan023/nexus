@@ -6,7 +6,6 @@
     <title>Login - Nexus</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="/css/background-global.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -18,23 +17,36 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             position: relative;
+            background: radial-gradient(ellipse at 50% 50%, #150535 0%, #0d0221 40%, #050110 100%);
         }
 
-        /* Login card */
+        /* Canvas background */
+        #nexusCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: auto;
+        }
+
+        /* Login card - glass morphism */
         .login-card {
-            background: rgba(255, 255, 255, 0.97);
+            background: rgba(13, 2, 33, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 45, 120, 0.15);
             border-radius: 20px;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px rgba(0, 210, 255, 0.06);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), 0 0 80px rgba(255, 45, 120, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05);
             padding: 2.5rem 2.5rem 2rem;
             width: 100%;
             max-width: 420px;
             position: relative;
             z-index: 1;
-            animation: cardEnter 0.6s ease-out;
+            animation: cardEnter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes cardEnter {
-            from { opacity: 0; transform: translateY(30px) scale(0.96); }
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
@@ -55,14 +67,14 @@
             font-size: 1.8rem;
             letter-spacing: 6px;
             margin: 0;
-            background: linear-gradient(135deg, #3a7bd5, #00D2FF);
+            background: linear-gradient(135deg, #ff2d78, #7b2fbe);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .login-logo p {
-            color: #8c8c9e;
+            color: rgba(255, 255, 255, 0.4);
             font-size: 0.88rem;
             margin-top: 0.3rem;
         }
@@ -71,7 +83,7 @@
         .login-label {
             font-weight: 600;
             font-size: 0.85rem;
-            color: #2d2d3f;
+            color: rgba(255, 255, 255, 0.7);
             margin-bottom: 0.4rem;
         }
 
@@ -85,33 +97,33 @@
             left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: #b0b0c0;
+            color: rgba(255, 255, 255, 0.3);
             font-size: 1.1rem;
-            transition: color 0.2s;
+            transition: color 0.3s;
             z-index: 2;
         }
 
         .login-input-group input {
             width: 100%;
             padding: 0.8rem 0.8rem 0.8rem 2.8rem;
-            border: 2px solid #e8e8ef;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             font-size: 0.95rem;
-            background: #f8f8fc;
-            transition: all 0.25s;
-            color: #2d2d3f;
+            background: rgba(255, 255, 255, 0.06);
+            transition: all 0.3s;
+            color: #fff;
         }
 
-        .login-input-group input::placeholder { color: #b0b0c0; }
+        .login-input-group input::placeholder { color: rgba(255, 255, 255, 0.25); }
 
         .login-input-group input:focus {
             outline: none;
-            border-color: #00B4D8;
-            background: #fff;
-            box-shadow: 0 0 0 4px rgba(0, 210, 255, 0.1);
+            border-color: #ff2d78;
+            background: rgba(255, 45, 120, 0.06);
+            box-shadow: 0 0 0 3px rgba(255, 45, 120, 0.15), 0 0 20px rgba(255, 45, 120, 0.1);
         }
 
-        .login-input-group input:focus ~ .input-icon { color: #00B4D8; }
+        .login-input-group input:focus ~ .input-icon { color: #ff2d78; }
 
         /* Password toggle */
         .toggle-password {
@@ -121,7 +133,7 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: #b0b0c0;
+            color: rgba(255, 255, 255, 0.3);
             cursor: pointer;
             padding: 0;
             font-size: 1.1rem;
@@ -129,13 +141,15 @@
             transition: color 0.2s;
         }
 
-        .toggle-password:hover { color: #00B4D8; }
+        .toggle-password:hover { color: #ff2d78; }
 
-        /* Button - Orange/Gold gradient */
+        /* Button - Neon Pink gradient */
         .btn-login {
             width: 100%;
             padding: 0.85rem;
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, #ff2d78, #e91e63, #7b2fbe);
+            background-size: 200% 200%;
+            animation: btnShimmer 3s ease infinite;
             border: none;
             border-radius: 12px;
             color: #fff;
@@ -149,22 +163,28 @@
             margin-top: 0.5rem;
         }
 
+        @keyframes btnShimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         .btn-login:hover {
-            background: linear-gradient(135deg, #d97706, #b45309);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+            box-shadow: 0 8px 30px rgba(255, 45, 120, 0.5), 0 0 40px rgba(255, 45, 120, 0.2);
             color: #fff;
         }
 
         .btn-login:active {
             transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+            box-shadow: 0 2px 10px rgba(255, 45, 120, 0.3);
         }
 
         .btn-login:disabled {
-            opacity: 0.7;
+            opacity: 0.6;
             transform: none;
             box-shadow: none;
+            animation: none;
         }
 
         /* Alert */
@@ -172,8 +192,10 @@
             display: none;
             font-size: 0.85rem;
             border-radius: 10px;
-            border: none;
+            border: 1px solid rgba(220, 53, 69, 0.3);
             padding: 0.7rem 1rem;
+            background: rgba(220, 53, 69, 0.15);
+            color: #ff8a9b;
             animation: shakeIn 0.4s ease;
         }
 
@@ -196,7 +218,7 @@
 
         .twofa-hint {
             text-align: center;
-            color: #8c8c9e;
+            color: rgba(255, 255, 255, 0.4);
             font-size: 0.82rem;
             margin-top: 0.5rem;
         }
@@ -206,10 +228,32 @@
             text-align: center;
             margin-top: 1.5rem;
             padding-top: 1rem;
-            border-top: 1px solid #f0f0f5;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
 
-        .login-footer small { color: #b0b0c0; font-size: 0.75rem; }
+        .login-footer small { color: rgba(255, 255, 255, 0.25); font-size: 0.75rem; }
+
+        /* N logo pulse animation */
+        @keyframes nodePulse {
+            0%, 100% { r: var(--base-r); opacity: var(--base-o); }
+            50% { r: calc(var(--base-r) * 1.4); opacity: 1; }
+        }
+
+        .n-node {
+            animation: nodePulse 2.5s ease-in-out infinite;
+        }
+
+        .n-node:nth-child(odd) { animation-delay: 0s; }
+        .n-node:nth-child(even) { animation-delay: 1.25s; }
+
+        @keyframes lineGlow {
+            0%, 100% { stroke-opacity: 0.3; }
+            50% { stroke-opacity: 0.7; }
+        }
+
+        .n-line {
+            animation: lineGlow 3s ease-in-out infinite;
+        }
 
         /* Mobile */
         @media (max-width: 480px) {
@@ -219,131 +263,60 @@
         }
     </style>
 </head>
-<body class="nexus-bg">
-    <!-- Background layers -->
-    <div class="nexus-grid"></div>
-    <div class="nexus-orb nexus-orb-1"></div>
-    <div class="nexus-orb nexus-orb-2"></div>
-    <div class="nexus-orb nexus-orb-3"></div>
-    <div class="nexus-particles" id="particles"></div>
-
-    <!-- Plexus globe watermark -->
-    <svg class="nexus-globe" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-        <g stroke="#00D2FF" stroke-width="0.8" fill="none" opacity="0.6">
-            <!-- Globe outline -->
-            <circle cx="200" cy="200" r="160"/>
-            <!-- Latitude lines -->
-            <ellipse cx="200" cy="200" rx="160" ry="60"/>
-            <ellipse cx="200" cy="200" rx="160" ry="120"/>
-            <ellipse cx="200" cy="140" rx="130" ry="30"/>
-            <ellipse cx="200" cy="260" rx="130" ry="30"/>
-            <!-- Longitude lines -->
-            <ellipse cx="200" cy="200" rx="60" ry="160"/>
-            <ellipse cx="200" cy="200" rx="120" ry="160"/>
-            <!-- Meridian -->
-            <line x1="200" y1="40" x2="200" y2="360"/>
-            <line x1="40" y1="200" x2="360" y2="200"/>
-        </g>
-        <!-- Plexus nodes on globe -->
-        <g fill="#00D2FF" opacity="0.8">
-            <circle cx="200" cy="40" r="3"/><circle cx="200" cy="360" r="3"/>
-            <circle cx="40" cy="200" r="3"/><circle cx="360" cy="200" r="3"/>
-            <circle cx="120" cy="80" r="2.5"/><circle cx="280" cy="80" r="2.5"/>
-            <circle cx="120" cy="320" r="2.5"/><circle cx="280" cy="320" r="2.5"/>
-            <circle cx="80" cy="140" r="2"/><circle cx="320" cy="140" r="2"/>
-            <circle cx="80" cy="260" r="2"/><circle cx="320" cy="260" r="2"/>
-            <circle cx="140" cy="120" r="2"/><circle cx="260" cy="120" r="2"/>
-            <circle cx="140" cy="280" r="2"/><circle cx="260" cy="280" r="2"/>
-            <circle cx="160" cy="200" r="2"/><circle cx="240" cy="200" r="2"/>
-            <circle cx="200" cy="140" r="2"/><circle cx="200" cy="260" r="2"/>
-        </g>
-        <!-- Plexus connections -->
-        <g stroke="#00D2FF" stroke-width="0.5" opacity="0.3">
-            <line x1="120" y1="80" x2="200" y2="40"/>
-            <line x1="280" y1="80" x2="200" y2="40"/>
-            <line x1="120" y1="80" x2="80" y2="140"/>
-            <line x1="280" y1="80" x2="320" y2="140"/>
-            <line x1="80" y1="140" x2="40" y2="200"/>
-            <line x1="320" y1="140" x2="360" y2="200"/>
-            <line x1="120" y1="80" x2="260" y2="120"/>
-            <line x1="140" y1="120" x2="240" y2="200"/>
-            <line x1="80" y1="260" x2="140" y2="280"/>
-            <line x1="320" y1="260" x2="260" y2="280"/>
-            <line x1="120" y1="320" x2="200" y2="360"/>
-            <line x1="280" y1="320" x2="200" y2="360"/>
-            <line x1="140" y1="120" x2="200" y2="140"/>
-            <line x1="260" y1="120" x2="200" y2="140"/>
-            <line x1="160" y1="200" x2="200" y2="260"/>
-            <line x1="240" y1="200" x2="200" y2="260"/>
-        </g>
-    </svg>
+<body>
+    <!-- Canvas: 3D Globe + Interactive Particles -->
+    <canvas id="nexusCanvas"></canvas>
 
     <div class="login-card">
         <div class="login-logo">
-            <!-- N logo inline (same as logo.svg) -->
+            <!-- N logo with pulsing network nodes -->
             <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="ng" x1="0%" y1="100%" x2="100%" y2="0%">
                         <stop offset="0%" stop-color="#3a7bd5"/>
-                        <stop offset="100%" stop-color="#00D2FF"/>
+                        <stop offset="35%" stop-color="#7b2fbe"/>
+                        <stop offset="100%" stop-color="#ff2d78"/>
                     </linearGradient>
                     <linearGradient id="nb" x1="0%" y1="100%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#3a7bd5" stop-opacity="0.45"/>
-                        <stop offset="100%" stop-color="#00D2FF" stop-opacity="0.45"/>
+                        <stop offset="0%" stop-color="#7b2fbe" stop-opacity="0.4"/>
+                        <stop offset="100%" stop-color="#ff2d78" stop-opacity="0.4"/>
                     </linearGradient>
-                    <filter id="glow"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                    <filter id="nGlow">
+                        <feGaussianBlur stdDeviation="2" result="b"/>
+                        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                    <filter id="nGlowStrong">
+                        <feGaussianBlur stdDeviation="3.5" result="b"/>
+                        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
                 </defs>
-                <!-- N main strokes -->
-                <g stroke="url(#ng)" stroke-width="2.2" stroke-linecap="round" fill="none" filter="url(#glow)">
-                    <line x1="24" y1="88" x2="24" y2="16"/>
-                    <line x1="24" y1="16" x2="76" y2="88"/>
-                    <line x1="76" y1="88" x2="76" y2="16"/>
+                <!-- Circle border -->
+                <circle cx="50" cy="50" r="47" stroke="rgba(255,45,120,0.2)" stroke-width="1" fill="none"/>
+                <!-- Bold N letter -->
+                <text x="50" y="65" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif"
+                    font-weight="900" font-size="56" fill="url(#ng)" filter="url(#nGlow)">N</text>
+                <!-- Animated connecting lines -->
+                <g stroke="url(#nb)" stroke-width="1" stroke-linecap="round" fill="none">
+                    <line class="n-line" x1="18" y1="16" x2="50" y2="8"/>
+                    <line class="n-line" x1="50" y1="8" x2="82" y2="16" style="animation-delay:0.5s"/>
+                    <line class="n-line" x1="18" y1="16" x2="12" y2="50" style="animation-delay:1s"/>
+                    <line class="n-line" x1="82" y1="16" x2="88" y2="50" style="animation-delay:1.5s"/>
+                    <line class="n-line" x1="12" y1="50" x2="20" y2="82" style="animation-delay:2s"/>
+                    <line class="n-line" x1="88" y1="50" x2="80" y2="82" style="animation-delay:0.7s"/>
+                    <line class="n-line" x1="20" y1="82" x2="50" y2="92" style="animation-delay:1.3s"/>
+                    <line class="n-line" x1="80" y1="82" x2="50" y2="92" style="animation-delay:1.8s"/>
                 </g>
-                <!-- Branch lines -->
-                <g stroke="url(#nb)" stroke-width="1.2" stroke-linecap="round" fill="none">
-                    <line x1="24" y1="16" x2="10" y2="5"/><line x1="24" y1="16" x2="42" y2="5"/>
-                    <line x1="10" y1="5" x2="22" y2="2"/>
-                    <line x1="76" y1="16" x2="58" y2="5"/><line x1="76" y1="16" x2="90" y2="5"/>
-                    <line x1="90" y1="5" x2="78" y2="2"/>
-                    <line x1="42" y1="5" x2="58" y2="5"/>
-                    <line x1="24" y1="52" x2="10" y2="44"/>
-                    <line x1="76" y1="52" x2="90" y2="44"/>
-                    <line x1="40" y1="38" x2="28" y2="30"/>
-                    <line x1="60" y1="66" x2="72" y2="74"/>
-                    <line x1="24" y1="88" x2="12" y2="96"/>
-                    <line x1="76" y1="88" x2="88" y2="96"/>
+                <!-- Pulsing nodes -->
+                <g filter="url(#nGlowStrong)">
+                    <circle class="n-node" cx="18" cy="16" r="3.5" fill="#ff2d78" style="--base-r:3.5;--base-o:0.9"/>
+                    <circle class="n-node" cx="82" cy="16" r="3" fill="#e91e63" style="--base-r:3;--base-o:0.85"/>
+                    <circle class="n-node" cx="50" cy="8" r="2.5" fill="#7b2fbe" style="--base-r:2.5;--base-o:0.7"/>
+                    <circle class="n-node" cx="12" cy="50" r="2.5" fill="#3a7bd5" style="--base-r:2.5;--base-o:0.65"/>
+                    <circle class="n-node" cx="88" cy="50" r="2.5" fill="#3a7bd5" style="--base-r:2.5;--base-o:0.65"/>
+                    <circle class="n-node" cx="20" cy="82" r="3" fill="#7b2fbe" style="--base-r:3;--base-o:0.75"/>
+                    <circle class="n-node" cx="80" cy="82" r="3" fill="#3a7bd5" style="--base-r:3;--base-o:0.75"/>
+                    <circle class="n-node" cx="50" cy="92" r="2" fill="#ff2d78" style="--base-r:2;--base-o:0.6"/>
                 </g>
-                <!-- Arrow markers -->
-                <g fill="url(#ng)" opacity="0.5">
-                    <polygon points="9,4 13,2 12,7"/><polygon points="91,4 87,2 88,7"/>
-                    <polygon points="21,1 24,4 18,4"/><polygon points="79,1 76,4 82,4"/>
-                </g>
-                <!-- Main vertex nodes -->
-                <g filter="url(#glow)">
-                    <circle cx="24" cy="88" r="4.5" fill="#3a7bd5"/>
-                    <circle cx="24" cy="16" r="5" fill="#00B4D8"/>
-                    <circle cx="76" cy="88" r="4.5" fill="#3a7bd5"/>
-                    <circle cx="76" cy="16" r="5" fill="#00D2FF"/>
-                </g>
-                <!-- Mid nodes -->
-                <circle cx="24" cy="52" r="3" fill="#00B4D8"/>
-                <circle cx="76" cy="52" r="3" fill="#3a7bd5"/>
-                <circle cx="50" cy="52" r="3.5" fill="#00A8CC"/>
-                <circle cx="40" cy="38" r="2.5" fill="#00C2E0" opacity="0.8"/>
-                <circle cx="60" cy="66" r="2.5" fill="#3a7bd5" opacity="0.8"/>
-                <!-- Branch nodes -->
-                <circle cx="10" cy="5" r="2.5" fill="#00D2FF" opacity="0.8"/>
-                <circle cx="42" cy="5" r="2.5" fill="#00C2E0" opacity="0.8"/>
-                <circle cx="58" cy="5" r="2.5" fill="#00A8CC" opacity="0.8"/>
-                <circle cx="90" cy="5" r="2.5" fill="#3a7bd5" opacity="0.8"/>
-                <circle cx="10" cy="44" r="2" fill="#00D2FF" opacity="0.6"/>
-                <circle cx="90" cy="44" r="2" fill="#3a7bd5" opacity="0.6"/>
-                <circle cx="28" cy="30" r="1.5" fill="#00C2E0" opacity="0.5"/>
-                <circle cx="72" cy="74" r="1.5" fill="#3a7bd5" opacity="0.5"/>
-                <circle cx="12" cy="96" r="2" fill="#3a7bd5" opacity="0.6"/>
-                <circle cx="88" cy="96" r="2" fill="#3a7bd5" opacity="0.6"/>
-                <circle cx="22" cy="2" r="1.5" fill="#00D2FF" opacity="0.4"/>
-                <circle cx="78" cy="2" r="1.5" fill="#00D2FF" opacity="0.4"/>
             </svg>
             <h3>NEXUS</h3>
             <p>Faca login para continuar</p>
@@ -394,24 +367,8 @@
         if (input.type === 'password') { input.type = 'text'; icon.className = 'bi bi-eye-slash'; }
         else { input.type = 'password'; icon.className = 'bi bi-eye'; }
     }
-
-    // Floating particles
-    (function() {
-        const c = document.getElementById('particles');
-        const colors = ['#00D2FF', '#3a7bd5', '#00B4D8', '#00A8CC'];
-        for (let i = 0; i < 25; i++) {
-            const p = document.createElement('div');
-            p.className = 'nexus-particle';
-            const s = Math.random() * 4 + 2;
-            p.style.width = s + 'px'; p.style.height = s + 'px';
-            p.style.left = Math.random() * 100 + '%';
-            p.style.background = colors[Math.floor(Math.random() * colors.length)];
-            p.style.animationDuration = (Math.random() * 12 + 8) + 's';
-            p.style.animationDelay = (Math.random() * 12) + 's';
-            c.appendChild(p);
-        }
-    })();
     </script>
+    <script src="/js/login-canvas.js"></script>
     <script src="/js/login.js"></script>
 </body>
 </html>
