@@ -55,9 +55,9 @@ async function carregarFaturas() {
                 <td><span class="badge bg-${statusMap[f.status] || 'secondary'}">${f.status}</span></td>
                 <td>
                     <div class="d-flex gap-1">
-                        ${f.status === 'pendente' ? `<button class="btn btn-sm btn-outline-success" onclick="marcarPago(${f.id})" title="Marcar pago"><i class="bi bi-check-lg"></i></button>` : ''}
-                        <button class="btn btn-sm btn-outline-primary" onclick="editarFatura(${f.id})" title="Editar"><i class="bi bi-pencil"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="excluirFatura(${f.id})" title="Excluir"><i class="bi bi-trash"></i></button>
+                        ${f.status === 'pendente' ? `<button class="btn btn-sm btn-outline-success btn-action" onclick="marcarPago(${f.id})" title="Marcar pago"><i class="bi bi-check-lg"></i></button>` : ''}
+                        <button class="btn btn-sm btn-outline-primary btn-action" onclick="editarFatura(${f.id})" title="Editar"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirFatura(${f.id})" title="Excluir"><i class="bi bi-trash"></i></button>
                     </div>
                 </td>
             </tr>`;

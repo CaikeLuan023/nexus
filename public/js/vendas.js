@@ -1862,10 +1862,10 @@ async function abrirTemplates() {
                                 <small class="text-muted d-block">${planos.map((p) => p.nome).join(', ') || 'Sem planos'} | Validade: ${t.validade_dias} dias</small>
                             </div>
                             <div class="d-flex gap-1">
-                                <button class="btn btn-sm btn-outline-primary" onclick="usarTemplate(${t.id})" title="Usar este template">
+                                <button class="btn btn-sm btn-outline-primary btn-action" onclick="usarTemplate(${t.id})" title="Usar este template">
                                     <i class="bi bi-box-arrow-in-right"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="excluirTemplate(${t.id})" title="Excluir">
+                                <button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirTemplate(${t.id})" title="Excluir">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
@@ -2191,7 +2191,7 @@ async function abrirRegrasComissao() {
                     <input class="form-check-input" type="checkbox" ${r.ativo ? 'checked' : ''}
                         onchange="toggleRegraComissao(${r.id}, this.checked)">
                 </div>
-                <button class="btn btn-sm btn-outline-danger" onclick="excluirRegraComissao(${r.id})">
+                <button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirRegraComissao(${r.id})">
                     <i class="bi bi-trash"></i>
                 </button>
             </div>

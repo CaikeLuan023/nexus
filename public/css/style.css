@@ -385,8 +385,97 @@ body {
 }
 
 .btn-action {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.85rem;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    border-radius: 8px;
+    border-width: 1.5px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-action:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-action.btn-outline-primary:hover {
+    background: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.35);
+}
+
+.btn-action.btn-outline-danger:hover {
+    background: #dc3545;
+    color: #fff;
+    border-color: #dc3545;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.35);
+}
+
+.btn-action.btn-outline-success:hover,
+.btn-action.btn-success:hover {
+    background: #198754;
+    color: #fff;
+    border-color: #198754;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.35);
+}
+
+.btn-action.btn-outline-warning:hover {
+    background: #ffc107;
+    color: #000;
+    border-color: #ffc107;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.35);
+}
+
+.btn-action.btn-outline-info:hover {
+    background: #0dcaf0;
+    color: #000;
+    border-color: #0dcaf0;
+    box-shadow: 0 4px 12px rgba(13, 202, 240, 0.35);
+}
+
+.btn-action.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: #fff;
+    border-color: #6c757d;
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.35);
+}
+
+/* Dark mode adjustments for action buttons */
+[data-theme='dark'] .btn-action.btn-outline-primary:hover {
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.5);
+}
+
+[data-theme='dark'] .btn-action.btn-outline-danger:hover {
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.5);
+}
+
+[data-theme='dark'] .btn-action.btn-outline-success:hover,
+[data-theme='dark'] .btn-action.btn-success:hover {
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.5);
+}
+
+[data-theme='dark'] .btn-action.btn-outline-warning:hover {
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.5);
+}
+
+[data-theme='dark'] .btn-action.btn-outline-info:hover {
+    box-shadow: 0 4px 12px rgba(13, 202, 240, 0.5);
+}
+
+[data-theme='dark'] .btn-action.btn-outline-secondary:hover {
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.5);
 }
 
 /* ==================== CHART CARD ==================== */

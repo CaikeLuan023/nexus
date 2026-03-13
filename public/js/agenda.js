@@ -113,7 +113,7 @@ function selecionarDia(dateStr) {
                     <strong>${e.titulo}</strong>
                     <small class="text-muted d-block">${e.tipo} | ${(e.data_inicio || '').substring(11, 16) || 'Dia inteiro'}</small>
                 </div>
-                <button class="btn btn-sm btn-outline-primary" onclick="editarEvento(${e.id})"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-primary btn-action" onclick="editarEvento(${e.id})"><i class="bi bi-pencil"></i></button>
             </div>
         `
             )

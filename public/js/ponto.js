@@ -439,10 +439,10 @@ function pontoRenderEquipe(equipe) {
                     ${u.totalPausasMin > 0 ? `<div class="small text-muted">Pausas: ${u.totalPausasMin}min</div>` : ''}
                 </div>
                 <div class="d-flex flex-column gap-1 ms-2">
-                    <button class="btn btn-sm btn-outline-primary" onclick="pontoVerHistColaborador(${u.id}, '${u.nome.replace(/'/g, "\\'")}')" title="Historico">
+                    <button class="btn btn-sm btn-outline-primary btn-action" onclick="pontoVerHistColaborador(${u.id}, '${u.nome.replace(/'/g, "\\'")}')" title="Historico">
                         <i class="bi bi-clock-history"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="pontoEditarConfig(${u.id}, '${u.nome.replace(/'/g, "\\'")}')" title="Configurar horario">
+                    <button class="btn btn-sm btn-outline-secondary btn-action" onclick="pontoEditarConfig(${u.id}, '${u.nome.replace(/'/g, "\\'")}')" title="Configurar horario">
                         <i class="bi bi-gear"></i>
                     </button>
                 </div>
@@ -541,7 +541,7 @@ async function pontoCarregarConfigGrid() {
                             <div class="fw-bold">${u.nome}</div>
                             <div class="small text-muted">${u.perfil} ${ho}</div>
                         </div>
-                        <button class="btn btn-sm btn-outline-primary" onclick="pontoEditarConfig(${u.id}, '${u.nome.replace(/'/g, "\\'")}')">
+                        <button class="btn btn-sm btn-outline-primary btn-action" onclick="pontoEditarConfig(${u.id}, '${u.nome.replace(/'/g, "\\'")}')">
                             <i class="bi bi-pencil"></i>
                         </button>
                     </div>
@@ -664,7 +664,7 @@ function pontoRenderRelatorio(relatorio, de, ate) {
             <td>${r.pausas_min}min</td>
             <td>${media}h</td>
             <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="pontoVerDetalhesRelatorio(${r.id}, '${r.nome.replace(/'/g, "\\'")}')" title="Ver detalhes">
+                <button class="btn btn-sm btn-outline-primary btn-action" onclick="pontoVerDetalhesRelatorio(${r.id}, '${r.nome.replace(/'/g, "\\'")}')" title="Ver detalhes">
                     <i class="bi bi-eye"></i>
                 </button>
             </td>

@@ -628,18 +628,18 @@ async function atdSelectChat(chatId, name) {
             btns += `<button class="btn btn-sm btn-success" onclick="atdAssumirChat('${atdEscape(chatId)}')" title="Assumir atendimento">
                 <i class="bi bi-person-check me-1"></i>Assumir
             </button>`;
-            btns += `<button class="btn btn-sm btn-outline-primary" onclick="atdTransferirChat('${atdEscape(chatId)}')" title="Atribuir a outro agente">
+            btns += `<button class="btn btn-sm btn-outline-primary btn-action" onclick="atdTransferirChat('${atdEscape(chatId)}')" title="Atribuir a outro agente">
                 <i class="bi bi-arrow-left-right"></i>
             </button>`;
-            btns += `<button class="btn btn-sm btn-outline-danger" onclick="atdFinalizarChat('${atdEscape(chatId)}')" title="Finalizar">
+            btns += `<button class="btn btn-sm btn-outline-danger btn-action" onclick="atdFinalizarChat('${atdEscape(chatId)}')" title="Finalizar">
                 <i class="bi bi-check-circle"></i>
             </button>`;
         } else if (atdStatus === 'em_atendimento' && (isMine || _atdIsAdmin)) {
             // Chat em atendimento (meu ou admin): Transferir + Finalizar
-            btns += `<button class="btn btn-sm btn-outline-primary" onclick="atdTransferirChat('${atdEscape(chatId)}')" title="Transferir">
+            btns += `<button class="btn btn-sm btn-outline-primary btn-action" onclick="atdTransferirChat('${atdEscape(chatId)}')" title="Transferir">
                 <i class="bi bi-arrow-left-right"></i>
             </button>`;
-            btns += `<button class="btn btn-sm btn-outline-danger" onclick="atdFinalizarChat('${atdEscape(chatId)}')" title="Finalizar atendimento">
+            btns += `<button class="btn btn-sm btn-outline-danger btn-action" onclick="atdFinalizarChat('${atdEscape(chatId)}')" title="Finalizar atendimento">
                 <i class="bi bi-check-circle"></i>
             </button>`;
         }

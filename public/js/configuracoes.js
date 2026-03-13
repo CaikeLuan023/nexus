@@ -282,7 +282,7 @@ async function carregarRegras() {
             <td><small>${acoes[r.acao] || r.acao}</small></td>
             <td><span class="badge bg-${r.ativo ? 'success' : 'secondary'}">${r.ativo ? 'Ativo' : 'Inativo'}</span></td>
             <td><small>${r.ultima_execucao ? formatarDataHora(r.ultima_execucao) : '-'}</small></td>
-            <td><button class="btn btn-sm btn-outline-danger" onclick="excluirRegra(${r.id})"><i class="bi bi-trash"></i></button></td>
+            <td><button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirRegra(${r.id})"><i class="bi bi-trash"></i></button></td>
         </tr>`
             )
             .join('');
@@ -338,7 +338,7 @@ async function carregarRecorrentes() {
             <td>${freqs[t.frequencia] || t.frequencia}</td>
             <td><span class="badge bg-${t.ativo ? 'success' : 'secondary'}">${t.ativo ? 'Ativo' : 'Inativo'}</span></td>
             <td><small>${t.proxima_execucao ? formatarDataHora(t.proxima_execucao) : '-'}</small></td>
-            <td><button class="btn btn-sm btn-outline-danger" onclick="excluirRecorrente(${t.id})"><i class="bi bi-trash"></i></button></td>
+            <td><button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirRecorrente(${t.id})"><i class="bi bi-trash"></i></button></td>
         </tr>`
             )
             .join('');
@@ -388,7 +388,7 @@ async function carregarTokens() {
             <td><code class="small">${t.token.substring(0, 20)}...</code></td>
             <td><span class="badge bg-${t.ativo ? 'success' : 'secondary'}" style="cursor:pointer" onclick="toggleToken(${t.id})">${t.ativo ? 'Ativo' : 'Inativo'}</span></td>
             <td><small>${t.ultimo_uso ? formatarDataHora(t.ultimo_uso) : 'Nunca'}</small></td>
-            <td><button class="btn btn-sm btn-outline-danger" onclick="excluirToken(${t.id})"><i class="bi bi-trash"></i></button></td>
+            <td><button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirToken(${t.id})"><i class="bi bi-trash"></i></button></td>
         </tr>`
             )
             .join('');
@@ -446,7 +446,7 @@ async function carregarWebhooks() {
                 <td>${w.nome}</td><td><small>${w.url}</small></td>
                 <td><small>${eventos}</small></td>
                 <td><span class="badge bg-${w.ativo ? 'success' : 'secondary'}">${w.ativo ? 'Ativo' : 'Inativo'}</span></td>
-                <td><button class="btn btn-sm btn-outline-danger" onclick="excluirWebhook(${w.id})"><i class="bi bi-trash"></i></button></td>
+                <td><button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirWebhook(${w.id})"><i class="bi bi-trash"></i></button></td>
             </tr>`;
             })
             .join('');
@@ -833,11 +833,11 @@ async function carregarSLA() {
                 <td>${r.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>'}</td>
                 <td>
                     <div class="d-flex gap-1">
-                        <button class="btn btn-sm btn-outline-primary" onclick="editarSLA(${r.id})"><i class="bi bi-pencil"></i></button>
-                        <button class="btn btn-sm btn-outline-${r.ativo ? 'warning' : 'success'}" onclick="toggleSLA(${r.id}, ${r.ativo ? 0 : 1})" title="${r.ativo ? 'Desativar' : 'Ativar'}">
+                        <button class="btn btn-sm btn-outline-primary btn-action" onclick="editarSLA(${r.id})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-${r.ativo ? 'warning' : 'success'} btn-action" onclick="toggleSLA(${r.id}, ${r.ativo ? 0 : 1})" title="${r.ativo ? 'Desativar' : 'Ativar'}">
                             <i class="bi bi-${r.ativo ? 'pause' : 'play'}"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="excluirSLA(${r.id})"><i class="bi bi-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirSLA(${r.id})"><i class="bi bi-trash"></i></button>
                     </div>
                 </td>
             </tr>
@@ -1284,7 +1284,7 @@ async function carregarRetencao() {
                 <td>${r.tempo_retencao_dias} dias</td>
                 <td><span class="badge bg-${acaoMap[r.acao] || 'secondary'}">${r.acao}</span></td>
                 <td>${r.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>'}</td>
-                <td><button class="btn btn-sm btn-outline-danger" onclick="excluirRetencao(${r.id})"><i class="bi bi-trash"></i></button></td>
+                <td><button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirRetencao(${r.id})"><i class="bi bi-trash"></i></button></td>
             </tr>
         `
             )
@@ -1421,11 +1421,11 @@ async function carregarIntegExternas() {
                         </div>
                         ${configParsed.url ? '<div class="mt-2"><small class="text-muted text-break">' + configParsed.url + '</small></div>' : ''}
                         <div class="mt-2 d-flex gap-1">
-                            <button class="btn btn-sm btn-outline-primary" onclick="editarIntegExt(${i.id})"><i class="bi bi-pencil"></i></button>
-                            <button class="btn btn-sm btn-outline-${i.ativo ? 'warning' : 'success'}" onclick="toggleIntegExt(${i.id}, ${i.ativo ? 0 : 1})">
+                            <button class="btn btn-sm btn-outline-primary btn-action" onclick="editarIntegExt(${i.id})"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-${i.ativo ? 'warning' : 'success'} btn-action" onclick="toggleIntegExt(${i.id}, ${i.ativo ? 0 : 1})">
                                 <i class="bi bi-${i.ativo ? 'pause' : 'play'}"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="excluirIntegExt(${i.id})"><i class="bi bi-trash"></i></button>
+                            <button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirIntegExt(${i.id})"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
                 </div>
