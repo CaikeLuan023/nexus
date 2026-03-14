@@ -79,6 +79,26 @@ function formatarDataHora(dateStr) {
     return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
+// Notification sound using Web Audio API
+function tocarSomNotificacao() {
+    try {
+        const ctx = _ensureAudioCtx();
+        const now = ctx.currentTime;
+        [520, 660].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.15, now + i * 0.15);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.4);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.15);
+            osc.stop(now + i * 0.15 + 0.4);
+        });
+    } catch {}
+}
+
 function mostrarToast(mensagem, tipo = 'success') {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -418,6 +438,9 @@ async function carregarUsuarioLogado() {
         }
     } catch (err) {
         // Se nao autenticado, redireciona para login
+        if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+        }
     }
 }
 
@@ -834,12 +857,14 @@ function connectGlobalSSE() {
                 if (event.payload && event.payload.id !== window._currentUser?.id) {
                     mostrarOnlineToast(event.payload.nome);
                 }
+                if (typeof carregarStatusTecnicos === 'function') carregarStatusTecnicos();
             }
-            if (event.event === 'user.offline') {
+            if (event.event === 'user.offline' || event.event === 'user.almoco') {
                 fetch('/api/online')
                     .then((r) => r.json())
                     .then(renderOnlineUsers)
                     .catch(() => {});
+                if (typeof carregarStatusTecnicos === 'function') carregarStatusTecnicos();
             }
             if (event.event === 'chat.message') {
                 handleChatMessage(event.payload);
@@ -852,6 +877,35 @@ function connectGlobalSSE() {
                     `Contrato assinado por ${event.payload.assinatura_nome} (${event.payload.provedor_nome})`,
                     'success'
                 );
+            }
+            // OS status change notifications for attendant
+            if (event.event === 'os.status' && event.payload) {
+                const p = event.payload;
+                if (p.criador_id === window._currentUser?.id) {
+                    const nome = p.tecnico_nome || 'Tecnico';
+                    const labels = { aceita: `${nome} aceitou a OS`, em_deslocamento: `${nome} esta em deslocamento`, em_execucao: `${nome} iniciou execucao`, concluida: `${nome} concluiu a OS`, recusada: `${nome} recusou a OS` };
+                    const cores = { aceita: 'info', em_deslocamento: 'warning', em_execucao: 'warning', concluida: 'success', recusada: 'danger' };
+                    const label = labels[p.status] || p.status.replace(/_/g, ' ');
+                    mostrarToast(`OS #${p.numero} - ${label}`, cores[p.status] || 'info');
+                    tocarSomNotificacao();
+                    atualizarContagemNotif();
+                }
+            }
+            // OS chat message notifications
+            if (event.event === 'os.mensagem' && event.payload) {
+                const p = event.payload;
+                // Notify the OS creator when technician sends a message
+                if (p.criador_id === window._currentUser?.id && p.usuario_id !== window._currentUser?.id) {
+                    const nome = p.usuario_nome || 'Tecnico';
+                    mostrarToast(`Voce tem uma mensagem do Tecnico ${nome} - OS #${p.numero || p.os_id}`, 'info');
+                    tocarSomNotificacao();
+                }
+                // Notify the technician when creator sends a message
+                if (p.tecnico_id === window._currentUser?.id && p.usuario_id !== window._currentUser?.id) {
+                    const nome = p.usuario_nome || 'Atendente';
+                    mostrarToast(`Nova mensagem de ${nome} - OS #${p.numero || p.os_id}`, 'info');
+                    tocarSomNotificacao();
+                }
             }
         } catch {}
     };
@@ -1019,9 +1073,12 @@ function renderOnlineUsers(users) {
                     naoLidas > 0
                         ? `<span class="badge bg-danger rounded-pill ms-auto" style="font-size:.6rem">${naoLidas}</span>`
                         : '';
+                const almocoIcon = u.em_almoco
+                    ? `<i class="bi bi-cup-hot-fill" style="color:#e67e22;font-size:.65rem;margin-left:4px" title="Em almoco"></i>`
+                    : '';
                 return `<div class="sidebar-online-user sidebar-online-clickable" onclick="abrirChatCom(${u.id}, '${escapeHtmlGlobal(u.nome).replace(/'/g, "\\'")}')">
                 ${fotoHtml}
-                <span>${escapeHtmlGlobal(u.nome)}</span>
+                <span>${escapeHtmlGlobal(u.nome)}${almocoIcon}</span>
                 ${badge}
             </div>`;
             })

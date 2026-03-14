@@ -452,6 +452,7 @@ async function abrirDetalheOS(id) {
 
         // Chat
         carregarMensagensOS(id);
+        iniciarPollingChat(id);
 
         // Fotos - split by type
         renderFotosDetalhe(os.fotos || []);
@@ -499,8 +500,8 @@ function renderBotoesAcao(os) {
             if (os.tecnico_id) _show('btnEnviarOS');
             break;
         case 'enviada':
-            _show('btnAceitarOS');
-            _show('btnRecusarOS');
+            // Somente tecnico no app pode aceitar/recusar - web apenas edita/cancela
+            _show('btnEditarOS');
             _show('btnCancelarOS');
             break;
         case 'aceita':
@@ -519,6 +520,7 @@ function renderBotoesAcao(os) {
 }
 
 function fecharModalDetalhe() {
+    pararPollingChat();
     const modalEl = document.getElementById('modalDetalheOS');
     const modal = bootstrap.Modal.getInstance(modalEl);
     if (modal) modal.hide();
@@ -569,6 +571,19 @@ function renderTimeline(historico, container) {
 }
 
 // ==================== CHAT / MENSAGENS ====================
+
+let _chatPollingInterval = null;
+
+function iniciarPollingChat(osId) {
+    pararPollingChat();
+    _chatPollingInterval = setInterval(() => {
+        if (_osDetalheAtualId === osId) carregarMensagensOS(osId);
+    }, 2000);
+}
+
+function pararPollingChat() {
+    if (_chatPollingInterval) { clearInterval(_chatPollingInterval); _chatPollingInterval = null; }
+}
 
 async function carregarMensagensOS(osId) {
     const container = document.getElementById('detalheChatMessages');
@@ -626,6 +641,10 @@ function renderFotosDetalhe(fotos) {
     const antesContainer = document.getElementById('detalheFotosAntes');
     const depoisContainer = document.getElementById('detalheFotosDepois');
 
+    // Store all photos globally first for gallery navigation
+    const allPaths = (fotos || []).map(f => f.caminho);
+    _galeriaFotos = allPaths;
+
     const fotosAntes = (fotos || []).filter(f => f.tipo === 'antes');
     const fotosDepois = (fotos || []).filter(f => f.tipo === 'depois' || f.tipo === 'evidencia');
 
@@ -633,10 +652,11 @@ function renderFotosDetalhe(fotos) {
         if (fotosAntes.length === 0) {
             antesContainer.innerHTML = '<div class="text-center text-muted py-3 w-100">Nenhuma foto registrada.</div>';
         } else {
-            antesContainer.innerHTML = fotosAntes.map(f => `
-                <img src="${escapeHtmlGlobal(f.caminho)}" onclick="ampliarFotoOS(${JSON.stringify(fotos.map(x => x.caminho))}, ${fotos.indexOf(f)})"
-                     title="${escapeHtmlGlobal(f.legenda || 'Antes')}" alt="Foto antes">
-            `).join('');
+            antesContainer.innerHTML = fotosAntes.map(f => {
+                const idx = allPaths.indexOf(f.caminho);
+                return `<img src="${escapeHtmlGlobal(f.caminho)}" onclick="ampliarFotoOS(_galeriaFotos, ${idx})"
+                     title="${escapeHtmlGlobal(f.legenda || 'Antes')}" alt="Foto antes">`;
+            }).join('');
         }
     }
 
@@ -644,15 +664,13 @@ function renderFotosDetalhe(fotos) {
         if (fotosDepois.length === 0) {
             depoisContainer.innerHTML = '<div class="text-center text-muted py-3 w-100">Nenhuma foto registrada.</div>';
         } else {
-            depoisContainer.innerHTML = fotosDepois.map(f => `
-                <img src="${escapeHtmlGlobal(f.caminho)}" onclick="ampliarFotoOS(${JSON.stringify(fotos.map(x => x.caminho))}, ${fotos.indexOf(f)})"
-                     title="${escapeHtmlGlobal(f.legenda || f.tipo)}" alt="Foto ${f.tipo}">
-            `).join('');
+            depoisContainer.innerHTML = fotosDepois.map(f => {
+                const idx = allPaths.indexOf(f.caminho);
+                return `<img src="${escapeHtmlGlobal(f.caminho)}" onclick="ampliarFotoOS(_galeriaFotos, ${idx})"
+                     title="${escapeHtmlGlobal(f.legenda || f.tipo)}" alt="Foto ${f.tipo}">`;
+            }).join('');
         }
     }
-
-    // Store all photos for gallery navigation
-    _galeriaFotos = (fotos || []).map(f => f.caminho);
 }
 
 function ampliarFotoOS(fotos, index) {
@@ -922,6 +940,51 @@ function setupOSSSEListener() {
     };
 }
 
+// ==================== PAINEL STATUS TECNICOS ====================
+
+async function carregarStatusTecnicos() {
+    try {
+        const online = await api('/api/online');
+        const tecnicos = _tecnicosList.map(t => {
+            const u = online.find(o => o.id === t.id);
+            return { id: t.id, nome: t.nome, online: !!u, em_almoco: u?.em_almoco || false };
+        });
+        renderPainelTecnicos(tecnicos);
+    } catch {}
+}
+
+function renderPainelTecnicos(tecnicos) {
+    const painel = document.getElementById('painelTecnicosStatus');
+    const lista = document.getElementById('tecnicosStatusList');
+    const countEl = document.getElementById('tecnicosOnlineCount');
+    if (!painel || !lista) return;
+
+    if (tecnicos.length === 0) { painel.style.display = 'none'; return; }
+    painel.style.display = 'block';
+
+    const onlineCount = tecnicos.filter(t => t.online).length;
+    if (countEl) countEl.textContent = `${onlineCount} online`;
+
+    // Sort: online first, then lunch, then offline
+    tecnicos.sort((a, b) => {
+        const scoreA = a.online ? (a.em_almoco ? 1 : 0) : 2;
+        const scoreB = b.online ? (b.em_almoco ? 1 : 0) : 2;
+        return scoreA - scoreB || a.nome.localeCompare(b.nome);
+    });
+
+    lista.innerHTML = tecnicos.map(t => {
+        let dotClass = 'offline';
+        let statusLabel = 'Offline';
+        if (t.online && t.em_almoco) { dotClass = 'almoco'; statusLabel = 'Almoco'; }
+        else if (t.online) { dotClass = 'online'; statusLabel = 'Disponivel'; }
+        return `<div class="tecnico-chip">
+            <span class="dot ${dotClass}"></span>
+            <span>${escapeHtmlGlobal(t.nome.split(' ')[0])}</span>
+            <span class="status-label">${statusLabel}</span>
+        </div>`;
+    }).join('');
+}
+
 // ==================== INIT ====================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -929,6 +992,9 @@ document.addEventListener('DOMContentLoaded', () => {
     carregarTecnicos().then(() => {
         carregarOS();
         carregarResumo();
+        carregarStatusTecnicos();
+        // Poll status every 30s
+        setInterval(carregarStatusTecnicos, 30000);
     });
 
     // Restore saved view
@@ -965,6 +1031,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Setup SSE listener for OS events after a short delay
-    setTimeout(setupOSSSEListener, 3000);
+    // Setup SSE listener for OS events
+    setTimeout(setupOSSSEListener, 500);
 });

@@ -267,6 +267,17 @@
     </style>
 </head>
 <body>
+    <script>
+    // Limpar caches antigos e forcar atualizacao do Service Worker
+    if ('serviceWorker' in navigator) {
+        caches.keys().then(function(keys) {
+            keys.forEach(function(k) { caches.delete(k); });
+        });
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+            regs.forEach(function(reg) { reg.unregister(); });
+        });
+    }
+    </script>
     <!-- Canvas: 3D Globe + Interactive Particles -->
     <canvas id="nexusCanvas"></canvas>
 

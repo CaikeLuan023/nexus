@@ -14,6 +14,12 @@
     <link rel="apple-touch-icon" href="/icons/icon-192.svg">
 </head>
 <body>
+    <script>
+    // Verificacao rapida de autenticacao antes de carregar a pagina
+    fetch('/api/me').then(function(r) {
+        if (r.status === 401) window.location.href = '/login';
+    }).catch(function() {});
+    </script>
     <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">
         <i class="bi bi-list"></i>
     </button>
@@ -27,7 +33,7 @@
                 <button class="btn btn-outline-primary btn-sm" id="btnEditarDash" onclick="toggleEditDashboard()">
                     <i class="bi bi-pencil-square me-1"></i> Personalizar
                 </button>
-                <div id="editDashActions" style="display:none" class="d-flex gap-2">
+                <div id="editDashActions" style="display:none !important" class="d-flex gap-2">
                     <button class="btn btn-success btn-sm" onclick="salvarLayoutDash()">
                         <i class="bi bi-check-lg me-1"></i> Salvar
                     </button>

@@ -1,6 +1,5 @@
-const CACHE_NAME = 'nexus-v28';
+const CACHE_NAME = 'nexus-v35';
 const STATIC_ASSETS = [
-    '/',
     '/css/style.css',
     '/js/app.js',
     '/js/dashboard-utils.js',
@@ -31,14 +30,26 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    // Only handle GET requests - Cache API does not support POST
     if (event.request.method !== 'GET') return;
 
-    if (
-        event.request.url.includes('/api/') ||
-        event.request.url.endsWith('.js') ||
-        event.request.url.endsWith('.css')
-    ) {
+    const url = new URL(event.request.url);
+
+    // Navigation requests (HTML pages): ALWAYS go to network
+    if (event.request.mode === 'navigate') {
+        event.respondWith(
+            fetch(event.request).catch(() => caches.match('/'))
+        );
+        return;
+    }
+
+    // API requests: ALWAYS go to network, never cache
+    if (url.pathname.startsWith('/api/')) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
+    // Static assets (JS, CSS, images): network-first with cache fallback
+    if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
         event.respondWith(
             fetch(event.request)
                 .then((response) => {
@@ -48,7 +59,23 @@ self.addEventListener('fetch', (event) => {
                 })
                 .catch(() => caches.match(event.request))
         );
-    } else {
-        event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
+        return;
     }
+
+    // CDN assets: cache-first (they are versioned/immutable)
+    if (!url.origin.includes(self.location.origin)) {
+        event.respondWith(
+            caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+                return response;
+            }))
+        );
+        return;
+    }
+
+    // Everything else: network-first
+    event.respondWith(
+        fetch(event.request).catch(() => caches.match(event.request))
+    );
 });

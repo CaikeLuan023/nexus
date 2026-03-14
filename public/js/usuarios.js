@@ -232,6 +232,7 @@ function renderPermissoes(perms) {
             const label = moduloLabels[modulo] || modulo;
             const analistaChecked = matrix[modulo]?.analista ? 'checked' : '';
             const vendedorChecked = matrix[modulo]?.vendedor ? 'checked' : '';
+            const tecnicoChecked = matrix[modulo]?.tecnico_campo ? 'checked' : '';
 
             return `
             <tr>
@@ -253,6 +254,12 @@ function renderPermissoes(perms) {
                 </td>
                 <td class="text-center">
                     <div class="form-check d-flex justify-content-center">
+                        <input class="form-check-input perm-checkbox" type="checkbox"
+                            data-perfil="tecnico_campo" data-modulo="${modulo}" ${tecnicoChecked}>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <div class="form-check d-flex justify-content-center">
                         <input class="form-check-input" type="checkbox" checked disabled
                             title="Admin sempre tem acesso total">
                     </div>
@@ -265,7 +272,7 @@ function renderPermissoes(perms) {
 
 async function salvarPermissoes() {
     const checkboxes = document.querySelectorAll('.perm-checkbox');
-    const perfis = { analista: {}, vendedor: {} };
+    const perfis = { analista: {}, vendedor: {}, tecnico_campo: {} };
 
     checkboxes.forEach((cb) => {
         const perfil = cb.dataset.perfil;

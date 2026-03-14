@@ -109,8 +109,8 @@ app.use('/sw.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
     res.sendFile(path.join(__dirname, 'public', 'sw.js'));
 });
-app.use('/js', express.static(path.join(__dirname, 'public', 'js'), { maxAge: '5m', etag: true }));
-app.use('/css', express.static(path.join(__dirname, 'public', 'css'), { maxAge: '5m', etag: true }));
+app.use('/js', express.static(path.join(__dirname, 'public', 'js'), { maxAge: 0, etag: false }));
+app.use('/css', express.static(path.join(__dirname, 'public', 'css'), { maxAge: 0, etag: false }));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h', etag: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { maxAge: '7d', etag: true }));
 
@@ -313,7 +313,7 @@ const WAHA_URL = process.env.WAHA_API_URL || 'http://localhost:3001';
 const WAHA_SESSION = process.env.WAHA_SESSION_NAME || 'default';
 const WAHA_KEY = process.env.WAHA_API_KEY || crypto.randomBytes(16).toString('hex');
 const sseClients = new Set();
-const onlineUsers = new Map(); // userId -> { id, nome, perfil, lastSeen, page }
+const onlineUsers = new Map(); // userId -> { id, nome, perfil, lastSeen, page, em_almoco }
 
 function getOnlineList() {
     return [...onlineUsers.values()].map((u) => ({
@@ -321,7 +321,8 @@ function getOnlineList() {
         nome: u.nome,
         perfil: u.perfil,
         page: u.page,
-        foto_url: u.foto_url || null
+        foto_url: u.foto_url || null,
+        em_almoco: u.em_almoco || false
     }));
 }
 
@@ -1154,7 +1155,7 @@ app.use(requireAuth);
 
 // ==================== ROTAS HTML (PROTEGIDAS) ====================
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));
+app.get('/', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));
 app.get('/chamados', requireModuleAccess('chamados'), (req, res) =>
     res.sendFile(path.join(__dirname, 'views', 'chamados.html'))
 );
@@ -1213,13 +1214,15 @@ app.post('/api/heartbeat', (req, res) => {
     const userDb = db.queryGet('SELECT foto_url FROM usuarios WHERE id = ?', [u.id]);
     const fotoUrl = userDb?.foto_url || null;
     const antes = onlineUsers.has(u.id);
+    const prevData = onlineUsers.get(u.id);
     onlineUsers.set(u.id, {
         id: u.id,
         nome: u.nome,
         perfil: u.perfil,
         foto_url: fotoUrl,
         lastSeen: Date.now(),
-        page: req.body.page || ''
+        page: req.body.page || '',
+        em_almoco: prevData?.em_almoco || false
     });
     if (!antes) broadcastSSE({ event: 'user.online', payload: { id: u.id, nome: u.nome, perfil: u.perfil } });
     res.json({ ok: true, online: getOnlineList() });
@@ -1227,6 +1230,35 @@ app.post('/api/heartbeat', (req, res) => {
 
 app.get('/api/online', (req, res) => {
     res.json(getOnlineList());
+});
+
+// Toggle almoco do tecnico
+app.post('/api/almoco/toggle', (req, res) => {
+    const u = req.session.usuario;
+    const userData = onlineUsers.get(u.id);
+    if (!userData) {
+        onlineUsers.set(u.id, { id: u.id, nome: u.nome, perfil: u.perfil, foto_url: null, lastSeen: Date.now(), page: '', em_almoco: true });
+    } else {
+        userData.em_almoco = !userData.em_almoco;
+    }
+    const emAlmoco = onlineUsers.get(u.id).em_almoco;
+    broadcastSSE({ event: 'user.almoco', payload: { id: u.id, nome: u.nome, perfil: u.perfil, em_almoco: emAlmoco } });
+    res.json({ sucesso: true, em_almoco: emAlmoco });
+});
+
+// Status almoco do usuario atual
+app.get('/api/almoco/status', (req, res) => {
+    const u = req.session.usuario;
+    const userData = onlineUsers.get(u.id);
+    res.json({ em_almoco: userData?.em_almoco || false });
+});
+
+// Equipe online (tecnicos e atendentes) - para o app do tecnico ver atendentes
+app.get('/api/equipe/online', (req, res) => {
+    const list = getOnlineList().map(u => ({
+        id: u.id, nome: u.nome, perfil: u.perfil, foto_url: u.foto_url, em_almoco: u.em_almoco
+    }));
+    res.json(list);
 });
 
 // ==================== API: CHAT INTERNO ====================
@@ -1323,7 +1355,7 @@ app.post('/api/chat/enviar', (req, res) => {
 
 // ==================== API: AUTH INFO ====================
 
-app.get('/api/me', (req, res) => {
+app.get('/api/me', requireAuth, (req, res) => {
     const db = getDB();
     const perms = db.queryAll('SELECT modulo, ativo FROM permissoes_modulos WHERE perfil = ?', [
         req.session.usuario.perfil
@@ -2824,7 +2856,7 @@ app.post('/api/usuarios', requireAdmin, (req, res) => {
     erro = validarSenha(senha);
     if (erro) return res.status(400).json({ erro });
     if (
-        !['admin', 'analista', 'vendedor', 'gestor_atendimento', 'gerente_noc', 'financeiro', 'atendente'].includes(
+        !['admin', 'analista', 'vendedor', 'gestor_atendimento', 'gerente_noc', 'financeiro', 'atendente', 'tecnico_campo'].includes(
             perfil
         )
     )
@@ -2937,7 +2969,7 @@ app.get('/api/permissoes', requireAdmin, (req, res) => {
 app.put('/api/permissoes/:perfil', requireAdmin, (req, res) => {
     const { perfil } = req.params;
     if (perfil === 'admin') return res.status(400).json({ erro: 'Não é possível alterar permissões do administrador' });
-    if (!['analista', 'vendedor'].includes(perfil)) return res.status(400).json({ erro: 'Perfil inválido' });
+    if (!['analista', 'vendedor', 'tecnico_campo'].includes(perfil)) return res.status(400).json({ erro: 'Perfil inválido' });
 
     const { modulos } = req.body;
     if (!modulos || typeof modulos !== 'object') return res.status(400).json({ erro: 'Dados inválidos' });
@@ -10530,18 +10562,24 @@ app.get('/api/ordens-servico/resumo', requireAuth, requireModuleAccess('ordens_s
 // Minhas OS (tecnico logado)
 app.get('/api/ordens-servico/minhas', requireAuth, (req, res) => {
     const db = getDB();
-    const os = db.queryAll(
+    const osList = db.queryAll(
         `SELECT os.*, u1.nome as criador_nome FROM ordens_servico os
          LEFT JOIN usuarios u1 ON os.criador_id = u1.id
          WHERE os.tecnico_id = ? AND os.status NOT IN ('concluida','cancelada')
          ORDER BY CASE os.prioridade WHEN 'urgente' THEN 1 WHEN 'alta' THEN 2 WHEN 'normal' THEN 3 ELSE 4 END, os.criado_em DESC`,
         [req.session.usuario.id]
     );
-    res.json(os);
+    for (const os of osList) {
+        os.checklist = db.queryAll('SELECT id, descricao, concluido FROM os_checklist WHERE os_id = ? ORDER BY id', [os.id]);
+    }
+    res.json(osList);
 });
 
 // Detalhe OS
-app.get('/api/ordens-servico/:id', requireAuth, requireModuleAccess('ordens_servico'), (req, res) => {
+app.get('/api/ordens-servico/:id', requireAuth, (req, res, next) => {
+    if (req.session.usuario.perfil === 'tecnico_campo') return next();
+    return requireModuleAccess('ordens_servico')(req, res, next);
+}, (req, res) => {
     try {
         const db = getDB();
         let sql = `SELECT os.*, u1.nome as criador_nome, u2.nome as tecnico_nome
@@ -10637,10 +10675,14 @@ function transicaoOS(req, res, statusDe, statusPara, extraFields = {}) {
         [os.id, req.session.usuario.id, req.session.usuario.nome, 'status_change', os.status, statusPara, req.body.motivo || req.body.observacoes || null]);
     // Notificacao + SSE
     const destinatario = statusPara === 'enviada' ? os.tecnico_id : os.criador_id;
+    const tecnico = os.tecnico_id ? db.queryGet('SELECT nome FROM usuarios WHERE id = ?', [os.tecnico_id]) : null;
+    const tecnicoNome = tecnico ? tecnico.nome : '';
     if (destinatario) {
-        criarNotificacao(destinatario, 'ordens_servico', `OS ${os.numero} - ${statusPara.replace('_', ' ')}`,
-            `A OS ${os.numero} foi atualizada para ${statusPara.replace('_', ' ')}`, `/ordens-servico`);
-        broadcastSSE({ event: 'os.status', payload: { os_id: os.id, numero: os.numero, status: statusPara, tecnico_id: os.tecnico_id, criador_id: os.criador_id } });
+        const msgNotif = tecnicoNome
+            ? `Tecnico ${tecnicoNome} - OS ${os.numero} atualizada para ${statusPara.replace(/_/g, ' ')}`
+            : `A OS ${os.numero} foi atualizada para ${statusPara.replace(/_/g, ' ')}`;
+        criarNotificacao(destinatario, 'ordens_servico', `OS ${os.numero} - ${statusPara.replace(/_/g, ' ')}`, msgNotif, `/ordens-servico`);
+        broadcastSSE({ event: 'os.status', payload: { os_id: os.id, numero: os.numero, status: statusPara, tecnico_id: os.tecnico_id, criador_id: os.criador_id, tecnico_nome: tecnicoNome } });
     }
     registrarAtividade(req, 'status', 'ordens_servico', os.id, `OS ${os.numero}: ${os.status} → ${statusPara}`);
     res.json({ sucesso: true, status: statusPara });
@@ -10692,8 +10734,9 @@ app.patch('/api/ordens-servico/:id/cancelar', requireAuth, requireModuleAccess('
 // ---- Chat da OS ----
 app.get('/api/ordens-servico/:id/mensagens', requireAuth, (req, res) => {
     const db = getDB();
+    const order = req.query.order === 'desc' ? 'DESC' : 'ASC';
     const msgs = db.queryAll(
-        `SELECT m.*, u.nome as usuario_nome FROM os_mensagens m LEFT JOIN usuarios u ON m.usuario_id = u.id WHERE m.os_id = ? ORDER BY m.criado_em ASC`,
+        `SELECT m.*, u.nome as usuario_nome FROM os_mensagens m LEFT JOIN usuarios u ON m.usuario_id = u.id WHERE m.os_id = ? ORDER BY m.criado_em ${order}`,
         [req.params.id]
     );
     // Marcar como lidas
@@ -10712,8 +10755,8 @@ app.post('/api/ordens-servico/:id/mensagens', requireAuth, (req, res) => {
         [req.params.id, req.session.usuario.id, texto.trim()]
     );
     const msg = { id: result.lastInsertRowid, os_id: parseInt(req.params.id), usuario_id: req.session.usuario.id, usuario_nome: req.session.usuario.nome, texto: texto.trim(), lido: 0, criado_em: new Date().toISOString().slice(0, 19).replace('T', ' ') };
-    // SSE: notificar apenas criador e tecnico
-    broadcastSSE({ event: 'os.mensagem', payload: { ...msg, tecnico_id: os.tecnico_id, criador_id: os.criador_id } });
+    // SSE: notificar criador e tecnico com numero da OS
+    broadcastSSE({ event: 'os.mensagem', payload: { ...msg, numero: os.numero, tecnico_id: os.tecnico_id, criador_id: os.criador_id } });
     res.json(msg);
 });
 
