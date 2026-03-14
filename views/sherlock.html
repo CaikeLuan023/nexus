@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sherlock - Nexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <nav class="sidebar" id="mainSidebar"></nav>
+
+    <main class="main-content" style="padding-bottom:0">
+        <div class="page-header">
+            <h2><i class="bi bi-search me-2"></i>Sherlock</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="novaConversa()">
+                    <i class="bi bi-plus-circle me-1"></i>Nova conversa
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="toggleHistorico()">
+                    <i class="bi bi-clock-history me-1"></i>Historico
+                </button>
+            </div>
+        </div>
+
+        <div class="sherlock-layout">
+            <!-- Conversation History Panel -->
+            <div class="sherlock-sidebar" id="sherlockSidebar" style="display:none">
+                <div class="sherlock-sidebar-header">
+                    <strong>Conversas</strong>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="toggleHistorico()"><i class="bi bi-x"></i></button>
+                </div>
+                <div class="sherlock-sidebar-list" id="conversasList"></div>
+            </div>
+
+            <!-- Main Chat Panel -->
+            <div class="sherlock-chat-panel">
+                <!-- Welcome screen -->
+                <div class="sherlock-welcome" id="sherlockWelcome">
+                    <div class="text-center">
+                        <div class="sherlock-welcome-icon mb-3">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h4 class="mt-2">Ola! Eu sou o Sherlock</h4>
+                        <p class="text-muted mb-4">Seu assistente de analise de dados. Pergunte qualquer coisa sobre clientes, chamados, vendas, financeiro e muito mais.</p>
+                        <div class="sherlock-suggestions">
+                            <button class="btn btn-outline-secondary btn-sm m-1" onclick="enviarSugestao('Qual o resumo geral do sistema?')">
+                                <i class="bi bi-speedometer2 me-1"></i>Resumo geral
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm m-1" onclick="enviarSugestao('Quantos chamados estao abertos por categoria?')">
+                                <i class="bi bi-ticket-detailed me-1"></i>Chamados por categoria
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm m-1" onclick="enviarSugestao('Qual o desempenho de vendas deste mes?')">
+                                <i class="bi bi-graph-up me-1"></i>Vendas do mes
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm m-1" onclick="enviarSugestao('Quais clientes tem mais chamados abertos?')">
+                                <i class="bi bi-people me-1"></i>Clientes criticos
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm m-1" onclick="enviarSugestao('Qual a media NPS dos ultimos 30 dias?')">
+                                <i class="bi bi-star me-1"></i>NPS recente
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm m-1" onclick="enviarSugestao('Quais faturas estao atrasadas?')">
+                                <i class="bi bi-currency-dollar me-1"></i>Faturas atrasadas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages area -->
+                <div class="sherlock-messages" id="sherlockMessages" style="display:none"></div>
+
+                <!-- Typing indicator -->
+                <div class="sherlock-typing" id="sherlockTyping" style="display:none">
+                    <div class="sherlock-msg sherlock-msg-assistant">
+                        <div class="sherlock-msg-avatar"><i class="bi bi-search"></i></div>
+                        <div class="sherlock-msg-content">
+                            <div class="sherlock-msg-bubble">
+                                <span class="sherlock-dots"><span></span><span></span><span></span></span>
+                                Analisando...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input bar -->
+                <div class="sherlock-input-bar">
+                    <input type="text" id="sherlockInput" class="form-control"
+                        placeholder="Pergunte algo sobre seus dados..."
+                        onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); enviarMensagem(); }"
+                        maxlength="2000">
+                    <button class="btn btn-primary" onclick="enviarMensagem()" id="btnEnviar" title="Enviar">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/sherlock.js"></script>
+</body>
+</html>

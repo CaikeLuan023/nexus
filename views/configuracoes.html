@@ -9,6 +9,7 @@
     <link href="/css/style.css" rel="stylesheet">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#007bff">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="/icons/icon-192.svg">
 </head>
@@ -69,6 +70,11 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabWhatsAppIA">
                     <i class="bi bi-robot me-1"></i> WhatsApp IA
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSherlock">
+                    <i class="bi bi-search me-1"></i> Sherlock
                 </button>
             </li>
             <li class="nav-item">
@@ -497,6 +503,73 @@
                             <tbody id="tabelaIAHistorico"><tr><td colspan="6" class="text-center text-muted py-3">Carregando...</td></tr></tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- Tab Sherlock -->
+            <div class="tab-pane fade" id="tabSherlock">
+                <div class="table-container">
+                    <h5 class="mb-3"><i class="bi bi-search me-2"></i>Sherlock - Assistente de Dados</h5>
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Configure o Sherlock para analisar dados internos do sistema via chat. Suporta <strong>Google Gemini (gratuito)</strong> ou OpenAI (pago).
+                    </div>
+                    <form id="formSherlock" onsubmit="salvarSherlockConfig(event)">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Status</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="sherlockAtivo">
+                                    <label class="form-check-label" for="sherlockAtivo">Sherlock Ativo</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Provedor de IA</label>
+                                <select class="form-select" id="sherlockProvedor" onchange="onSherlockProvedorChange()">
+                                    <option value="gemini">Google Gemini (Gratuito)</option>
+                                    <option value="openai">OpenAI (Pago)</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">API Key</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="sherlockApiKey" placeholder="Cole sua API Key aqui">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="toggleSherlockKey()">
+                                        <i class="bi bi-eye" id="sherlockKeyIcon"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted" id="sherlockKeyHint">Gemini: crie gratis em aistudio.google.com/apikey</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Modelo</label>
+                                <select class="form-select" id="sherlockModelo">
+                                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recomendado)</option>
+                                    <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                                    <option value="gpt-4o">OpenAI GPT-4o</option>
+                                    <option value="gpt-4o-mini">OpenAI GPT-4o Mini</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Max Tokens</label>
+                                <input type="number" class="form-control" id="sherlockMaxTokens" value="4000" min="500" max="8000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Temperatura</label>
+                                <input type="number" class="form-control" id="sherlockTemperatura" value="0.3" min="0" max="1" step="0.1">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Max linhas SQL</label>
+                                <input type="number" class="form-control" id="sherlockMaxLinhas" value="100" min="10" max="500">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Prompt extra (opcional)</label>
+                                <textarea class="form-control" id="sherlockPromptExtra" rows="3" placeholder="Instrucoes adicionais para o Sherlock..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Salvar Configuracao</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
 

@@ -262,6 +262,11 @@ async function initDB() {
         db.run('ALTER TABLE provedores ADD COLUMN endereco TEXT');
     }
 
+    // Migração: coluna id_externo na tabela provedores (ID do cliente no ERP)
+    if (!nomesColunas.includes('id_externo')) {
+        db.run('ALTER TABLE provedores ADD COLUMN id_externo TEXT');
+    }
+
     // ==================== VENDAS: TABELAS ====================
 
     // Pipeline CRM - Negocios/Oportunidades
@@ -546,7 +551,9 @@ async function initDB() {
         'financeiro',
         'usuarios',
         'configuracoes',
-        'ponto'
+        'ponto',
+        'sherlock',
+        'ordens_servico'
     ];
     const perfilDefaults = {
         admin: modulos.reduce((acc, m) => ({ ...acc, [m]: 1 }), {}),
@@ -570,7 +577,9 @@ async function initDB() {
             financeiro: 0,
             usuarios: 0,
             configuracoes: 0,
-            ponto: 0
+            ponto: 0,
+            sherlock: 0,
+            ordens_servico: 0
         },
         gestor_atendimento: {
             dashboard: 1,
@@ -588,7 +597,9 @@ async function initDB() {
             financeiro: 0,
             usuarios: 1,
             configuracoes: 0,
-            ponto: 1
+            ponto: 1,
+            sherlock: 1,
+            ordens_servico: 1
         },
         gerente_noc: {
             dashboard: 1,
@@ -606,7 +617,9 @@ async function initDB() {
             financeiro: 0,
             usuarios: 0,
             configuracoes: 0,
-            ponto: 1
+            ponto: 1,
+            sherlock: 1,
+            ordens_servico: 0
         },
         financeiro: {
             dashboard: 1,
@@ -624,7 +637,9 @@ async function initDB() {
             financeiro: 1,
             usuarios: 0,
             configuracoes: 0,
-            ponto: 1
+            ponto: 1,
+            sherlock: 1,
+            ordens_servico: 0
         },
         atendente: {
             dashboard: 1,
@@ -642,7 +657,29 @@ async function initDB() {
             financeiro: 0,
             usuarios: 0,
             configuracoes: 0,
-            ponto: 1
+            ponto: 1,
+            sherlock: 0,
+            ordens_servico: 1
+        },
+        tecnico_campo: {
+            dashboard: 1,
+            provedores: 0,
+            vendas: 0,
+            dashboard_vendedor: 0,
+            chamados: 0,
+            treinamentos: 0,
+            projetos: 0,
+            historico: 0,
+            whatsapp: 0,
+            relatorios: 0,
+            conhecimento: 0,
+            agenda: 0,
+            financeiro: 0,
+            usuarios: 0,
+            configuracoes: 0,
+            ponto: 1,
+            sherlock: 0,
+            ordens_servico: 1
         }
     };
     const permCount = db.exec('SELECT COUNT(*) FROM permissoes_modulos');
@@ -659,7 +696,7 @@ async function initDB() {
     }
 
     // Migração: garantir que modulos novos existam para todos os perfis
-    const perfis = ['admin', 'analista', 'vendedor', 'gestor_atendimento', 'gerente_noc', 'financeiro', 'atendente'];
+    const perfis = ['admin', 'analista', 'vendedor', 'gestor_atendimento', 'gerente_noc', 'financeiro', 'atendente', 'tecnico_campo'];
     for (const perfil of perfis) {
         const defaults = perfilDefaults[perfil] || {};
         for (const modulo of modulos) {
@@ -811,6 +848,9 @@ async function initDB() {
     } catch {}
     try {
         db.run('ALTER TABLE usuarios ADD COLUMN foto_url TEXT');
+    } catch {}
+    try {
+        db.run('ALTER TABLE usuarios ADD COLUMN session_token TEXT');
     } catch {}
 
     // ==================== CHAT INTERNO ====================
@@ -1139,6 +1179,44 @@ async function initDB() {
             "INSERT INTO sla_config (categoria, prioridade, tempo_resposta_horas, tempo_resolucao_horas) VALUES ('integracao', 'critica', 1, 4)"
         );
     }
+
+    // ==================== ERP CONTRATOS (sincronizados do ERP) ====================
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS erp_contratos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            erp_tipo TEXT NOT NULL,
+            id_externo TEXT NOT NULL,
+            cliente_id_externo TEXT,
+            provedor_id INTEGER,
+            plano TEXT,
+            status TEXT,
+            valor REAL DEFAULT 0,
+            dados_raw TEXT,
+            criado_em TEXT DEFAULT (datetime('now','localtime')),
+            atualizado_em TEXT DEFAULT (datetime('now','localtime')),
+            UNIQUE(erp_tipo, id_externo)
+        )
+    `);
+    db.run('CREATE INDEX IF NOT EXISTS idx_erp_contratos_tipo ON erp_contratos(erp_tipo)');
+    db.run('CREATE INDEX IF NOT EXISTS idx_erp_contratos_cliente ON erp_contratos(cliente_id_externo)');
+
+    // ==================== ERP PLANOS (sincronizados do ERP) ====================
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS erp_planos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            erp_tipo TEXT NOT NULL,
+            id_externo TEXT NOT NULL,
+            nome TEXT,
+            valor REAL DEFAULT 0,
+            dados_raw TEXT,
+            criado_em TEXT DEFAULT (datetime('now','localtime')),
+            atualizado_em TEXT DEFAULT (datetime('now','localtime')),
+            UNIQUE(erp_tipo, id_externo)
+        )
+    `);
+    db.run('CREATE INDEX IF NOT EXISTS idx_erp_planos_tipo ON erp_planos(erp_tipo)');
 
     // ==================== ERP SYNC LOG ====================
 
@@ -1579,6 +1657,156 @@ async function initDB() {
     `);
     db.run('CREATE INDEX IF NOT EXISTS idx_webhook_log_id ON webhook_dispatch_log(webhook_id)');
     db.run('CREATE INDEX IF NOT EXISTS idx_webhook_log_data ON webhook_dispatch_log(criado_em)');
+
+    // ==================== SHERLOCK (IA ANALISE DE DADOS) ====================
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS sherlock_conversas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id INTEGER NOT NULL,
+            titulo TEXT DEFAULT 'Nova conversa',
+            ativo INTEGER DEFAULT 1,
+            criado_em TEXT DEFAULT (datetime('now','localtime')),
+            atualizado_em TEXT DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+        )
+    `);
+    db.run('CREATE INDEX IF NOT EXISTS idx_sherlock_conversas_usuario ON sherlock_conversas(usuario_id)');
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS sherlock_mensagens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            conversa_id INTEGER NOT NULL,
+            role TEXT NOT NULL DEFAULT 'user',
+            conteudo TEXT NOT NULL,
+            tokens_usados INTEGER DEFAULT 0,
+            sql_executado TEXT,
+            tempo_resposta_ms INTEGER DEFAULT 0,
+            criado_em TEXT DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY (conversa_id) REFERENCES sherlock_conversas(id) ON DELETE CASCADE
+        )
+    `);
+    db.run('CREATE INDEX IF NOT EXISTS idx_sherlock_mensagens_conversa ON sherlock_mensagens(conversa_id)');
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS sherlock_config (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ativo INTEGER DEFAULT 1,
+            provedor TEXT DEFAULT 'gemini',
+            api_key TEXT DEFAULT '',
+            modelo TEXT DEFAULT 'gemini-2.5-flash',
+            max_tokens INTEGER DEFAULT 4000,
+            temperatura REAL DEFAULT 0.3,
+            max_linhas_sql INTEGER DEFAULT 100,
+            prompt_sistema_extra TEXT DEFAULT '',
+            criado_em TEXT DEFAULT (datetime('now','localtime'))
+        )
+    `);
+    // Migration: add provedor and api_key columns if missing
+    try { db.run("ALTER TABLE sherlock_config ADD COLUMN provedor TEXT DEFAULT 'gemini'"); } catch(e) {}
+    try { db.run("ALTER TABLE sherlock_config ADD COLUMN api_key TEXT DEFAULT ''"); } catch(e) {}
+    // Seed config if empty
+    const sherlockCfgCount = db.exec('SELECT COUNT(*) FROM sherlock_config');
+    if (sherlockCfgCount.length > 0 && sherlockCfgCount[0].values[0][0] === 0) {
+        db.run("INSERT INTO sherlock_config (ativo, provedor, modelo, max_tokens, temperatura, max_linhas_sql) VALUES (1, 'gemini', 'gemini-2.5-flash', 4000, 0.3, 100)");
+    }
+
+    // ==================== ORDENS DE SERVICO (tabelas) ====================
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS ordens_servico (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            numero TEXT NOT NULL UNIQUE,
+            chamado_id INTEGER,
+            criador_id INTEGER NOT NULL,
+            tecnico_id INTEGER,
+            cliente_nome TEXT NOT NULL,
+            cliente_telefone TEXT,
+            cliente_documento TEXT,
+            endereco TEXT NOT NULL,
+            endereco_complemento TEXT,
+            latitude REAL,
+            longitude REAL,
+            tipo_servico TEXT NOT NULL,
+            descricao TEXT,
+            equipamentos TEXT,
+            prioridade TEXT DEFAULT 'normal',
+            status TEXT DEFAULT 'rascunho',
+            observacoes_tecnico TEXT,
+            data_agendamento TEXT,
+            data_envio TEXT,
+            data_aceite TEXT,
+            data_inicio_deslocamento TEXT,
+            data_inicio_execucao TEXT,
+            data_conclusao TEXT,
+            assinatura_base64 TEXT,
+            criado_em TEXT DEFAULT (datetime('now','localtime')),
+            atualizado_em TEXT DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY (chamado_id) REFERENCES chamados(id),
+            FOREIGN KEY (criador_id) REFERENCES usuarios(id),
+            FOREIGN KEY (tecnico_id) REFERENCES usuarios(id)
+        )
+    `);
+    db.run('CREATE INDEX IF NOT EXISTS idx_os_tecnico ON ordens_servico(tecnico_id)');
+    db.run('CREATE INDEX IF NOT EXISTS idx_os_status ON ordens_servico(status)');
+    db.run('CREATE INDEX IF NOT EXISTS idx_os_criador ON ordens_servico(criador_id)');
+    db.run('CREATE INDEX IF NOT EXISTS idx_os_numero ON ordens_servico(numero)');
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS os_checklist (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            os_id INTEGER NOT NULL,
+            descricao TEXT NOT NULL,
+            concluido INTEGER DEFAULT 0,
+            concluido_em TEXT,
+            criado_em TEXT DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY (os_id) REFERENCES ordens_servico(id) ON DELETE CASCADE
+        )
+    `);
+    db.run('CREATE INDEX IF NOT EXISTS idx_os_checklist_os ON os_checklist(os_id)');
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS os_fotos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            os_id INTEGER NOT NULL,
+            tipo TEXT NOT NULL,
+            caminho TEXT NOT NULL,
+            legenda TEXT,
+            criado_em TEXT DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY (os_id) REFERENCES ordens_servico(id) ON DELETE CASCADE
+        )
+    `);
+    db.run('CREATE INDEX IF NOT EXISTS idx_os_fotos_os ON os_fotos(os_id)');
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS os_mensagens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            os_id INTEGER NOT NULL,
+            usuario_id INTEGER NOT NULL,
+            texto TEXT NOT NULL,
+            lido INTEGER DEFAULT 0,
+            criado_em TEXT DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY (os_id) REFERENCES ordens_servico(id) ON DELETE CASCADE,
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        )
+    `);
+    db.run('CREATE INDEX IF NOT EXISTS idx_os_mensagens_os ON os_mensagens(os_id)');
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS os_historico (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            os_id INTEGER NOT NULL,
+            usuario_id INTEGER,
+            usuario_nome TEXT,
+            acao TEXT NOT NULL,
+            de_status TEXT,
+            para_status TEXT,
+            detalhes TEXT,
+            criado_em TEXT DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY (os_id) REFERENCES ordens_servico(id) ON DELETE CASCADE
+        )
+    `);
+    db.run('CREATE INDEX IF NOT EXISTS idx_os_historico_os ON os_historico(os_id)');
 
     // ==================== SEED: BASE DE CONHECIMENTO ====================
     seedBaseConhecimento();
@@ -2737,11 +2965,27 @@ DICA: Use a agenda para coordenar reunioes, treinamentos e prazos importantes da
     stmtArtigo.free();
 }
 
+let _saveTimer = null;
+const SAVE_DELAY_MS = 3000;
+
 function saveDB() {
     if (!db) return;
     const data = db.export();
     fs.writeFileSync(DB_PATH, Buffer.from(data));
 }
+
+function saveDBDebounced() {
+    if (_saveTimer) return;
+    _saveTimer = setTimeout(() => {
+        _saveTimer = null;
+        saveDB();
+    }, SAVE_DELAY_MS);
+}
+
+// Salvar ao encerrar o processo
+process.on('exit', () => { if (_saveTimer) { clearTimeout(_saveTimer); saveDB(); } });
+process.on('SIGINT', () => { if (_saveTimer) { clearTimeout(_saveTimer); saveDB(); } process.exit(0); });
+process.on('SIGTERM', () => { if (_saveTimer) { clearTimeout(_saveTimer); saveDB(); } process.exit(0); });
 
 // Helpers para manter compatibilidade com a API usada no server.js
 function queryAll(sql, params = []) {
@@ -2771,7 +3015,7 @@ function queryRun(sql, params = []) {
     const changes = db.getRowsModified();
     const lastIdResult = db.exec('SELECT last_insert_rowid() as id');
     const lastId = lastIdResult.length > 0 ? lastIdResult[0].values[0][0] : null;
-    saveDB();
+    saveDBDebounced();
     return { lastInsertRowid: lastId, changes };
 }
 

@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     carregarSLADashboard();
     carregarWhatsAppIA();
     carregarIAHistorico();
+    carregarSherlockConfig();
     carregarRetencao();
     carregarIntegExternas();
 });
@@ -760,6 +761,15 @@ async function sincronizarErp() {
     try {
         const r = await api('/api/erp/' + _erpSelecionado + '/sync', { method: 'POST' });
         if (r.sucesso) {
+            let detalhes = '';
+            if (r.detalhes) {
+                const d = r.detalhes;
+                detalhes =
+                    '<br><small>' +
+                    '<b>Clientes:</b> ' + d.clientes.total + ' total (' + d.clientes.novos + ' novos, ' + d.clientes.atualizados + ' atualizados' + (d.clientes.erros ? ', ' + d.clientes.erros + ' erros' : '') + ')' +
+                    '<br><b>Contratos:</b> ' + d.contratos.total + ' total (' + d.contratos.novos + ' novos, ' + d.contratos.atualizados + ' atualizados' + (d.contratos.erros ? ', ' + d.contratos.erros + ' erros' : '') + ')' +
+                    '</small>';
+            }
             resultado.innerHTML =
                 '<div class="alert alert-success mt-2">' +
                 '<i class="bi bi-check-circle me-1"></i><strong>Sincronizacao concluida!</strong><br>' +
@@ -767,7 +777,8 @@ async function sincronizarErp() {
                 'Novos: ' + r.novos + ' | ' +
                 'Atualizados: ' + r.atualizados + ' | ' +
                 'Erros: ' + r.erros + ' | ' +
-                'Duracao: ' + (r.duracao_ms / 1000).toFixed(1) + 's</div>';
+                'Duracao: ' + (r.duracao_ms / 1000).toFixed(1) + 's' +
+                detalhes + '</div>';
             document.getElementById('erpUltimoSync').textContent =
                 'Ultima sincronizacao: ' + new Date().toLocaleString('pt-BR');
             carregarErpStatus();
@@ -1518,5 +1529,73 @@ async function excluirIntegExt(id) {
         carregarIntegExternas();
     } catch (err) {
         mostrarToast('Erro: ' + err.message, 'error');
+    }
+}
+
+// ==================== SHERLOCK CONFIG ====================
+
+async function carregarSherlockConfig() {
+    try {
+        const config = await api('/api/sherlock/config');
+        if (config) {
+            document.getElementById('sherlockAtivo').checked = !!config.ativo;
+            document.getElementById('sherlockProvedor').value = config.provedor || 'gemini';
+            document.getElementById('sherlockModelo').value = config.modelo || 'gemini-2.5-flash';
+            document.getElementById('sherlockMaxTokens').value = config.max_tokens || 4000;
+            document.getElementById('sherlockTemperatura').value = config.temperatura || 0.3;
+            document.getElementById('sherlockMaxLinhas').value = config.max_linhas_sql || 100;
+            document.getElementById('sherlockPromptExtra').value = config.prompt_sistema_extra || '';
+            if (config.api_key_masked) {
+                document.getElementById('sherlockApiKey').placeholder = config.api_key_masked;
+            }
+            onSherlockProvedorChange();
+        }
+    } catch {}
+}
+
+async function salvarSherlockConfig(e) {
+    e.preventDefault();
+    try {
+        await api('/api/sherlock/config', {
+            method: 'PUT',
+            body: {
+                ativo: document.getElementById('sherlockAtivo').checked ? 1 : 0,
+                provedor: document.getElementById('sherlockProvedor').value,
+                api_key: document.getElementById('sherlockApiKey').value || undefined,
+                modelo: document.getElementById('sherlockModelo').value,
+                max_tokens: Number(document.getElementById('sherlockMaxTokens').value),
+                temperatura: Number(document.getElementById('sherlockTemperatura').value),
+                max_linhas_sql: Number(document.getElementById('sherlockMaxLinhas').value),
+                prompt_sistema_extra: document.getElementById('sherlockPromptExtra').value
+            }
+        });
+        mostrarToast('Configuracao Sherlock salva!');
+    } catch (err) {
+        mostrarToast('Erro: ' + err.message, 'error');
+    }
+}
+
+function toggleSherlockKey() {
+    const input = document.getElementById('sherlockApiKey');
+    const icon = document.getElementById('sherlockKeyIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
+function onSherlockProvedorChange() {
+    const provedor = document.getElementById('sherlockProvedor').value;
+    const hint = document.getElementById('sherlockKeyHint');
+    const modelSelect = document.getElementById('sherlockModelo');
+    if (provedor === 'gemini') {
+        hint.textContent = 'Gemini: crie gratis em aistudio.google.com/apikey';
+        if (modelSelect.value.startsWith('gpt-')) modelSelect.value = 'gemini-2.5-flash';
+    } else {
+        hint.textContent = 'OpenAI: crie em platform.openai.com/api-keys (pago)';
+        if (modelSelect.value.startsWith('gemini')) modelSelect.value = 'gpt-4o-mini';
     }
 }

@@ -56,43 +56,41 @@
             margin-bottom: 1.8rem;
         }
 
-        .login-logo .logo-wrap {
+        .login-logo .logo-network {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 0.4rem;
             position: relative;
-            width: 160px;
-            height: 160px;
-            margin: 0 auto 0.5rem;
-            overflow: visible;
         }
 
-        .login-logo .logo-wrap svg {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
-            overflow: visible;
+        .login-logo .logo-network canvas {
+            width: 100%;
+            height: 100%;
         }
 
-        .login-logo .logo-n {
+        .login-logo .logo-network .n-letter {
             position: absolute;
-            top: 50%; left: 50%;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 3.5rem;
             font-weight: 900;
-            font-size: 56px;
-            background: linear-gradient(135deg, #3a7bd5, #7b2fbe, #ff2d78);
+            background: linear-gradient(180deg, #c84bff 0%, #ff2d78 50%, #7b2fbe 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            z-index: 2;
+            line-height: 1;
             user-select: none;
+            z-index: 2;
+            filter: drop-shadow(0 0 20px rgba(200, 75, 255, 0.5)) drop-shadow(0 0 40px rgba(255, 45, 120, 0.3));
         }
 
         .login-logo h3 {
             font-weight: 800;
-            font-size: 1.8rem;
-            letter-spacing: 6px;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
             margin: 0;
-            background: linear-gradient(135deg, #ff2d78, #7b2fbe);
+            background: linear-gradient(135deg, #ff2d78, #e91e63, #7b2fbe);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -274,12 +272,11 @@
 
     <div class="login-card">
         <div class="login-logo">
-            <!-- Mini plexus globe orbiting around N -->
-            <div class="logo-wrap">
-                <svg id="logoGlobe" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"></svg>
-                <span class="logo-n">N</span>
+            <div class="logo-network">
+                <canvas id="logoCanvas" width="400" height="400"></canvas>
+                <span class="n-letter">N</span>
             </div>
-            <h3>NEXUS</h3>
+            <h3>Nexus</h3>
             <p>Faca login para continuar</p>
         </div>
 
@@ -321,165 +318,8 @@
         </div>
     </div>
 
-    <script>
-    function toggleSenha() {
-        const input = document.getElementById('inputSenha');
-        const icon = document.getElementById('eyeIcon');
-        if (input.type === 'password') { input.type = 'text'; icon.className = 'bi bi-eye-slash'; }
-        else { input.type = 'password'; icon.className = 'bi bi-eye'; }
-    }
-    </script>
+    <script src="/js/logo-sphere.js"></script>
     <script src="/js/login-canvas.js"></script>
-    <script>
-    // === MINI PLEXUS GLOBE around the N (SVG-based for reliable rendering) ===
-    (function() {
-        var svg = document.getElementById('logoGlobe');
-        if (!svg) return;
-        var NS = 'http://www.w3.org/2000/svg';
-        var S = 160, mid = S / 2, R = 65;
-        var N_PTS = 50;
-
-        // Generate Fibonacci sphere points
-        var pts = [], golden = Math.PI * (3 - Math.sqrt(5));
-        for (var i = 0; i < N_PTS; i++) {
-            var y = 1 - (i / (N_PTS - 1)) * 2;
-            var rad = Math.sqrt(1 - y * y);
-            var th = golden * i;
-            pts.push({
-                ox: Math.cos(th) * rad, oy: y, oz: Math.sin(th) * rad,
-                sx: 0, sy: 0, sz: 0, phase: Math.random() * 6.28
-            });
-        }
-
-        // Pre-compute edges (nearby pairs)
-        var edges = [];
-        for (var i = 0; i < N_PTS; i++) {
-            for (var j = i + 1; j < N_PTS; j++) {
-                var a = pts[i], b = pts[j];
-                var dx = a.ox-b.ox, dy = a.oy-b.oy, dz = a.oz-b.oz;
-                var d = Math.sqrt(dx*dx+dy*dy+dz*dz);
-                if (d < 0.58) edges.push({i:i, j:j, nd:d/0.58});
-            }
-        }
-
-        // Create SVG line elements for edges
-        var edgeEls = [];
-        for (var i = 0; i < edges.length; i++) {
-            var line = document.createElementNS(NS, 'line');
-            line.setAttribute('stroke-linecap', 'round');
-            line.setAttribute('stroke-width', '0.7');
-            svg.appendChild(line);
-            edgeEls.push(line);
-        }
-
-        // Create SVG circle elements for nodes
-        var nodeEls = [];
-        for (var i = 0; i < N_PTS; i++) {
-            var circle = document.createElementNS(NS, 'circle');
-            svg.appendChild(circle);
-            nodeEls.push(circle);
-        }
-
-        // Create data pulse elements
-        var pulseData = [], pulseEls = [];
-        for (var i = 0; i < 5; i++) {
-            var c = document.createElementNS(NS, 'circle');
-            c.setAttribute('r', '2.5');
-            svg.appendChild(c);
-            pulseEls.push(c);
-            pulseData.push({
-                e: Math.floor(Math.random() * edges.length),
-                t: Math.random(),
-                spd: 0.005 + Math.random() * 0.008
-            });
-        }
-
-        var angle = 0;
-        function animate(time) {
-            angle += 0.004;
-            var cosY = Math.cos(angle), sinY = Math.sin(angle);
-            var cosX = Math.cos(0.35), sinX = Math.sin(0.35);
-
-            // 3D transform all points
-            for (var i = 0; i < N_PTS; i++) {
-                var p = pts[i];
-                var x1 = p.ox * cosY - p.oz * sinY;
-                var z1 = p.ox * sinY + p.oz * cosY;
-                var y2 = p.oy * cosX - z1 * sinX;
-                var z2 = p.oy * sinX + z1 * cosX;
-                var sc = 280 / (280 + z2 * R);
-                p.sx = mid + x1 * R * sc;
-                p.sy = mid + y2 * R * sc;
-                p.sz = z2;
-            }
-
-            // Update edge elements
-            for (var i = 0; i < edges.length; i++) {
-                var edge = edges[i];
-                var a = pts[edge.i], b = pts[edge.j];
-                var el = edgeEls[i];
-
-                if (a.sz < -0.15 && b.sz < -0.15) {
-                    el.setAttribute('stroke', 'none');
-                    continue;
-                }
-                var da = Math.max(0, (a.sz + 0.5) * 1.3);
-                var db = Math.max(0, (b.sz + 0.5) * 1.3);
-                var depth = Math.min(da, db);
-                var alpha = (1 - edge.nd) * 0.55 * depth;
-                if (alpha < 0.03) { el.setAttribute('stroke', 'none'); continue; }
-
-                el.setAttribute('x1', a.sx.toFixed(1));
-                el.setAttribute('y1', a.sy.toFixed(1));
-                el.setAttribute('x2', b.sx.toFixed(1));
-                el.setAttribute('y2', b.sy.toFixed(1));
-                el.setAttribute('stroke', 'rgba(255,45,120,' + alpha.toFixed(3) + ')');
-            }
-
-            // Update node elements
-            for (var i = 0; i < N_PTS; i++) {
-                var p = pts[i];
-                var el = nodeEls[i];
-                if (p.sz < -0.2) { el.setAttribute('fill', 'none'); continue; }
-
-                var depth = Math.max(0, Math.min(1, (p.sz + 0.4) * 1.5));
-                var pulse = 1 + Math.sin(time * 0.002 + p.phase) * 0.2;
-                var sz = (1.0 + depth * 1.0) * pulse;
-
-                el.setAttribute('cx', p.sx.toFixed(1));
-                el.setAttribute('cy', p.sy.toFixed(1));
-                el.setAttribute('r', sz.toFixed(2));
-                el.setAttribute('fill', 'rgba(255,45,120,' + (depth * 0.85).toFixed(3) + ')');
-            }
-
-            // Update data pulses
-            for (var i = 0; i < pulseData.length; i++) {
-                var pl = pulseData[i];
-                var edge = edges[pl.e];
-                var el = pulseEls[i];
-                if (edge) {
-                    var a = pts[edge.i], b = pts[edge.j];
-                    var px = a.sx + (b.sx - a.sx) * pl.t;
-                    var py = a.sy + (b.sy - a.sy) * pl.t;
-                    var dz = a.sz + (b.sz - a.sz) * pl.t;
-                    if (dz > -0.1) {
-                        var dp = Math.max(0, dz + 0.5);
-                        el.setAttribute('cx', px.toFixed(1));
-                        el.setAttribute('cy', py.toFixed(1));
-                        el.setAttribute('fill', 'rgba(255,230,255,' + (dp * 0.9).toFixed(3) + ')');
-                    } else {
-                        el.setAttribute('fill', 'none');
-                    }
-                }
-                pl.t += pl.spd;
-                if (pl.t > 1) { pl.t = 0; pl.e = Math.floor(Math.random() * edges.length); }
-            }
-
-            requestAnimationFrame(animate);
-        }
-        requestAnimationFrame(animate);
-    })();
-    </script>
     <script src="/js/login.js"></script>
 </body>
 </html>

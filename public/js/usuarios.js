@@ -165,26 +165,44 @@ async function excluirUsuario(id) {
 
 const moduloLabels = {
     dashboard: 'Dashboard',
-    provedores: 'Provedores',
-    vendas: 'Vendas',
-    dashboard_vendedor: 'Meu Dashboard (Vendedor)',
     chamados: 'Chamados',
-    treinamentos: 'Treinamentos',
+    ordens_servico: 'Ordens de Servico',
+    whatsapp: 'WhatsApp',
+    provedores: 'Clientes',
+    vendas: 'Vendas',
+    financeiro: 'Financeiro',
+    dashboard_vendedor: 'Meu Dashboard (Vendedor)',
     projetos: 'Projetos',
+    agenda: 'Agenda',
+    treinamentos: 'Treinamentos',
+    ponto: 'Ponto',
+    relatorios: 'Relatorios',
     historico: 'Historico',
-    whatsapp: 'WhatsApp'
+    sherlock: 'Sherlock',
+    usuarios: 'Usuarios',
+    conhecimento: 'Conhecimento',
+    configuracoes: 'Configuracoes'
 };
 
 const moduloIcons = {
     dashboard: 'bi-speedometer2',
-    provedores: 'bi-building',
-    vendas: 'bi-cash-coin',
-    dashboard_vendedor: 'bi-graph-up-arrow',
     chamados: 'bi-ticket-detailed',
-    treinamentos: 'bi-mortarboard',
+    ordens_servico: 'bi-clipboard2-check',
+    whatsapp: 'bi-whatsapp',
+    provedores: 'bi-people',
+    vendas: 'bi-cash-coin',
+    financeiro: 'bi-currency-dollar',
+    dashboard_vendedor: 'bi-graph-up-arrow',
     projetos: 'bi-kanban',
+    agenda: 'bi-calendar3',
+    treinamentos: 'bi-mortarboard',
+    ponto: 'bi-clock-history',
+    relatorios: 'bi-file-earmark-bar-graph',
     historico: 'bi-clock-history',
-    whatsapp: 'bi-whatsapp'
+    sherlock: 'bi-search',
+    usuarios: 'bi-people-fill',
+    conhecimento: 'bi-book',
+    configuracoes: 'bi-gear'
 };
 
 async function carregarPermissoes() {

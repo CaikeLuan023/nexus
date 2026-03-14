@@ -89,14 +89,20 @@ function mostrarToast(mensagem, tipo = 'success') {
         warning: 'bg-warning text-dark',
         info: 'bg-info text-dark'
     };
+    const icones = {
+        success: 'bi-check-circle-fill',
+        error: 'bi-x-circle-fill',
+        warning: 'bi-exclamation-triangle-fill',
+        info: 'bi-info-circle-fill'
+    };
 
     const toast = document.createElement('div');
     toast.className = `toast align-items-center text-white ${cores[tipo] || cores.success} border-0`;
     toast.setAttribute('role', 'alert');
     toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">${escapeHtmlGlobal(mensagem)}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        <div class="d-flex align-items-center">
+            <div class="toast-body"><i class="bi ${icones[tipo] || icones.success} me-1"></i>${escapeHtmlGlobal(mensagem)}</div>
+            <button type="button" class="btn-close btn-close-white me-2" data-bs-dismiss="toast"></button>
         </div>
     `;
     container.appendChild(toast);
@@ -199,12 +205,12 @@ function toggleTheme() {
 }
 
 function updateThemeButton(theme) {
-    const icon = document.getElementById('themeIcon');
-    const label = document.getElementById('themeLabel');
-    if (icon && label) {
-        icon.className = theme === 'dark' ? 'bi bi-sun-fill me-1' : 'bi bi-moon-fill me-1';
-        label.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
-    }
+    var icon = document.getElementById('themeIcon');
+    var label = document.getElementById('themeLabel');
+    var sw = document.getElementById('perfilThemeSwitch');
+    if (icon) icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    if (label) label.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+    if (sw) sw.checked = theme === 'dark';
 }
 
 function applyChartTheme(theme) {
@@ -229,47 +235,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const _sidebarItems = [
     { id: 'navDashboard', modulo: 'dashboard', icon: 'bi-speedometer2', label: 'Dashboard', href: '/' },
+    { id: 'navChamados', modulo: 'chamados', icon: 'bi-ticket-detailed', label: 'Chamados', href: '/chamados' },
+    { id: 'navFilaAtendimento', modulo: 'chamados', icon: 'bi-sort-down', label: 'Fila Atendimento', href: '/fila-atendimento' },
+    { id: 'navOrdensServico', modulo: 'ordens_servico', icon: 'bi-clipboard2-check', label: 'Ordens de Servico', href: '/ordens-servico' },
+    { id: 'navAtendimento', modulo: 'whatsapp', icon: 'bi-whatsapp', label: 'WhatsApp', href: '/atendimento' },
+    { id: 'navFlow', modulo: 'whatsapp', icon: 'bi-diagram-3', label: 'Fluxos', href: '/flow' },
+    { id: 'navNPS', modulo: 'chamados', icon: 'bi-star', label: 'NPS', href: '/nps' },
     { id: 'navProvedores', modulo: 'provedores', icon: 'bi-people', label: 'Clientes', href: '/provedores' },
     { id: 'navVendas', modulo: 'vendas', icon: 'bi-cash-coin', label: 'Vendas', href: '/vendas' },
-    {
-        id: 'navDashboardVendedor',
-        modulo: 'dashboard_vendedor',
-        icon: 'bi-graph-up-arrow',
-        label: 'Meu Dashboard',
-        href: '/dashboard-vendedor'
-    },
-    { id: 'navChamados', modulo: 'chamados', icon: 'bi-ticket-detailed', label: 'Chamados', href: '/chamados' },
-    {
-        id: 'navFilaAtendimento',
-        modulo: 'chamados',
-        icon: 'bi-sort-down',
-        label: 'Fila Atendimento',
-        href: '/fila-atendimento'
-    },
-    {
-        id: 'navTreinamentos',
-        modulo: 'treinamentos',
-        icon: 'bi-mortarboard',
-        label: 'Treinamentos',
-        href: '/treinamentos'
-    },
-    { id: 'navProjetos', modulo: 'projetos', icon: 'bi-kanban', label: 'Projetos', href: '/projetos' },
-    { id: 'navHistorico', modulo: 'historico', icon: 'bi-clock-history', label: 'Historico', href: '/historico' },
-    { id: 'navAtendimento', modulo: 'whatsapp', icon: 'bi-headset', label: 'Atendimento', href: '/atendimento' },
-    { id: 'navPonto', modulo: 'ponto', icon: 'bi-clock-history', label: 'Ponto', href: '/ponto' },
-    { id: 'navFlow', modulo: 'whatsapp', icon: 'bi-diagram-3', label: 'Fluxos', href: '/flow' },
-    {
-        id: 'navRelatorios',
-        modulo: 'relatorios',
-        icon: 'bi-file-earmark-bar-graph',
-        label: 'Relatorios',
-        href: '/relatorios'
-    },
-    { id: 'navConhecimento', modulo: 'conhecimento', icon: 'bi-book', label: 'Conhecimento', href: '/conhecimento' },
-    { id: 'navAgenda', modulo: 'agenda', icon: 'bi-calendar3', label: 'Agenda', href: '/agenda' },
-    { id: 'navNPS', modulo: 'chamados', icon: 'bi-star', label: 'NPS', href: '/nps' },
     { id: 'navFinanceiro', modulo: 'financeiro', icon: 'bi-currency-dollar', label: 'Financeiro', href: '/financeiro' },
+    { id: 'navDashboardVendedor', modulo: 'dashboard_vendedor', icon: 'bi-graph-up-arrow', label: 'Meu Dashboard', href: '/dashboard-vendedor' },
+    { id: 'navProjetos', modulo: 'projetos', icon: 'bi-kanban', label: 'Projetos', href: '/projetos' },
+    { id: 'navAgenda', modulo: 'agenda', icon: 'bi-calendar3', label: 'Agenda', href: '/agenda' },
+    { id: 'navTreinamentos', modulo: 'treinamentos', icon: 'bi-mortarboard', label: 'Treinamentos', href: '/treinamentos' },
+    { id: 'navPonto', modulo: 'ponto', icon: 'bi-clock-history', label: 'Ponto', href: '/ponto' },
+    { id: 'navRelatorios', modulo: 'relatorios', icon: 'bi-file-earmark-bar-graph', label: 'Relatorios', href: '/relatorios' },
+    { id: 'navHistorico', modulo: 'historico', icon: 'bi-clock-history', label: 'Historico', href: '/historico' },
+    { id: 'navSherlock', modulo: 'sherlock', icon: 'bi-search', label: 'Sherlock', href: '/sherlock' },
     { id: 'navUsuarios', modulo: 'usuarios', icon: 'bi-people-fill', label: 'Usuarios', href: '/usuarios' },
+    { id: 'navConhecimento', modulo: 'conhecimento', icon: 'bi-book', label: 'Conhecimento', href: '/conhecimento' },
     { id: 'navLogs', modulo: 'configuracoes', icon: 'bi-journal-code', label: 'Logs API', href: '/logs' },
     { id: 'navConfiguracoes', modulo: 'configuracoes', icon: 'bi-gear', label: 'Configuracoes', href: '/configuracoes' }
 ];
@@ -278,62 +262,26 @@ function gerarSidebar(permissoes) {
     const sidebar = document.getElementById('mainSidebar');
     if (!sidebar) return;
 
-    const currentPath = window.location.pathname;
-
-    const navItems = _sidebarItems
-        .map((item) => {
-            const isActive =
-                (item.href === '/' && currentPath === '/') || (item.href !== '/' && currentPath.startsWith(item.href));
-            const display = permissoes[item.modulo] ? '' : 'none';
-            const activeClass = isActive ? ' active' : '';
-            let extra = '';
-            if (item.id === 'navWhatsApp' && currentPath === '/whatsapp') {
-                extra =
-                    ' <span class="badge bg-success rounded-pill ms-1" id="sidebarUnreadBadge" style="display:none">0</span>';
-            }
-            return `<li class="nav-item" id="${item.id}" style="display:${display}"><a class="nav-link${activeClass}" href="${item.href}"><i class="bi ${item.icon}"></i> ${item.label}${extra}</a></li>`;
-        })
-        .join('\n            ');
+    const p = window.location.pathname;
+    const navHtml = _sidebarItems.map(item => {
+        const isActive = (item.href === '/' && p === '/') || (item.href !== '/' && p.startsWith(item.href));
+        const display = permissoes[item.modulo] ? '' : 'none';
+        return `<li class="nav-item" id="${item.id}" style="display:${display}"><a class="nav-link${isActive ? ' active' : ''}" href="${item.href}"><i class="bi ${item.icon}"></i> ${item.label}</a></li>`;
+    }).join('');
 
     sidebar.innerHTML = `
         <div class="sidebar-brand">
-            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="sidebar-logo">
-                <defs>
-                    <linearGradient id="sng" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3a7bd5"/><stop offset="100%" stop-color="#00D2FF"/></linearGradient>
-                    <linearGradient id="snb" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3a7bd5" stop-opacity="0.45"/><stop offset="100%" stop-color="#00D2FF" stop-opacity="0.45"/></linearGradient>
-                    <filter id="sg"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                </defs>
-                <g stroke="url(#sng)" stroke-width="2.2" stroke-linecap="round" fill="none" filter="url(#sg)">
-                    <line x1="24" y1="88" x2="24" y2="16"/><line x1="24" y1="16" x2="76" y2="88"/><line x1="76" y1="88" x2="76" y2="16"/>
-                </g>
-                <g stroke="url(#snb)" stroke-width="1.2" stroke-linecap="round" fill="none">
-                    <line x1="24" y1="16" x2="10" y2="5"/><line x1="24" y1="16" x2="42" y2="5"/><line x1="10" y1="5" x2="22" y2="2"/>
-                    <line x1="76" y1="16" x2="58" y2="5"/><line x1="76" y1="16" x2="90" y2="5"/><line x1="90" y1="5" x2="78" y2="2"/>
-                    <line x1="42" y1="5" x2="58" y2="5"/>
-                    <line x1="24" y1="52" x2="10" y2="44"/><line x1="76" y1="52" x2="90" y2="44"/>
-                    <line x1="40" y1="38" x2="28" y2="30"/><line x1="60" y1="66" x2="72" y2="74"/>
-                    <line x1="24" y1="88" x2="12" y2="96"/><line x1="76" y1="88" x2="88" y2="96"/>
-                </g>
-                <g fill="url(#sng)" opacity="0.5"><polygon points="9,4 13,2 12,7"/><polygon points="91,4 87,2 88,7"/><polygon points="21,1 24,4 18,4"/><polygon points="79,1 76,4 82,4"/></g>
-                <g filter="url(#sg)"><circle cx="24" cy="88" r="4.5" fill="#3a7bd5"/><circle cx="24" cy="16" r="5" fill="#00B4D8"/><circle cx="76" cy="88" r="4.5" fill="#3a7bd5"/><circle cx="76" cy="16" r="5" fill="#00D2FF"/></g>
-                <circle cx="24" cy="52" r="3" fill="#00B4D8"/><circle cx="76" cy="52" r="3" fill="#3a7bd5"/><circle cx="50" cy="52" r="3.5" fill="#00A8CC"/>
-                <circle cx="40" cy="38" r="2.5" fill="#00C2E0" opacity="0.8"/><circle cx="60" cy="66" r="2.5" fill="#3a7bd5" opacity="0.8"/>
-                <circle cx="10" cy="5" r="2.5" fill="#00D2FF" opacity="0.8"/><circle cx="42" cy="5" r="2.5" fill="#00C2E0" opacity="0.8"/>
-                <circle cx="58" cy="5" r="2.5" fill="#00A8CC" opacity="0.8"/><circle cx="90" cy="5" r="2.5" fill="#3a7bd5" opacity="0.8"/>
-                <circle cx="10" cy="44" r="2" fill="#00D2FF" opacity="0.6"/><circle cx="90" cy="44" r="2" fill="#3a7bd5" opacity="0.6"/>
-                <circle cx="12" cy="96" r="2" fill="#3a7bd5" opacity="0.6"/><circle cx="88" cy="96" r="2" fill="#3a7bd5" opacity="0.6"/>
-            </svg>
-            <h5>Nexus</h5>
+            <div class="sidebar-logo-sphere">
+                <canvas id="sidebarSphereCanvas" width="120" height="120"></canvas>
+                <span class="sidebar-n-letter">N</span>
+            </div>
+            <h5>Nexus ISP</h5>
         </div>
         <ul class="nav flex-column mt-2">
-            ${navItems}
+            ${navHtml}
         </ul>
         <div class="sidebar-theme-toggle" id="themeToggle">
-            <button class="btn btn-sm btn-outline-light w-100" onclick="toggleTheme()">
-                <i class="bi bi-moon-fill me-1" id="themeIcon"></i>
-                <span id="themeLabel">Dark Mode</span>
-            </button>
-            <button class="btn btn-sm btn-outline-light w-100 mt-1 position-relative" onclick="toggleNotificacoes()" id="btnNotificacoes">
+            <button class="btn btn-sm btn-outline-light w-100 position-relative" onclick="toggleNotificacoes()" id="btnNotificacoes">
                 <i class="bi bi-bell me-1"></i> Notificacoes
                 <span class="badge bg-danger rounded-pill ms-1" id="badgeNotificacoes" style="display:none">0</span>
             </button>
@@ -345,6 +293,67 @@ function gerarSidebar(permissoes) {
         <div class="sidebar-user" id="sidebarUser"></div>
     `;
     updateThemeButton(localStorage.getItem('theme') || 'light');
+    initSidebarSphere();
+}
+
+// ==================== SIDEBAR: MINI GEODESIC SPHERE ====================
+
+function initSidebarSphere() {
+    var canvas = document.getElementById('sidebarSphereCanvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    var cx = W / 2, cy = H / 2;
+    var R = 48;
+    var total = 60;
+    var golden = (1 + Math.sqrt(5)) / 2;
+    var points3D = [];
+    for (var i = 0; i < total; i++) {
+        var theta = Math.acos(1 - 2 * (i + 0.5) / total);
+        var phi = 2 * Math.PI * i / golden;
+        points3D.push({ x: R * Math.sin(theta) * Math.cos(phi), y: R * Math.sin(theta) * Math.sin(phi), z: R * Math.cos(theta) });
+    }
+    var edges = [];
+    var maxDist = R * 0.78;
+    for (var i = 0; i < total; i++) {
+        for (var j = i + 1; j < total; j++) {
+            var dx = points3D[i].x - points3D[j].x, dy = points3D[i].y - points3D[j].y, dz = points3D[i].z - points3D[j].z;
+            if (Math.sqrt(dx*dx + dy*dy + dz*dz) < maxDist) edges.push([i, j]);
+        }
+    }
+    function rotY(p, a) { var c=Math.cos(a),s=Math.sin(a); return {x:p.x*c+p.z*s, y:p.y, z:-p.x*s+p.z*c}; }
+    function rotX(p, a) { var c=Math.cos(a),s=Math.sin(a); return {x:p.x, y:p.y*c-p.z*s, z:p.y*s+p.z*c}; }
+
+    function drawSphere(t) {
+        ctx.clearRect(0, 0, W, H);
+        var aY = t * 0.0003, aX = 0.35 + Math.sin(t * 0.00015) * 0.12;
+        var proj = [];
+        for (var i = 0; i < points3D.length; i++) {
+            var r1 = rotY(points3D[i], aY), r2 = rotX(r1, aX);
+            proj.push({ x: cx + r2.x, y: cy + r2.y, z: r2.z, depth: (r2.z + R) / (2 * R) });
+        }
+        for (var e = 0; e < edges.length; e++) {
+            var a = proj[edges[e][0]], b = proj[edges[e][1]];
+            var avg = (a.depth + b.depth) / 2;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+            if (avg < 0.45) {
+                ctx.strokeStyle = 'rgba(123,47,190,' + (avg * 0.15) + ')';
+                ctx.lineWidth = 0.3;
+            } else {
+                ctx.strokeStyle = 'rgba(255,45,120,' + (0.12 + avg * 0.5) + ')';
+                ctx.lineWidth = 0.4 + avg * 0.5;
+            }
+            ctx.stroke();
+        }
+        for (var i = 0; i < proj.length; i++) {
+            var p = proj[i], sz = 0.6 + p.depth * 1.2;
+            ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,80,160,' + (0.2 + p.depth * 0.8) + ')';
+            ctx.fill();
+        }
+        requestAnimationFrame(drawSphere);
+    }
+    requestAnimationFrame(drawSphere);
 }
 
 // ==================== SIDEBAR: USUARIO LOGADO ====================
@@ -420,81 +429,100 @@ function abrirModalPerfil() {
             'beforeend',
             `
         <div class="modal fade" id="modalPerfil" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title"><i class="bi bi-person-circle me-2"></i>Meu Perfil</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="text-center mb-3">
-                            <div class="perfil-foto-container" id="perfilFotoContainer"></div>
-                            <div class="mt-2">
-                                <label class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-camera me-1"></i>Alterar Foto
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content perfil-modal-content">
+                    <div class="modal-body p-0">
+                        <!-- Header com foto -->
+                        <div class="perfil-header">
+                            <div class="perfil-foto-wrapper">
+                                <div class="perfil-foto-container" id="perfilFotoContainer"></div>
+                                <label class="perfil-foto-edit" title="Alterar foto">
+                                    <i class="bi bi-camera-fill"></i>
                                     <input type="file" accept="image/*" id="inputFotoPerfil" style="display:none" onchange="uploadFotoPerfil(this)">
                                 </label>
-                                <button class="btn btn-sm btn-outline-danger" id="btnRemoverFoto" style="display:none" onclick="removerFotoPerfil()">
-                                    <i class="bi bi-trash"></i>
+                            </div>
+                            <h5 class="perfil-nome mt-3 mb-0" id="perfilNome"></h5>
+                            <div class="perfil-role mt-1"><span class="badge" id="perfilRole"></span></div>
+                            <button class="btn btn-sm btn-outline-danger perfil-remove-foto" id="btnRemoverFoto" style="display:none" onclick="removerFotoPerfil()">
+                                <i class="bi bi-trash me-1"></i>Remover foto
+                            </button>
+                        </div>
+                        <!-- Info -->
+                        <div class="perfil-body">
+                            <div class="perfil-info-row">
+                                <div class="perfil-info-item">
+                                    <i class="bi bi-person"></i>
+                                    <div>
+                                        <small class="text-muted">Usuario</small>
+                                        <div class="fw-semibold" id="perfilUsuario"></div>
+                                    </div>
+                                </div>
+                                <div class="perfil-info-item">
+                                    <i class="bi bi-shield-check"></i>
+                                    <div>
+                                        <small class="text-muted">Perfil</small>
+                                        <div class="fw-semibold" id="perfilRoleText"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Preferencias -->
+                            <div class="perfil-section-title mt-3">Preferencias</div>
+                            <div class="perfil-pref-row" onclick="toggleTheme()">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi" id="themeIcon"></i>
+                                    <span id="themeLabel">Dark Mode</span>
+                                </div>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" id="perfilThemeSwitch" onchange="toggleTheme()">
+                                </div>
+                            </div>
+                            <!-- Acoes -->
+                            <div class="perfil-actions mt-3">
+                                <button class="btn btn-outline-secondary btn-sm w-100" onclick="bootstrap.Modal.getInstance(document.getElementById('modalPerfil')).hide(); abrirModalSenha()">
+                                    <i class="bi bi-key me-1"></i>Alterar Senha
                                 </button>
                             </div>
                         </div>
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label class="form-label text-muted small">Nome</label>
-                                <div class="fw-semibold" id="perfilNome"></div>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label text-muted small">Usuario</label>
-                                <div id="perfilUsuario"></div>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label text-muted small">Perfil / Role</label>
-                                <div><span class="badge bg-primary" id="perfilRole"></span></div>
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-outline-secondary btn-sm" onclick="bootstrap.Modal.getInstance(document.getElementById('modalPerfil')).hide(); abrirModalSenha()">
-                                <i class="bi bi-key me-1"></i>Alterar Senha
-                            </button>
-                        </div>
                     </div>
+                    <button type="button" class="perfil-close" data-bs-dismiss="modal" aria-label="Fechar"><i class="bi bi-x-lg"></i></button>
                 </div>
             </div>
         </div>`
         );
+        // Prevenir duplo toggle ao clicar na row
+        document.getElementById('perfilThemeSwitch').addEventListener('click', function(e) { e.stopPropagation(); });
     }
-    const u = window._currentUser;
-    if (u) {
-        const iniciais = u.nome
-            .split(' ')
-            .map((n) => n[0])
-            .join('')
-            .substring(0, 2)
-            .toUpperCase();
-        const container = document.getElementById('perfilFotoContainer');
+    atualizarConteudoPerfil();
+    var modal = bootstrap.Modal.getInstance(document.getElementById('modalPerfil'));
+    if (!modal) modal = new bootstrap.Modal(document.getElementById('modalPerfil'));
+    modal.show();
+}
+
+function atualizarConteudoPerfil() {
+    var u = window._currentUser;
+    if (!u) return;
+    var iniciais = u.nome.split(' ').map(function(n) { return n[0]; }).join('').substring(0, 2).toUpperCase();
+    var container = document.getElementById('perfilFotoContainer');
+    if (container) {
         if (u.foto_url) {
-            container.innerHTML = `<img src="${escapeHtmlGlobal(u.foto_url)}" class="perfil-foto-img">`;
+            container.innerHTML = '<img src="' + escapeHtmlGlobal(u.foto_url) + '" class="perfil-foto-img">';
             document.getElementById('btnRemoverFoto').style.display = '';
         } else {
-            container.innerHTML = `<div class="perfil-foto-placeholder">${iniciais}</div>`;
+            container.innerHTML = '<div class="perfil-foto-placeholder">' + iniciais + '</div>';
             document.getElementById('btnRemoverFoto').style.display = 'none';
         }
-        document.getElementById('perfilNome').textContent = u.nome;
-        document.getElementById('perfilUsuario').textContent = u.usuario;
-        const perfilLabels = {
-            admin: 'Administrador',
-            analista: 'Analista',
-            vendedor: 'Vendedor',
-            gestor_atendimento: 'Gestor Atendimento',
-            gerente_noc: 'Gerente NOC',
-            financeiro: 'Financeiro',
-            atendente: 'Atendente'
-        };
-        document.getElementById('perfilRole').textContent = perfilLabels[u.perfil] || u.perfil;
     }
-    new bootstrap.Modal(document.getElementById('modalPerfil')).show();
+    var el;
+    el = document.getElementById('perfilNome'); if (el) el.textContent = u.nome;
+    el = document.getElementById('perfilUsuario'); if (el) el.textContent = u.usuario;
+    var perfilLabels = { admin: 'Administrador', analista: 'Analista', vendedor: 'Vendedor', gestor_atendimento: 'Gestor Atendimento', gerente_noc: 'Gerente NOC', financeiro: 'Financeiro', atendente: 'Atendente' };
+    var roleLabel = perfilLabels[u.perfil] || u.perfil;
+    el = document.getElementById('perfilRole'); if (el) el.textContent = roleLabel;
+    el = document.getElementById('perfilRoleText'); if (el) el.textContent = roleLabel;
+    // Atualizar estado do theme switch
+    var themeSwitch = document.getElementById('perfilThemeSwitch');
+    if (themeSwitch) themeSwitch.checked = (localStorage.getItem('theme') || 'light') === 'dark';
+    updateThemeButton(localStorage.getItem('theme') || 'light');
 }
 
 async function uploadFotoPerfil(input) {
@@ -508,7 +536,7 @@ async function uploadFotoPerfil(input) {
         if (data.foto_url) {
             window._currentUser.foto_url = data.foto_url;
             mostrarToast('Foto atualizada!', 'success');
-            abrirModalPerfil();
+            atualizarConteudoPerfil();
             carregarUsuarioLogado();
         } else {
             mostrarToast(data.erro || 'Erro ao enviar foto', 'danger');
@@ -525,7 +553,7 @@ async function removerFotoPerfil() {
         await fetch('/api/me/foto', { method: 'DELETE', headers: { 'X-CSRF-Token': token } });
         window._currentUser.foto_url = null;
         mostrarToast('Foto removida', 'success');
-        abrirModalPerfil();
+        atualizarConteudoPerfil();
         carregarUsuarioLogado();
     } catch {
         mostrarToast('Erro ao remover foto', 'danger');

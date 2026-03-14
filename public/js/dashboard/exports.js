@@ -24,7 +24,7 @@ function getDashboardAbas() {
             { label: 'Valor', key: 'valor' }
         ],
         dados: [
-            { metrica: 'Total de Provedores', valor: d.resumo.total_provedores || 0 },
+            { metrica: 'Total de Clientes', valor: d.resumo.total_provedores || 0 },
             { metrica: 'Total de Chamados', valor: d.resumo.total_chamados || 0 },
             { metrica: 'Chamados Pendentes', valor: d.resumo.pendentes || 0 },
             { metrica: 'Chamados Resolvidos', valor: d.resumo.resolvidos || 0 },
@@ -36,7 +36,7 @@ function getDashboardAbas() {
     // Aba 2: Provedores por Responsavel
     if (d.porResponsavel && d.porResponsavel.length > 0) {
         abas.push({
-            nome: 'Provedores por Responsavel',
+            nome: 'Clientes por Responsavel',
             colunas: [
                 { label: 'Responsavel', key: 'responsavel' },
                 { label: 'Total', key: 'total' }
@@ -48,7 +48,7 @@ function getDashboardAbas() {
     // Aba 3: Provedores por Modelo
     if (d.porModelo && d.porModelo.length > 0) {
         abas.push({
-            nome: 'Provedores por Modelo',
+            nome: 'Clientes por Modelo',
             colunas: [
                 { label: 'Modelo', value: (r) => LABELS_MODELO[r.modelo] || r.modelo },
                 { label: 'Total', key: 'total' }
@@ -60,7 +60,7 @@ function getDashboardAbas() {
     // Aba 4: Provedores por ERP
     if (d.porERP && d.porERP.length > 0) {
         abas.push({
-            nome: 'Provedores por ERP',
+            nome: 'Clientes por ERP',
             colunas: [
                 { label: 'ERP', value: (r) => LABELS_ERP[r.erp] || r.erp },
                 { label: 'Total', key: 'total' }
@@ -72,7 +72,7 @@ function getDashboardAbas() {
     // Aba 5: Provedores por Plano
     if (d.porPlano && d.porPlano.length > 0) {
         abas.push({
-            nome: 'Provedores por Plano',
+            nome: 'Clientes por Plano',
             colunas: [
                 { label: 'Plano', value: (r) => LABELS_PLANO[r.plano] || r.plano },
                 { label: 'Total', key: 'total' }
@@ -84,9 +84,9 @@ function getDashboardAbas() {
     // Aba 6: Chamados por Provedor
     if (d.porProvedor && d.porProvedor.length > 0) {
         abas.push({
-            nome: 'Chamados por Provedor',
+            nome: 'Chamados por Cliente',
             colunas: [
-                { label: 'Provedor', key: 'nome' },
+                { label: 'Cliente', key: 'nome' },
                 { label: 'Total de Chamados', key: 'total' }
             ],
             dados: d.porProvedor
@@ -185,7 +185,7 @@ function getDashboardAbas() {
         abas.push({
             nome: 'Chamados Abertos',
             colunas: [
-                { label: 'Provedor', key: 'nome' },
+                { label: 'Cliente', key: 'nome' },
                 { label: 'Categoria', value: (r) => labelCategoria(r.categoria) },
                 { label: 'Qtd Abertos', key: 'total' }
             ],
@@ -199,7 +199,7 @@ function getDashboardAbas() {
             nome: 'Chamados Recentes',
             colunas: [
                 { label: 'ID', key: 'id' },
-                { label: 'Provedor', key: 'provedor_nome' },
+                { label: 'Cliente', key: 'provedor_nome' },
                 { label: 'Titulo', key: 'titulo' },
                 { label: 'Categoria', value: (r) => labelCategoria(r.categoria) },
                 { label: 'Status', value: (r) => LABELS_STATUS[r.status] || r.status },
@@ -310,7 +310,7 @@ function exportarDashboardPDF() {
     // Summary cards
     html += '<div style="display:inline-block;width:100%;margin-bottom:20px">';
     const cards = [
-        { label: 'Provedores', val: d.resumo.total_provedores, color: '#17a2b8' },
+        { label: 'Clientes', val: d.resumo.total_provedores, color: '#17a2b8' },
         { label: 'Chamados', val: d.resumo.total_chamados, color: '#f59e0b' },
         { label: 'Pendentes', val: d.resumo.pendentes, color: '#ff9f43' },
         { label: 'Resolvidos', val: d.resumo.resolvidos, color: '#2ec4b6' },
@@ -327,37 +327,37 @@ function exportarDashboardPDF() {
 
     // Data sections
     if (d.porResponsavel?.length) {
-        html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Provedores por Responsavel</h5>';
+        html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Clientes por Responsavel</h5>';
         html += pdfTable(
             ['Responsavel', 'Total'],
             d.porResponsavel.map((r) => [r.responsavel, r.total])
         );
     }
     if (d.porModelo?.length) {
-        html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Provedores por Modelo</h5>';
+        html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Clientes por Modelo</h5>';
         html += pdfTable(
             ['Modelo', 'Total'],
             d.porModelo.map((r) => [LABELS_MODELO[r.modelo] || r.modelo, r.total])
         );
     }
     if (d.porERP?.length) {
-        html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Provedores por ERP</h5>';
+        html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Clientes por ERP</h5>';
         html += pdfTable(
             ['ERP', 'Total'],
             d.porERP.map((r) => [LABELS_ERP[r.erp] || r.erp, r.total])
         );
     }
     if (d.porPlano?.length) {
-        html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Provedores por Plano</h5>';
+        html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Clientes por Plano</h5>';
         html += pdfTable(
             ['Plano', 'Total'],
             d.porPlano.map((r) => [LABELS_PLANO[r.plano] || r.plano, r.total])
         );
     }
     if (d.porProvedor?.length) {
-        html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Chamados por Provedor</h5>';
+        html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Chamados por Cliente</h5>';
         html += pdfTable(
-            ['Provedor', 'Total'],
+            ['Cliente', 'Total'],
             d.porProvedor.map((r) => [r.nome, r.total])
         );
     }
@@ -421,7 +421,7 @@ function exportarDashboardPDF() {
     if (d.recentes?.length) {
         html += '<h5 style="color:#1a1a2e;margin:15px 0 8px">Chamados Recentes</h5>';
         html += pdfTable(
-            ['ID', 'Provedor', 'Titulo', 'Categoria', 'Status', 'Data'],
+            ['ID', 'Cliente', 'Titulo', 'Categoria', 'Status', 'Data'],
             d.recentes.map((r) => [
                 r.id,
                 r.provedor_nome,

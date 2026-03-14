@@ -83,7 +83,7 @@ async function carregarDashboard() {
             porERP,
             (r) => LABELS_ERP[r.erp] || r.erp,
             (r) => r.total,
-            'Provedores'
+            'Clientes'
         );
         renderDoughnut(
             'chartPlano',

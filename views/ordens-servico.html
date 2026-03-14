@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordens de Servico - Nexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+    <style>
+        .badge-em_execucao { background-color: #6f42c1 !important; }
+        .kanban-board { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; }
+        .kanban-column { min-width: 280px; flex: 1; background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border-color); display: flex; flex-direction: column; max-height: calc(100vh - 220px); }
+        .kanban-column-header { padding: 0.75rem 1rem; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+        .kanban-column-header .badge { font-size: 0.7rem; }
+        .kanban-cards { padding: 0.75rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+        .kanban-card { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem; cursor: pointer; transition: all 0.2s; }
+        .kanban-card:hover { border-color: var(--primary-color); transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow); }
+        .kanban-card .card-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; }
+        .kanban-card .card-meta { font-size: 0.75rem; color: var(--text-secondary); }
+        .timeline-item { position: relative; padding-left: 1.5rem; padding-bottom: 1rem; border-left: 2px solid var(--border-color); }
+        .timeline-item:last-child { border-left: 2px solid transparent; padding-bottom: 0; }
+        .timeline-item::before { content: ''; position: absolute; left: -5px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--primary-color); }
+        .timeline-item .timeline-time { font-size: 0.7rem; color: var(--text-muted); }
+        .timeline-item .timeline-text { font-size: 0.85rem; }
+        .chat-messages { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; }
+        .chat-msg { max-width: 80%; padding: 0.5rem 0.75rem; border-radius: 12px; font-size: 0.85rem; }
+        .chat-msg.sent { align-self: flex-end; background: var(--primary-color); color: #fff; border-bottom-right-radius: 4px; }
+        .chat-msg.received { align-self: flex-start; background: var(--bg-input); border: 1px solid var(--border-color); border-bottom-left-radius: 4px; }
+        .chat-msg .msg-time { font-size: 0.65rem; opacity: 0.7; margin-top: 2px; }
+        .foto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; }
+        .foto-grid img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid var(--border-color); transition: transform 0.2s; }
+        .foto-grid img:hover { transform: scale(1.05); }
+        .checklist-progress { height: 6px; border-radius: 3px; }
+        .checklist-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; }
+        .checklist-item:last-child { border-bottom: none; }
+        .signature-area { border: 2px dashed var(--border-color); border-radius: 10px; padding: 1rem; text-align: center; min-height: 120px; display: flex; align-items: center; justify-content: center; }
+        .signature-area img { max-height: 100px; }
+        .info-card { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem; }
+        .info-card .info-row { display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; }
+        .info-card .info-row:last-child { border-bottom: none; }
+        .info-card .info-label { color: var(--text-secondary); font-weight: 500; }
+        .checklist-add-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('show')">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <nav class="sidebar" id="mainSidebar"></nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h2><i class="bi bi-clipboard2-check me-2"></i>Ordens de Servico</h2>
+            <div class="d-flex gap-2">
+                <div class="btn-group" role="group">
+                    <button class="btn btn-outline-secondary btn-sm active" id="btnVistaTabelaOS" onclick="setVistaTabela()"><i class="bi bi-table"></i> Lista</button>
+                    <button class="btn btn-outline-secondary btn-sm" id="btnVistaKanbanOS" onclick="setVistaKanban()"><i class="bi bi-kanban"></i> Kanban</button>
+                </div>
+                <button class="btn btn-primary" onclick="abrirModalOS()">
+                    <i class="bi bi-plus-lg me-1"></i> Nova OS
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filter-bar">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label form-label-sm">Status</label>
+                    <select class="form-select form-select-sm" id="filtroStatusOS">
+                        <option value="">Todos</option>
+                        <option value="rascunho">Rascunho</option>
+                        <option value="enviada">Enviada</option>
+                        <option value="aceita">Aceita</option>
+                        <option value="em_deslocamento">Em Deslocamento</option>
+                        <option value="em_execucao">Em Execucao</option>
+                        <option value="concluida">Concluida</option>
+                        <option value="recusada">Recusada</option>
+                        <option value="cancelada">Cancelada</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label form-label-sm">Tecnico</label>
+                    <select class="form-select form-select-sm" id="filtroTecnicoOS">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label form-label-sm">Tipo</label>
+                    <select class="form-select form-select-sm" id="filtroTipoServicoOS">
+                        <option value="">Todos</option>
+                        <option value="instalacao">Instalacao</option>
+                        <option value="reparo">Reparo</option>
+                        <option value="manutencao">Manutencao</option>
+                        <option value="troca_equipamento">Troca de Equipamento</option>
+                        <option value="vistoria">Vistoria</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label form-label-sm">Prioridade</label>
+                    <select class="form-select form-select-sm" id="filtroPrioridadeOS">
+                        <option value="">Todas</option>
+                        <option value="baixa">Baixa</option>
+                        <option value="normal">Normal</option>
+                        <option value="alta">Alta</option>
+                        <option value="urgente">Urgente</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label form-label-sm">Data Inicio</label>
+                    <input type="date" class="form-control form-control-sm" id="filtroDataInicioOS">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label form-label-sm">Data Fim</label>
+                    <input type="date" class="form-control form-control-sm" id="filtroDataFimOS">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela -->
+        <div id="vistaTabelaOS" class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Cliente</th>
+                            <th>Tipo</th>
+                            <th>Tecnico</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Agendamento</th>
+                            <th>Acoes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaOS">
+                        <tr><td colspan="8" class="text-center text-muted py-4">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Kanban -->
+        <div id="vistaKanbanOS" class="kanban-board" style="display:none">
+            <!-- Rascunho -->
+            <div class="kanban-column">
+                <div class="kanban-column-header">
+                    <span><i class="bi bi-pencil me-1"></i>Rascunho</span>
+                    <span class="badge bg-secondary" id="kanbanCountRascunho">0</span>
+                </div>
+                <div class="kanban-cards" id="kanbanRascunho"></div>
+            </div>
+            <!-- Enviada -->
+            <div class="kanban-column">
+                <div class="kanban-column-header">
+                    <span><i class="bi bi-send me-1"></i>Enviada</span>
+                    <span class="badge bg-info" id="kanbanCountEnviada">0</span>
+                </div>
+                <div class="kanban-cards" id="kanbanEnviada"></div>
+            </div>
+            <!-- Aceita -->
+            <div class="kanban-column">
+                <div class="kanban-column-header">
+                    <span><i class="bi bi-check-circle me-1"></i>Aceita</span>
+                    <span class="badge bg-primary" id="kanbanCountAceita">0</span>
+                </div>
+                <div class="kanban-cards" id="kanbanAceita"></div>
+            </div>
+            <!-- Em Deslocamento -->
+            <div class="kanban-column">
+                <div class="kanban-column-header">
+                    <span><i class="bi bi-truck me-1"></i>Em Deslocamento</span>
+                    <span class="badge bg-warning" id="kanbanCountDeslocamento">0</span>
+                </div>
+                <div class="kanban-cards" id="kanbanDeslocamento"></div>
+            </div>
+            <!-- Em Execucao -->
+            <div class="kanban-column">
+                <div class="kanban-column-header">
+                    <span><i class="bi bi-gear me-1"></i>Em Execucao</span>
+                    <span class="badge badge-em_execucao" id="kanbanCountExecucao">0</span>
+                </div>
+                <div class="kanban-cards" id="kanbanExecucao"></div>
+            </div>
+            <!-- Concluida -->
+            <div class="kanban-column">
+                <div class="kanban-column-header">
+                    <span><i class="bi bi-check2-all me-1"></i>Concluida</span>
+                    <span class="badge bg-success" id="kanbanCountConcluida">0</span>
+                </div>
+                <div class="kanban-cards" id="kanbanConcluida"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Criar/Editar OS -->
+    <div class="modal fade" id="modalOS" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalOSTitulo"><i class="bi bi-clipboard2-check me-2"></i>Nova Ordem de Servico</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="osId">
+                    <div class="row g-3">
+                        <!-- Cliente -->
+                        <div class="col-md-6">
+                            <label class="form-label">Nome do Cliente *</label>
+                            <input type="text" class="form-control" id="osClienteNome" required placeholder="Nome completo">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Telefone *</label>
+                            <input type="text" class="form-control" id="osClienteTelefone" required placeholder="(00) 00000-0000">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Documento</label>
+                            <input type="text" class="form-control" id="osClienteDocumento" placeholder="CPF / CNPJ">
+                        </div>
+
+                        <!-- Endereco -->
+                        <div class="col-md-8">
+                            <label class="form-label">Endereco *</label>
+                            <input type="text" class="form-control" id="osEndereco" required placeholder="Rua, numero, bairro, cidade">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Complemento</label>
+                            <input type="text" class="form-control" id="osEnderecoComplemento" placeholder="Apto, bloco, ref.">
+                        </div>
+
+                        <!-- Servico -->
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo de Servico *</label>
+                            <select class="form-select" id="osTipoServico" required>
+                                <option value="">Selecione...</option>
+                                <option value="instalacao">Instalacao</option>
+                                <option value="reparo">Reparo</option>
+                                <option value="manutencao">Manutencao</option>
+                                <option value="troca_equipamento">Troca de Equipamento</option>
+                                <option value="vistoria">Vistoria</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Prioridade</label>
+                            <select class="form-select" id="osPrioridade">
+                                <option value="baixa">Baixa</option>
+                                <option value="normal" selected>Normal</option>
+                                <option value="alta">Alta</option>
+                                <option value="urgente">Urgente</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Tecnico</label>
+                            <select class="form-select" id="osTecnicoId">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Descricao do Servico *</label>
+                            <textarea class="form-control" id="osDescricao" rows="3" required placeholder="Descreva o servico a ser realizado..."></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Equipamentos</label>
+                            <textarea class="form-control" id="osEquipamentos" rows="2" placeholder="Separados por virgula: ONU, Roteador, Cabo 50m"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Agendamento</label>
+                            <input type="datetime-local" class="form-control" id="osDataAgendamento">
+                        </div>
+
+                        <!-- Checklist -->
+                        <div class="col-12">
+                            <label class="form-label d-flex align-items-center justify-content-between">
+                                <span><i class="bi bi-list-check me-1"></i>Checklist</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="adicionarItemChecklist()">
+                                    <i class="bi bi-plus-lg me-1"></i>Adicionar Item
+                                </button>
+                            </label>
+                            <div id="osChecklistContainer">
+                                <!-- Items adicionados dinamicamente -->
+                            </div>
+                            <div class="checklist-add-row">
+                                <input type="text" class="form-control form-control-sm" id="osNovoChecklistItem" placeholder="Descreva o item do checklist...">
+                                <button type="button" class="btn btn-sm btn-outline-success" onclick="adicionarItemChecklist()">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="salvarOS('rascunho')">
+                        <i class="bi bi-save me-1"></i>Salvar Rascunho
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="salvarOS('enviada')">
+                        <i class="bi bi-send me-1"></i>Enviar para Tecnico
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalhe OS -->
+    <div class="modal fade" id="modalDetalheOS" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clipboard2-check me-2"></i>
+                        <span id="detalheOSNumero">OS #---</span>
+                        <span class="badge ms-2" id="detalheOSStatusBadge">---</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="detalheOSId">
+
+                    <!-- Info + Timeline -->
+                    <div class="row g-3 mb-3">
+                        <!-- Coluna Esquerda: Informacoes -->
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h6 class="mb-3"><i class="bi bi-info-circle me-1"></i>Informacoes</h6>
+                                <div class="info-row">
+                                    <span class="info-label">Cliente</span>
+                                    <span id="detalheCliente">---</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Telefone</span>
+                                    <span id="detalheTelefone">---</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Endereco</span>
+                                    <span id="detalheEndereco">---</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Tipo</span>
+                                    <span id="detalheTipo">---</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Tecnico</span>
+                                    <span id="detalheTecnico">---</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Prioridade</span>
+                                    <span id="detalhePrioridade">---</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Agendamento</span>
+                                    <span id="detalheAgendamento">---</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Criada em</span>
+                                    <span id="detalheCriadaEm">---</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Concluida em</span>
+                                    <span id="detalheConcluidaEm">---</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Coluna Direita: Timeline/Historico -->
+                        <div class="col-md-6">
+                            <div class="info-card" style="height: 100%; overflow-y: auto;">
+                                <h6 class="mb-3"><i class="bi bi-clock-history me-1"></i>Historico</h6>
+                                <div id="detalheTimeline">
+                                    <div class="timeline-item">
+                                        <div class="timeline-time">Carregando...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs: Chat | Fotos | Checklist -->
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabChat" type="button" role="tab">
+                                <i class="bi bi-chat-dots me-1"></i>Chat
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabFotos" type="button" role="tab">
+                                <i class="bi bi-camera me-1"></i>Fotos
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabChecklist" type="button" role="tab">
+                                <i class="bi bi-list-check me-1"></i>Checklist
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content border border-top-0 rounded-bottom p-3">
+                        <!-- Tab Chat -->
+                        <div class="tab-pane fade show active" id="tabChat" role="tabpanel">
+                            <div class="chat-messages" id="detalheChatMessages">
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-chat-dots fs-3 d-block mb-1"></i>
+                                    Nenhuma mensagem ainda.
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 mt-2">
+                                <input type="text" class="form-control form-control-sm" id="detalheChatInput" placeholder="Digite uma mensagem...">
+                                <button class="btn btn-sm btn-primary text-nowrap" onclick="enviarMensagemOS()">
+                                    <i class="bi bi-send"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tab Fotos -->
+                        <div class="tab-pane fade" id="tabFotos" role="tabpanel">
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2"><i class="bi bi-camera me-1"></i>Fotos Antes</h6>
+                                <div class="foto-grid" id="detalheFotosAntes">
+                                    <div class="text-center text-muted py-3 w-100">Nenhuma foto registrada.</div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div>
+                                <h6 class="text-muted mb-2"><i class="bi bi-camera-fill me-1"></i>Fotos Depois</h6>
+                                <div class="foto-grid" id="detalheFotosDepois">
+                                    <div class="text-center text-muted py-3 w-100">Nenhuma foto registrada.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Checklist -->
+                        <div class="tab-pane fade" id="tabChecklist" role="tabpanel">
+                            <div class="mb-2">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="text-muted" style="font-size: 0.85rem;">Progresso: <strong id="checklistProgressText">0/0</strong></span>
+                                    <span class="text-muted" style="font-size: 0.85rem;" id="checklistProgressPercent">0%</span>
+                                </div>
+                                <div class="progress checklist-progress">
+                                    <div class="progress-bar bg-success" id="checklistProgressBar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div id="detalheChecklistItems">
+                                <div class="text-center text-muted py-3">Nenhum item no checklist.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assinatura -->
+                    <div class="mt-3" id="detalheAssinaturaContainer" style="display:none">
+                        <h6 class="mb-2"><i class="bi bi-pen me-1"></i>Assinatura do Cliente</h6>
+                        <div class="signature-area" id="detalheAssinatura">
+                            <span class="text-muted">Sem assinatura registrada</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" id="detalheOSFooter">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <!-- Botoes de acao dinamicos conforme o status -->
+                    <button type="button" class="btn btn-info d-none" id="btnEnviarOS" onclick="acaoOS('enviada')">
+                        <i class="bi bi-send me-1"></i>Enviar
+                    </button>
+                    <button type="button" class="btn btn-primary d-none" id="btnAceitarOS" onclick="acaoOS('aceita')">
+                        <i class="bi bi-check-circle me-1"></i>Aceitar
+                    </button>
+                    <button type="button" class="btn btn-danger d-none" id="btnRecusarOS" onclick="acaoOS('recusada')">
+                        <i class="bi bi-x-circle me-1"></i>Recusar
+                    </button>
+                    <button type="button" class="btn btn-warning d-none" id="btnDeslocamentoOS" onclick="acaoOS('em_deslocamento')">
+                        <i class="bi bi-truck me-1"></i>Iniciar Deslocamento
+                    </button>
+                    <button type="button" class="btn btn-purple d-none" id="btnIniciarExecucaoOS" onclick="acaoOS('em_execucao')" style="background-color: #6f42c1; border-color: #6f42c1; color: #fff;">
+                        <i class="bi bi-gear me-1"></i>Iniciar Execucao
+                    </button>
+                    <button type="button" class="btn btn-success d-none" id="btnConcluirOS" onclick="acaoOS('concluida')">
+                        <i class="bi bi-check2-all me-1"></i>Concluir
+                    </button>
+                    <button type="button" class="btn btn-dark d-none" id="btnCancelarOS" onclick="acaoOS('cancelada')">
+                        <i class="bi bi-slash-circle me-1"></i>Cancelar OS
+                    </button>
+                    <button type="button" class="btn btn-outline-primary d-none" id="btnEditarOS" onclick="editarOS()">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Imagem Ampliada -->
+    <div class="modal fade" id="modalImagemOS" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-body text-center p-0 position-relative">
+                    <button class="btn btn-light position-absolute" style="left:10px;top:50%;transform:translateY(-50%);z-index:10;opacity:0.8" onclick="galeriaOSAnterior()">
+                        <i class="bi bi-chevron-left fs-4"></i>
+                    </button>
+                    <img id="imagemAmpliadaOS" src="" class="img-fluid rounded" style="max-height:90vh">
+                    <button class="btn btn-light position-absolute" style="right:10px;top:50%;transform:translateY(-50%);z-index:10;opacity:0.8" onclick="galeriaOSProxima()">
+                        <i class="bi bi-chevron-right fs-4"></i>
+                    </button>
+                    <div id="galeriaOSCounter" class="text-light mt-2" style="font-size:0.9rem"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmacao -->
+    <div class="modal fade" id="confirmModalOS" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="bi bi-exclamation-triangle text-warning fs-1 mb-3 d-block"></i>
+                    <p id="confirmMessageOS"></p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmBtnOS">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/ordens-servico.js"></script>
+</body>
+</html>

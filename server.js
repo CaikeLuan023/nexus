@@ -48,12 +48,13 @@ app.use(
         contentSecurityPolicy: {
             directives: {
                 defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", 'https://cdn.jsdelivr.net'],
+                scriptSrc: ["'self'", 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com'],
+                scriptSrcElem: ["'self'", 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com'],
                 scriptSrcAttr: ["'unsafe-inline'"],
                 styleSrc: ["'self'", 'https://cdn.jsdelivr.net', "'unsafe-inline'"],
                 fontSrc: ["'self'", 'https://cdn.jsdelivr.net', 'data:'],
                 imgSrc: ["'self'", 'data:', 'blob:'],
-                connectSrc: ["'self'"],
+                connectSrc: ["'self'", 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com'],
                 frameSrc: ["'none'"],
                 objectSrc: ["'none'"],
                 baseUri: ["'self'"],
@@ -108,9 +109,10 @@ app.use('/sw.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
     res.sendFile(path.join(__dirname, 'public', 'sw.js'));
 });
-app.use('/js', express.static(path.join(__dirname, 'public', 'js'), { maxAge: 0, etag: false }));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/js', express.static(path.join(__dirname, 'public', 'js'), { maxAge: '5m', etag: true }));
+app.use('/css', express.static(path.join(__dirname, 'public', 'css'), { maxAge: '5m', etag: true }));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h', etag: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { maxAge: '7d', etag: true }));
 
 // ==================== SESSION CONFIG ====================
 
@@ -222,6 +224,32 @@ function sanitizarTexto(texto) {
     return texto.trim().replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
 }
 
+// ==================== SECURITY: Anti-SSRF URL validation ====================
+function isUrlSafe(urlStr) {
+    try {
+        const parsed = new URL(urlStr);
+        // Block non-http(s) protocols
+        if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+        const hostname = parsed.hostname;
+        // Block loopback
+        if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0') return false;
+        // Block private IP ranges (10.x, 172.16-31.x, 192.168.x, 169.254.x metadata)
+        const parts = hostname.split('.').map(Number);
+        if (parts.length === 4 && parts.every(p => !isNaN(p))) {
+            if (parts[0] === 10) return false;
+            if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return false;
+            if (parts[0] === 192 && parts[1] === 168) return false;
+            if (parts[0] === 169 && parts[1] === 254) return false;
+            if (parts[0] === 0) return false;
+        }
+        // Block IPv6 private/link-local
+        if (hostname.startsWith('[')) return false;
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 // Garantir que pasta uploads existe
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
@@ -261,7 +289,6 @@ const ALLOWED_MIMES = new Set([
     'application/zip',
     'application/x-rar-compressed',
     'application/vnd.rar',
-    'application/octet-stream'
 ]);
 const ALLOWED_EXTS =
     /\.(jpg|jpeg|png|gif|webp|pdf|bmp|mp4|mp3|ogg|oga|opus|wav|doc|docx|xls|xlsx|ppt|pptx|txt|csv|zip|rar)$/i;
@@ -322,7 +349,23 @@ async function enviarMensagemWhatsApp(chatId, text) {
 
 function broadcastSSE(event) {
     const data = `data: ${JSON.stringify(event)}\n\n`;
-    for (const client of sseClients) client.write(data);
+    for (const client of sseClients) {
+        // SECURITY: Filtrar chat.message para apenas remetente e destinatario
+        if (event.event === 'chat.message' && event.payload) {
+            const p = event.payload;
+            if (client._userId && client._userId !== p.remetente_id && client._userId !== p.destinatario_id) {
+                continue;
+            }
+        }
+        // SECURITY: Filtrar os.mensagem para apenas criador e tecnico da OS
+        if (event.event === 'os.mensagem' && event.payload) {
+            const p = event.payload;
+            if (client._userId && client._userId !== p.tecnico_id && client._userId !== p.criador_id) {
+                continue;
+            }
+        }
+        client.write(data);
+    }
 }
 
 async function processarAutoResposta(msg) {
@@ -553,6 +596,12 @@ async function processarFluxo(msg) {
             case 'integracao': {
                 try {
                     const url = substituirVariaveis(node.data.url || '', variaveis);
+                    // SECURITY: Anti-SSRF - bloquear URLs internas/privadas
+                    if (!isUrlSafe(url)) {
+                        variaveis['_integracao_erro'] = 'URL bloqueada: nao e permitido acessar enderecos internos';
+                        currentNodeId = getNextNode(node, 'output_2');
+                        break;
+                    }
                     const metodo = (node.data.metodo || 'GET').toUpperCase();
                     const headers = { 'Content-Type': 'application/json' };
                     const opts = { method: metodo, headers };
@@ -655,9 +704,21 @@ async function dispararNotificacao(tipo, dados) {
 // ==================== AUTH MIDDLEWARE ====================
 
 function requireAuth(req, res, next) {
-    if (req.session && req.session.usuario) return next();
-    if (req.path.startsWith('/api/')) return res.status(401).json({ erro: 'Não autenticado' });
-    return res.redirect('/login');
+    if (!req.session || !req.session.usuario) {
+        if (req.path.startsWith('/api/')) return res.status(401).json({ erro: 'Não autenticado' });
+        return res.redirect('/login');
+    }
+    // SECURITY: Verificar session_token (invalidacao apos troca de senha)
+    if (req.session.usuario.session_token) {
+        const db = getDB();
+        const user = db.queryGet('SELECT session_token FROM usuarios WHERE id = ?', [req.session.usuario.id]);
+        if (user && user.session_token && user.session_token !== req.session.usuario.session_token) {
+            req.session.destroy(() => {});
+            if (req.path.startsWith('/api/')) return res.status(401).json({ erro: 'Sessao invalidada. Faca login novamente.' });
+            return res.redirect('/login');
+        }
+    }
+    return next();
 }
 
 function requireAdmin(req, res, next) {
@@ -727,7 +788,7 @@ app.post('/api/login', loginLimiter, (req, res) => {
         return res.json({ requer_2fa: true });
     }
 
-    req.session.usuario = { id: user.id, nome: user.nome, usuario: user.usuario, perfil: user.perfil };
+    req.session.usuario = { id: user.id, nome: user.nome, usuario: user.usuario, perfil: user.perfil, session_token: user.session_token || null };
     registrarAtividade(req, 'login', 'auth', user.id, `Login: ${user.nome}`);
     res.json({ id: user.id, nome: user.nome, usuario: user.usuario, perfil: user.perfil });
 });
@@ -738,14 +799,14 @@ app.post('/api/login/2fa', loginLimiter, (req, res) => {
     if (!pendente) return res.status(400).json({ erro: 'Sessao 2FA expirada. Faca login novamente.' });
 
     const db = getDB();
-    const user = db.queryGet('SELECT totp_secret FROM usuarios WHERE id = ? AND ativo = 1', [pendente.id]);
+    const user = db.queryGet('SELECT totp_secret, session_token FROM usuarios WHERE id = ? AND ativo = 1', [pendente.id]);
     if (!user || !user.totp_secret) return res.status(400).json({ erro: 'Erro de configuracao 2FA' });
 
     const valido = authenticator.check(codigo, user.totp_secret);
     if (!valido) return res.status(401).json({ erro: 'Codigo 2FA invalido' });
 
     delete req.session._2fa_pendente;
-    req.session.usuario = pendente;
+    req.session.usuario = { ...pendente, session_token: user.session_token || null };
     registrarAtividade(req, 'login', 'auth', pendente.id, `Login 2FA: ${pendente.nome}`);
     res.json(pendente);
 });
@@ -793,8 +854,15 @@ function salvarMensagemLocal(msgData) {
 const WAHA_WEBHOOK_TOKEN = process.env.WAHA_WEBHOOK_TOKEN || '';
 
 app.post('/api/whatsapp/webhook', async (req, res) => {
-    // Token validation desabilitado - WAHA CORE nao suporta headers extras
-    // Seguro pois roda em rede local (Docker -> localhost)
+    // SECURITY: Validar origem do webhook (apenas loopback / Docker bridge)
+    const remoteIp = req.ip || req.connection?.remoteAddress || '';
+    const allowedIps = ['127.0.0.1', '::1', '::ffff:127.0.0.1', 'localhost'];
+    // Incluir Docker bridge range (172.17.x.x)
+    const isDockerBridge = remoteIp.match(/^(::ffff:)?172\.(1[6-9]|2[0-9]|3[01])\.\d{1,3}\.\d{1,3}$/);
+    if (!allowedIps.includes(remoteIp) && !isDockerBridge) {
+        console.warn(`[webhook] Bloqueado: IP nao autorizado ${remoteIp}`);
+        return res.status(403).json({ erro: 'Acesso negado' });
+    }
 
     const data = req.body;
     const event = data.event;
@@ -1061,7 +1129,7 @@ app.get('/contrato-aceite/:token', (req, res) => {
     </script></body></html>`);
 });
 
-app.post('/api/contrato-aceite/:token', (req, res) => {
+app.post('/api/contrato-aceite/:token', formPublicLimiter, (req, res) => {
     const db = getDB();
     const contrato = db.queryGet('SELECT * FROM vendas_contratos WHERE assinatura_token = ?', [req.params.token]);
     if (!contrato) return res.status(404).json({ erro: 'Contrato nao encontrado' });
@@ -1133,6 +1201,9 @@ app.get('/ponto', requireAuth, requireModuleAccess('ponto'), (req, res) =>
     res.sendFile(path.join(__dirname, 'views', 'ponto.html'))
 );
 app.get('/logs', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'views', 'logs.html')));
+app.get('/sherlock', requireAuth, requireModuleAccess('sherlock'), (req, res) =>
+    res.sendFile(path.join(__dirname, 'views', 'sherlock.html'))
+);
 
 // ==================== API: USUARIOS ONLINE ====================
 
@@ -1231,17 +1302,19 @@ app.post('/api/chat/enviar', (req, res) => {
     if (!texto?.trim() || !destinatario_id) return res.status(400).json({ erro: 'Dados obrigatorios' });
     const dest = db.queryGet('SELECT id, nome FROM usuarios WHERE id = ? AND ativo = 1', [destinatario_id]);
     if (!dest) return res.status(404).json({ erro: 'Usuario nao encontrado' });
+    const textoSanitizado = sanitizarTexto(texto);
+    if (!textoSanitizado) return res.status(400).json({ erro: 'Texto vazio' });
     const result = db.queryRun('INSERT INTO chat_mensagens (remetente_id, destinatario_id, texto) VALUES (?, ?, ?)', [
         req.session.usuario.id,
         destinatario_id,
-        texto.trim()
+        textoSanitizado
     ]);
     const msg = {
         id: result.lastInsertRowid,
         remetente_id: req.session.usuario.id,
         remetente_nome: req.session.usuario.nome,
         destinatario_id,
-        texto: texto.trim(),
+        texto: textoSanitizado,
         criado_em: new Date().toISOString().replace('T', ' ').substring(0, 19)
     };
     broadcastSSE({ event: 'chat.message', payload: msg });
@@ -1316,7 +1389,11 @@ app.post('/api/me/alterar-senha', (req, res) => {
     }
 
     const senhaHash = bcrypt.hashSync(nova_senha, 12);
-    db.queryRun('UPDATE usuarios SET senha = ? WHERE id = ?', [senhaHash, req.session.usuario.id]);
+    // Gerar novo token de sessao para invalidar todas as outras sessoes ativas
+    const novoSessionToken = crypto.randomBytes(16).toString('hex');
+    db.queryRun('UPDATE usuarios SET senha = ?, session_token = ? WHERE id = ?', [senhaHash, novoSessionToken, req.session.usuario.id]);
+    // Atualizar a sessao atual com o novo token para nao ser invalidada
+    req.session.usuario.session_token = novoSessionToken;
     registrarAtividade(req, 'editar', 'auth', req.session.usuario.id, 'Senha alterada');
     res.json({ ok: true, mensagem: 'Senha alterada com sucesso' });
 });
@@ -1325,7 +1402,7 @@ app.post('/api/me/alterar-senha', (req, res) => {
 
 app.post('/api/me/2fa/gerar', (req, res) => {
     const secret = authenticator.generateSecret();
-    const otpauthUrl = authenticator.keyuri(req.session.usuario.usuario, 'GestaoTrabalho', secret);
+    const otpauthUrl = authenticator.keyuri(req.session.usuario.usuario, 'Nexus', secret);
     res.json({ secret, otpauthUrl });
 });
 
@@ -2350,16 +2427,19 @@ app.get('/api/config/backup/:id/download', requireAdmin, (req, res) => {
     const db = getDB();
     const backup = db.queryGet('SELECT * FROM backups_log WHERE id = ?', [Number(req.params.id)]);
     if (!backup) return res.status(404).json({ erro: 'Backup nao encontrado' });
-    const filePath = path.join(backupsDir, backup.nome_arquivo);
+    // SECURITY: path.basename previne path traversal
+    const safeFilename = path.basename(backup.nome_arquivo);
+    const filePath = path.join(backupsDir, safeFilename);
     if (!fs.existsSync(filePath)) return res.status(404).json({ erro: 'Arquivo nao encontrado' });
-    res.download(filePath, backup.nome_arquivo);
+    res.download(filePath, safeFilename);
 });
 
 app.delete('/api/config/backup/:id', requireAdmin, (req, res) => {
     const db = getDB();
     const backup = db.queryGet('SELECT * FROM backups_log WHERE id = ?', [Number(req.params.id)]);
     if (!backup) return res.status(404).json({ erro: 'Backup nao encontrado' });
-    const filePath = path.join(backupsDir, backup.nome_arquivo);
+    const safeFilename = path.basename(backup.nome_arquivo);
+    const filePath = path.join(backupsDir, safeFilename);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     db.queryRun('DELETE FROM backups_log WHERE id = ?', [Number(req.params.id)]);
     registrarAtividade(req, 'excluir', 'configuracoes', null, `Backup excluido: ${backup.nome_arquivo}`);
@@ -3055,6 +3135,53 @@ app.delete('/api/provedores/:id', requireModuleAccess('provedores'), (req, res) 
     db.queryRun('DELETE FROM provedores WHERE id = ?', [Number(req.params.id)]);
     registrarAtividade(req, 'excluir', 'provedores', Number(req.params.id), 'Provedor excluido');
     res.json({ sucesso: true });
+});
+
+// ==================== API: PLANOS DO CLIENTE (ERP) ====================
+
+app.get('/api/provedores/:id/planos', requireAuth, (req, res) => {
+    try {
+        const db = getDB();
+        const provedor = db.queryGet('SELECT id, nome, erp, id_externo FROM provedores WHERE id = ?', [Number(req.params.id)]);
+        if (!provedor) return res.status(404).json({ erro: 'Cliente nao encontrado' });
+        if (!provedor.id_externo) return res.json([]);
+
+        const contratos = db.queryAll(
+            `SELECT ec.id_externo, ec.plano, ec.status, ec.valor, ec.dados_raw,
+                    ep.nome as plano_nome, ep.valor as plano_valor
+             FROM erp_contratos ec
+             LEFT JOIN erp_planos ep ON ep.erp_tipo = ec.erp_tipo AND ep.id_externo = ec.plano
+             WHERE ec.erp_tipo = ? AND ec.cliente_id_externo = ?
+             ORDER BY ec.status, ec.id_externo`,
+            [provedor.erp, provedor.id_externo]
+        );
+
+        res.json(contratos.map(c => ({
+            id_contrato: c.id_externo,
+            plano: c.plano_nome || c.plano || '-',
+            status: c.status || '-',
+            valor: c.plano_valor || c.valor || 0
+        })));
+    } catch (err) {
+        res.status(500).json({ erro: err.message });
+    }
+});
+
+app.get('/api/erp/planos-locais', requireAuth, (req, res) => {
+    try {
+        const db = getDB();
+        const { tipo } = req.query;
+        let sql = 'SELECT * FROM erp_planos';
+        const params = [];
+        if (tipo) {
+            sql += ' WHERE erp_tipo = ?';
+            params.push(tipo);
+        }
+        sql += ' ORDER BY nome';
+        res.json(db.queryAll(sql, params));
+    } catch (err) {
+        res.status(500).json({ erro: err.message });
+    }
 });
 
 // ==================== API: CHAMADOS ====================
@@ -6238,7 +6365,7 @@ app.get('/api/nps/responder/:token', (req, res) => {
 });
 
 // Receber resposta NPS (sem auth)
-app.post('/api/nps/responder/:token', (req, res) => {
+app.post('/api/nps/responder/:token', formPublicLimiter, (req, res) => {
     try {
         const db = getDB();
         const { nota, comentario } = req.body;
@@ -7796,7 +7923,9 @@ app.post('/api/v1/ponto/registrar', (req, res) => {
     const apiKey = req.headers['x-api-key'];
     const cfgKey = db.queryGet("SELECT valor FROM config_geral WHERE chave = 'ponto_api_key'");
 
-    if (!cfgKey || !cfgKey.valor || cfgKey.valor !== apiKey) {
+    if (!cfgKey || !cfgKey.valor || !apiKey ||
+        cfgKey.valor.length !== apiKey.length ||
+        !crypto.timingSafeEqual(Buffer.from(cfgKey.valor), Buffer.from(apiKey))) {
         return res.status(401).json({ erro: 'API key inválida' });
     }
 
@@ -7856,13 +7985,17 @@ const ERP_ADAPTERS = {
         testEndpoint: '/cliente',
         buildHeaders(config) {
             const tokenB64 = Buffer.from(config.token).toString('base64');
-            return { Authorization: `Basic ${tokenB64}`, 'Content-Type': 'application/json', ixctoken: config.token };
+            return { Authorization: `Basic ${tokenB64}`, 'Content-Type': 'application/json', ixcsoft: 'listar' };
         },
-        buildBody(config) {
-            return { qtype: 'cliente.id', query: '', sortname: 'cliente.id', sortorder: 'asc', page: '1', rp: '20' };
+        buildBody(config, endpoint) {
+            return { qtype: 'id', query: '0', oper: '>', sortname: 'id', sortorder: 'asc', page: '1', rp: '5000' };
         },
         endpoints: { clientes: '/cliente', contratos: '/cliente_contrato', planos: '/vd_servico' },
         normalizeResponse(data) {
+            // IXC retorna {"type":"error","message":"..."} em caso de erro
+            if (data && data.type === 'error') {
+                throw new Error('Erro IXC: ' + (data.message || 'Erro desconhecido'));
+            }
             return Array.isArray(data) ? data : data.registros || data.data || [];
         },
         normalizeClientes(items) {
@@ -8164,6 +8297,10 @@ function _truncBody(body, maxLen) {
 
 async function erpFetch(config, endpoint, adapter, contexto) {
     const url = `${config.url_base}${endpoint}`;
+    // SECURITY: Anti-SSRF - bloquear URLs internas/privadas
+    if (!isUrlSafe(url)) {
+        throw new Error('URL bloqueada: nao e permitido acessar enderecos internos/privados');
+    }
     const opts = { method: adapter.httpMethod || 'GET' };
     if (adapter.buildHeaders.constructor.name === 'AsyncFunction') {
         opts.headers = await adapter.buildHeaders(config);
@@ -8171,10 +8308,15 @@ async function erpFetch(config, endpoint, adapter, contexto) {
         opts.headers = adapter.buildHeaders(config);
     }
     if (adapter.buildBody) {
-        const body = adapter.buildBody(config);
+        const body = adapter.buildBody(config, endpoint);
         if (body) {
             opts.method = opts.method === 'GET' ? 'POST' : opts.method;
-            opts.body = JSON.stringify(body);
+            if (adapter.bodyFormat === 'form') {
+                opts.body = new URLSearchParams(body).toString();
+                opts.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+            } else {
+                opts.body = JSON.stringify(body);
+            }
         }
     }
 
@@ -8378,6 +8520,16 @@ app.get('/api/erp/:tipo/testar', requireAdmin, async (req, res) => {
     try {
         const r = await erpFetch(config, adapter.testEndpoint, adapter, 'teste_conexao');
         if (r.ok) {
+            // Verificar se a resposta e JSON (nao HTML de login page)
+            const ct = r.headers.get('content-type') || '';
+            const body = await r.text().catch(() => '');
+            if (ct.includes('text/html') || body.trimStart().startsWith('<!DOCTYPE') || body.trimStart().startsWith('<html')) {
+                return res.json({
+                    ok: false,
+                    status: r.status,
+                    erro: 'A API retornou uma pagina HTML em vez de JSON. Verifique se a URL base esta correta (ex: https://dominio/webservice/v1)'
+                });
+            }
             const db = getDB();
             db.queryRun("UPDATE config_erp SET ultimo_sync = datetime('now','localtime') WHERE id = ?", [config.id]);
             res.json({ ok: true, status: r.status });
@@ -8394,6 +8546,19 @@ app.get('/api/erp/:tipo/testar', requireAdmin, async (req, res) => {
     }
 });
 
+// Helper: parse ERP response com deteccao de HTML
+async function parseErpResponse(r) {
+    const text = await r.text();
+    if (text.trimStart().startsWith('<!DOCTYPE') || text.trimStart().startsWith('<html')) {
+        throw new Error('A API retornou HTML em vez de JSON. Verifique a URL base (ex: https://dominio/webservice/v1)');
+    }
+    try {
+        return JSON.parse(text);
+    } catch {
+        throw new Error('Resposta da API nao e JSON valido: ' + text.substring(0, 150));
+    }
+}
+
 app.get('/api/erp/:tipo/clientes', requireAdmin, async (req, res) => {
     const { tipo } = req.params;
     const adapter = ERP_ADAPTERS[tipo];
@@ -8402,7 +8567,7 @@ app.get('/api/erp/:tipo/clientes', requireAdmin, async (req, res) => {
     if (!config) return res.status(400).json({ erro: `${adapter.label} nao configurado` });
     try {
         const r = await erpFetch(config, adapter.endpoints.clientes, adapter, 'consulta_clientes');
-        const data = await r.json();
+        const data = await parseErpResponse(r);
         const raw = adapter.normalizeResponse(data);
         res.json({ raw, normalized: adapter.normalizeClientes(raw) });
     } catch (err) {
@@ -8418,7 +8583,7 @@ app.get('/api/erp/:tipo/contratos', requireAdmin, async (req, res) => {
     if (!config) return res.status(400).json({ erro: `${adapter.label} nao configurado` });
     try {
         const r = await erpFetch(config, adapter.endpoints.contratos, adapter, 'consulta_contratos');
-        const data = await r.json();
+        const data = await parseErpResponse(r);
         const raw = adapter.normalizeResponse(data);
         res.json({ raw, normalized: adapter.normalizeContratos(raw) });
     } catch (err) {
@@ -8434,7 +8599,7 @@ app.get('/api/erp/:tipo/planos', requireAdmin, async (req, res) => {
     if (!config) return res.status(400).json({ erro: `${adapter.label} nao configurado` });
     try {
         const r = await erpFetch(config, adapter.endpoints.planos, adapter, 'consulta_planos');
-        const data = await r.json();
+        const data = await parseErpResponse(r);
         const raw = adapter.normalizeResponse(data);
         res.json({ raw, normalized: adapter.normalizePlanos(raw) });
     } catch (err) {
@@ -8453,81 +8618,168 @@ app.post('/api/erp/:tipo/sync', requireAdmin, async (req, res) => {
 
     const startTime = Date.now();
     const db = getDB();
-    let novos = 0,
-        atualizados = 0,
-        erros = 0,
-        totalRegistros = 0;
+    const resultado = { clientes: { total: 0, novos: 0, atualizados: 0, erros: 0 }, contratos: { total: 0, novos: 0, atualizados: 0, erros: 0 }, planos: { total: 0, novos: 0, atualizados: 0, erros: 0 } };
 
     try {
-        const r = await erpFetch(config, adapter.endpoints.clientes, adapter, 'sync_clientes');
-        const data = await r.json();
-        const raw = adapter.normalizeResponse(data);
-        const clientes = adapter.normalizeClientes(raw);
-        totalRegistros = clientes.length;
+        // ===== SYNC CLIENTES =====
+        const rCli = await erpFetch(config, adapter.endpoints.clientes, adapter, 'sync_clientes');
+        const dataCli = await parseErpResponse(rCli);
+        const rawCli = adapter.normalizeResponse(dataCli);
+        const clientes = adapter.normalizeClientes(rawCli);
+        resultado.clientes.total = clientes.length;
 
         for (const cli of clientes) {
             try {
                 const existe = db.queryGet('SELECT id FROM provedores WHERE nome = ?', [cli.nome]);
                 if (existe) {
-                    // Atualizar dados do ERP (cnpj, email, telefone, endereco)
                     db.queryRun(
-                        'UPDATE provedores SET cnpj = COALESCE(?, cnpj), email = COALESCE(?, email), telefone = COALESCE(?, telefone), endereco = COALESCE(?, endereco), erp = ? WHERE id = ?',
-                        [
-                            cli.documento || null,
-                            cli.email || null,
-                            cli.telefone || null,
-                            cli.endereco || null,
-                            tipo,
-                            existe.id
-                        ]
+                        'UPDATE provedores SET cnpj = COALESCE(?, cnpj), email = COALESCE(?, email), telefone = COALESCE(?, telefone), endereco = COALESCE(?, endereco), erp = ?, id_externo = ? WHERE id = ?',
+                        [cli.documento || null, cli.email || null, cli.telefone || null, cli.endereco || null, tipo, String(cli.id_externo || ''), existe.id]
                     );
-                    atualizados++;
+                    resultado.clientes.atualizados++;
                 } else if (cli.nome) {
                     db.queryRun(
-                        'INSERT INTO provedores (nome, contato, erp, cnpj, email, telefone, endereco) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                        [
-                            cli.nome,
-                            cli.telefone || cli.email || '',
-                            tipo,
-                            cli.documento || null,
-                            cli.email || null,
-                            cli.telefone || null,
-                            cli.endereco || null
-                        ]
+                        'INSERT INTO provedores (nome, contato, erp, cnpj, email, telefone, endereco, id_externo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                        [cli.nome, cli.telefone || cli.email || '', tipo, cli.documento || null, cli.email || null, cli.telefone || null, cli.endereco || null, String(cli.id_externo || '')]
                     );
-                    novos++;
+                    resultado.clientes.novos++;
                 }
-            } catch {
-                erros++;
+            } catch { resultado.clientes.erros++; }
+        }
+
+        db.queryRun(
+            'INSERT INTO erp_sync_log (tipo, entidade, total_registros, novos, atualizados, erros, duracao_ms, detalhes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [tipo, 'clientes', resultado.clientes.total, resultado.clientes.novos, resultado.clientes.atualizados, resultado.clientes.erros, Date.now() - startTime, `Sync manual por ${req.session?.usuario?.nome || 'admin'}`]
+        );
+
+        // ===== SYNC CONTRATOS =====
+        if (adapter.endpoints.contratos && adapter.normalizeContratos) {
+            try {
+                const rCon = await erpFetch(config, adapter.endpoints.contratos, adapter, 'sync_contratos');
+                const dataCon = await parseErpResponse(rCon);
+                const rawCon = adapter.normalizeResponse(dataCon);
+                const contratos = adapter.normalizeContratos(rawCon);
+                resultado.contratos.total = contratos.length;
+
+                for (const con of contratos) {
+                    try {
+                        const existe = db.queryGet('SELECT id FROM erp_contratos WHERE erp_tipo = ? AND id_externo = ?', [tipo, String(con.id_externo)]);
+                        if (existe) {
+                            db.queryRun(
+                                'UPDATE erp_contratos SET cliente_id_externo = ?, plano = ?, status = ?, valor = ?, dados_raw = ?, atualizado_em = datetime(\'now\',\'localtime\') WHERE id = ?',
+                                [String(con.cliente_id_externo || ''), con.plano || '', con.status || '', con.valor || 0, JSON.stringify(con._raw || {}), existe.id]
+                            );
+                            resultado.contratos.atualizados++;
+                        } else if (con.id_externo) {
+                            db.queryRun(
+                                'INSERT INTO erp_contratos (erp_tipo, id_externo, cliente_id_externo, plano, status, valor, dados_raw) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                                [tipo, String(con.id_externo), String(con.cliente_id_externo || ''), con.plano || '', con.status || '', con.valor || 0, JSON.stringify(con._raw || {})]
+                            );
+                            resultado.contratos.novos++;
+                        }
+                    } catch { resultado.contratos.erros++; }
+                }
+
+                db.queryRun(
+                    'INSERT INTO erp_sync_log (tipo, entidade, total_registros, novos, atualizados, erros, duracao_ms, detalhes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                    [tipo, 'contratos', resultado.contratos.total, resultado.contratos.novos, resultado.contratos.atualizados, resultado.contratos.erros, Date.now() - startTime, `Sync manual por ${req.session?.usuario?.nome || 'admin'}`]
+                );
+            } catch (err) {
+                resultado.contratos.erros = 1;
+                db.queryRun(
+                    'INSERT INTO erp_sync_log (tipo, entidade, total_registros, novos, atualizados, erros, duracao_ms, detalhes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                    [tipo, 'contratos', 0, 0, 0, 1, Date.now() - startTime, `Erro contratos: ${err.message}`]
+                );
             }
         }
+
+        // ===== SYNC PLANOS =====
+        if (adapter.endpoints.planos && adapter.normalizePlanos) {
+            try {
+                const rPlan = await erpFetch(config, adapter.endpoints.planos, adapter, 'sync_planos');
+                const dataPlan = await parseErpResponse(rPlan);
+                const rawPlan = adapter.normalizeResponse(dataPlan);
+                const planos = adapter.normalizePlanos(rawPlan);
+                resultado.planos.total = planos.length;
+
+                for (const pl of planos) {
+                    try {
+                        const existe = db.queryGet('SELECT id FROM erp_planos WHERE erp_tipo = ? AND id_externo = ?', [tipo, String(pl.id_externo)]);
+                        if (existe) {
+                            db.queryRun(
+                                'UPDATE erp_planos SET nome = ?, valor = ?, dados_raw = ?, atualizado_em = datetime(\'now\',\'localtime\') WHERE id = ?',
+                                [pl.nome || '', pl.valor || 0, JSON.stringify(pl._raw || {}), existe.id]
+                            );
+                            resultado.planos.atualizados++;
+                        } else if (pl.id_externo) {
+                            db.queryRun(
+                                'INSERT INTO erp_planos (erp_tipo, id_externo, nome, valor, dados_raw) VALUES (?, ?, ?, ?, ?)',
+                                [tipo, String(pl.id_externo), pl.nome || '', pl.valor || 0, JSON.stringify(pl._raw || {})]
+                            );
+                            resultado.planos.novos++;
+                        }
+                    } catch { resultado.planos.erros++; }
+                }
+
+                // Enriquecer contratos: resolver id_vd_servico para nome do plano
+                db.queryRun(
+                    `UPDATE erp_contratos SET plano = (
+                        SELECT nome FROM erp_planos WHERE erp_planos.erp_tipo = erp_contratos.erp_tipo AND erp_planos.id_externo = erp_contratos.plano
+                    ) WHERE erp_tipo = ? AND plano GLOB '[0-9]*' AND EXISTS (
+                        SELECT 1 FROM erp_planos WHERE erp_planos.erp_tipo = erp_contratos.erp_tipo AND erp_planos.id_externo = erp_contratos.plano
+                    )`,
+                    [tipo]
+                );
+
+                db.queryRun(
+                    'INSERT INTO erp_sync_log (tipo, entidade, total_registros, novos, atualizados, erros, duracao_ms, detalhes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                    [tipo, 'planos', resultado.planos.total, resultado.planos.novos, resultado.planos.atualizados, resultado.planos.erros, Date.now() - startTime, `Sync manual por ${req.session?.usuario?.nome || 'admin'}`]
+                );
+            } catch (err) {
+                resultado.planos.erros = 1;
+                db.queryRun(
+                    'INSERT INTO erp_sync_log (tipo, entidade, total_registros, novos, atualizados, erros, duracao_ms, detalhes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                    [tipo, 'planos', 0, 0, 0, 1, Date.now() - startTime, `Erro planos: ${err.message}`]
+                );
+            }
+        }
+
+        // Atualizar provedores.plano com nome do plano do primeiro contrato ativo
+        try {
+            db.queryRun(
+                `UPDATE provedores SET plano = (
+                    SELECT ec.plano FROM erp_contratos ec
+                    WHERE ec.erp_tipo = ? AND ec.cliente_id_externo = provedores.id_externo
+                    AND ec.plano IS NOT NULL AND ec.plano != ''
+                    ORDER BY CASE WHEN ec.status IN ('A','Ativo','ativo','Ativado') THEN 0 ELSE 1 END, ec.id DESC
+                    LIMIT 1
+                ) WHERE erp = ? AND id_externo IS NOT NULL AND id_externo != ''`,
+                [tipo, tipo]
+            );
+        } catch {}
 
         // Atualizar ultimo_sync
         db.queryRun("UPDATE config_erp SET ultimo_sync = datetime('now','localtime') WHERE tipo = ?", [tipo]);
 
         const duracao = Date.now() - startTime;
-        db.queryRun(
-            'INSERT INTO erp_sync_log (tipo, entidade, total_registros, novos, atualizados, erros, duracao_ms, detalhes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [
-                tipo,
-                'clientes',
-                totalRegistros,
-                novos,
-                atualizados,
-                erros,
-                duracao,
-                `Sync manual por ${req.session?.usuario?.nome || 'admin'}`
-            ]
+        const totalGeral = resultado.clientes.total + resultado.contratos.total + resultado.planos.total;
+        const novosGeral = resultado.clientes.novos + resultado.contratos.novos + resultado.planos.novos;
+        const atualizadosGeral = resultado.clientes.atualizados + resultado.contratos.atualizados + resultado.planos.atualizados;
+        const errosGeral = resultado.clientes.erros + resultado.contratos.erros + resultado.planos.erros;
+
+        registrarAtividade(req, 'sync', 'erp', null,
+            `Sync ${tipo}: ${resultado.clientes.total} clientes (${resultado.clientes.novos} novos), ${resultado.contratos.total} contratos (${resultado.contratos.novos} novos), ${resultado.planos.total} planos (${resultado.planos.novos} novos)`
         );
 
-        registrarAtividade(
-            req,
-            'sync',
-            'erp',
-            null,
-            `Sync ${tipo}: ${totalRegistros} registros, ${novos} novos, ${atualizados} existentes`
-        );
-        res.json({ sucesso: true, total: totalRegistros, novos, atualizados, erros, duracao_ms: duracao });
+        res.json({
+            sucesso: true,
+            total: totalGeral,
+            novos: novosGeral,
+            atualizados: atualizadosGeral,
+            erros: errosGeral,
+            duracao_ms: duracao,
+            detalhes: resultado
+        });
     } catch (err) {
         const duracao = Date.now() - startTime;
         db.queryRun(
@@ -9760,6 +10012,753 @@ function processarSLAEstourados() {
         console.error('SLA check error:', e.message);
     }
 }
+
+// ==================== API: SHERLOCK (IA ANALISE DE DADOS) ====================
+
+const sherlockLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    keyGenerator: (req) => String(req.session?.usuario?.id || req.ip),
+    message: { erro: 'Muitas perguntas. Aguarde um momento.' }
+});
+
+function getSherlockRestrictedTables(perfil) {
+    const restrictions = {
+        vendedor: ['financeiro_faturas', 'ponto_registros', 'ponto_pausas', 'atividades_log', 'whatsapp_mensagens', 'whatsapp_ia_config', 'whatsapp_ia_historico', 'config_email', 'config_geral', 'api_tokens', 'sherlock_config'],
+        atendente: ['financeiro_faturas', 'vendas_negocios', 'vendas_propostas', 'vendas_contratos', 'vendas_metas', 'vendas_comissoes', 'vendas_interacoes', 'vendas_tarefas', 'vendas_visitas', 'ponto_registros', 'ponto_pausas', 'config_email', 'config_geral', 'api_tokens', 'sherlock_config'],
+        financeiro: ['ponto_registros', 'ponto_pausas', 'whatsapp_mensagens', 'whatsapp_ia_config', 'config_geral', 'api_tokens', 'sherlock_config'],
+        gerente_noc: ['vendas_comissoes', 'vendas_metas', 'financeiro_faturas', 'config_email', 'api_tokens', 'sherlock_config'],
+        gestor_atendimento: ['vendas_comissoes', 'vendas_metas', 'financeiro_faturas', 'config_email', 'api_tokens', 'sherlock_config']
+    };
+    return restrictions[perfil] || [];
+}
+
+function buildSherlockSystemPrompt(usuario, config) {
+    const restricted = getSherlockRestrictedTables(usuario.perfil);
+    const isRestricted = (t) => restricted.includes(t);
+
+    let schema = '';
+
+    schema += `=== CLIENTES (provedores) ===
+Tabela: provedores - Clientes ISP
+Colunas: id, nome (UNIQUE), contato, observacoes, plano, adicionais, modelo_integracao, erp, responsavel, logo_url, whatsapp, cnpj, email, telefone, endereco, criado_em\n\n`;
+
+    schema += `=== CHAMADOS (chamados) ===
+Tabela: chamados - Tickets de suporte
+Colunas: id, provedor_id (FK provedores), titulo, descricao, categoria, status ('pendente'|'em_andamento'|'resolvido'|'fechado'), data_abertura, data_resolucao, resolucao, prioridade ('normal'|'alta'|'critica'), responsavel_id (FK usuarios), criado_em\n\n`;
+
+    if (!isRestricted('vendas_negocios')) {
+        schema += `=== VENDAS - NEGOCIOS (vendas_negocios) ===
+Tabela: vendas_negocios - Pipeline CRM
+Colunas: id, provedor_id, provedor_nome_lead, contato_lead, estagio ('lead'|'qualificado'|'proposta'|'negociacao'|'ativado'|'perdido'), plano_interesse, valor_estimado, responsavel_vendedor, origem, observacoes, motivo_perda, criado_em, atualizado_em\n\n`;
+    }
+
+    if (!isRestricted('vendas_propostas')) {
+        schema += `=== VENDAS - PROPOSTAS (vendas_propostas) ===
+Tabela: vendas_propostas - Propostas comerciais
+Colunas: id, negocio_id, provedor_id, provedor_nome, titulo, planos, valor_total, status ('rascunho'|'enviada'|'aceita'|'recusada'|'expirada'), visualizacoes, criado_por, criado_em\n\n`;
+    }
+
+    if (!isRestricted('vendas_contratos')) {
+        schema += `=== VENDAS - CONTRATOS (vendas_contratos) ===
+Tabela: vendas_contratos - Contratos assinados
+Colunas: id, negocio_id, proposta_id, provedor_id, provedor_nome, numero_contrato, titulo, valor_mensal, valor_total, data_inicio, data_fim, status ('pendente'|'ativo'|'cancelado'|'expirado'), responsavel, criado_em\n\n`;
+    }
+
+    if (!isRestricted('vendas_metas')) {
+        schema += `=== VENDAS - METAS (vendas_metas) ===
+Tabela: vendas_metas - Metas por vendedor
+Colunas: id, vendedor, tipo_meta, valor_alvo, percentual_comissao, periodo_referencia, criado_em\n\n`;
+    }
+
+    if (!isRestricted('vendas_comissoes')) {
+        schema += `=== VENDAS - COMISSOES (vendas_comissoes) ===
+Tabela: vendas_comissoes - Comissoes calculadas
+Colunas: id, vendedor, negocio_id, descricao, valor_base, percentual, valor_comissao, periodo, status ('pendente'|'pago'), criado_em\n\n`;
+    }
+
+    if (!isRestricted('vendas_interacoes')) {
+        schema += `=== VENDAS - INTERACOES (vendas_interacoes) ===
+Tabela: vendas_interacoes - Notas por negocio
+Colunas: id, negocio_id, tipo, descricao, criado_por, criado_em\n\n`;
+    }
+
+    if (!isRestricted('vendas_tarefas')) {
+        schema += `=== VENDAS - TAREFAS (vendas_tarefas) ===
+Tabela: vendas_tarefas - Follow-ups
+Colunas: id, titulo, descricao, provedor_id, negocio_id, tipo, data_hora, status ('pendente'|'concluida'|'cancelada'), responsavel, criado_em\n\n`;
+    }
+
+    if (!isRestricted('financeiro_faturas')) {
+        schema += `=== FINANCEIRO (financeiro_faturas) ===
+Tabela: financeiro_faturas - Faturas
+Colunas: id, provedor_id (FK provedores), descricao, valor, tipo ('receita'|'despesa'), status ('pendente'|'pago'|'atrasado'|'cancelado'), data_vencimento, data_pagamento, forma_pagamento, observacoes, criado_em\n\n`;
+    }
+
+    schema += `=== USUARIOS (usuarios) ===
+Tabela: usuarios - Contas de usuario
+Colunas: id, nome, usuario, perfil ('admin'|'analista'|'vendedor'|'gestor_atendimento'|'gerente_noc'|'financeiro'|'atendente'), ativo, criado_em
+NOTA: NUNCA consultar colunas senha, totp_secret, session_token\n\n`;
+
+    schema += `=== TREINAMENTOS (treinamentos) ===
+Tabela: treinamentos
+Colunas: id, provedor_id, titulo, descricao, data_treinamento, hora_treinamento, status ('agendado'|'realizado'|'cancelado'), criado_em\n\n`;
+
+    schema += `=== PROJETOS (projetos) ===
+Tabela: projetos
+Colunas: id, titulo, descricao, provedor_id, status ('em_andamento'|'concluido'|'pausado'|'cancelado'), prioridade ('normal'|'alta'|'critica'), percentual_conclusao, data_inicio, data_previsao, responsavel_id, criado_em\n\n`;
+
+    if (!isRestricted('ponto_registros')) {
+        schema += `=== PONTO (ponto_registros / ponto_pausas) ===
+Tabela: ponto_registros - Marcacoes de ponto
+Colunas: id, usuario_id, usuario_nome, tipo ('entrada'|'almoco_inicio'|'almoco_fim'|'saida'), data_hora, ip, origem
+
+Tabela: ponto_pausas - Pausas
+Colunas: id, usuario_id, usuario_nome, motivo, inicio, fim, duracao_min\n\n`;
+    }
+
+    schema += `=== NPS (nps_pesquisas) ===
+Tabela: nps_pesquisas - Pesquisa de satisfacao
+Colunas: id, chamado_id, provedor_id, nota (0-10), comentario, respondido, respondido_em, criado_em\n\n`;
+
+    schema += `=== ERP CONTRATOS (erp_contratos) ===
+Tabela: erp_contratos - Contratos sincronizados do ERP
+Colunas: id, erp_tipo, id_externo, cliente_id_externo, provedor_id, plano, status, valor, criado_em, atualizado_em\n\n`;
+
+    if (!isRestricted('atividades_log')) {
+        schema += `=== LOG DE ATIVIDADES (atividades_log) ===
+Tabela: atividades_log - Audit trail
+Colunas: id, usuario_id, usuario_nome, acao, modulo, entidade_id, detalhes, ip, criado_em\n\n`;
+    }
+
+    schema += `=== AGENDA (agenda_eventos) ===
+Tabela: agenda_eventos
+Colunas: id, titulo, descricao, tipo, data_inicio, data_fim, dia_inteiro, cor, usuario_id, criado_em\n\n`;
+
+    const extra = config.prompt_sistema_extra || '';
+
+    return `Voce e o Sherlock, assistente de analise de dados do sistema Nexus - plataforma de gestao para provedores de internet (ISPs).
+
+SUAS CAPACIDADES:
+- Executar consultas SQL (somente SELECT) no banco SQLite da empresa
+- Analisar resultados e apresentar insights em linguagem natural
+- Gerar tabelas, resumos, tendencias e recomendacoes
+- Responder SEMPRE em portugues do Brasil
+
+REGRAS CRITICAS:
+1. NUNCA execute INSERT, UPDATE, DELETE, DROP, ALTER, CREATE ou qualquer comando que modifique dados
+2. SEMPRE limite resultados com LIMIT (maximo ${config.max_linhas_sql || 100} linhas)
+3. Nunca exponha senhas, tokens ou api_keys
+4. Se nao tiver certeza sobre a estrutura de uma tabela, use executar_consulta_sql com "PRAGMA table_info(nome_tabela)"
+5. Quando possivel, agrupe dados e apresente resumos ao inves de listar linhas individuais
+6. Use datetime('now','localtime') para datas atuais no SQLite
+7. Formate valores monetarios como R$ X.XXX,XX
+8. Formate datas no padrao brasileiro DD/MM/AAAA
+
+SCHEMA DO BANCO DE DADOS:
+
+${schema}
+CONTEXTO DO USUARIO:
+- Nome: ${usuario.nome}
+- Perfil: ${usuario.perfil}
+- ID: ${usuario.id}
+
+${extra}
+
+ESTILO DE RESPOSTA:
+- Seja conciso mas informativo
+- Use markdown para formatar tabelas, negrito e listas
+- Ao apresentar dados tabulares, use tabelas markdown
+- Sempre contextualize os numeros
+- Sugira perguntas relacionadas quando apropriado
+- Se a pergunta for vaga, peca esclarecimento`;
+}
+
+function getSherlockTools() {
+    return [
+        {
+            type: 'function',
+            function: {
+                name: 'executar_consulta_sql',
+                description: 'Executa uma consulta SQL SELECT no banco de dados SQLite do sistema Nexus. Use para buscar dados de clientes, chamados, vendas, financeiro, etc. Apenas SELECT e permitido. Sempre inclua LIMIT.',
+                parameters: {
+                    type: 'object',
+                    properties: {
+                        sql: { type: 'string', description: 'A consulta SQL SELECT a ser executada. Deve comecar com SELECT ou PRAGMA. Sempre incluir LIMIT.' },
+                        descricao: { type: 'string', description: 'Breve descricao do que esta consulta busca.' }
+                    },
+                    required: ['sql', 'descricao']
+                }
+            }
+        },
+        {
+            type: 'function',
+            function: {
+                name: 'obter_resumo_geral',
+                description: 'Obtem um resumo geral do sistema com contagens atuais de todas as entidades principais. Use como ponto de partida quando o usuario pede uma visao geral.',
+                parameters: { type: 'object', properties: {}, required: [] }
+            }
+        }
+    ];
+}
+
+function executarConsultaSherlockSQL(sql, usuario, config, db) {
+    const normalized = sql.trim().toUpperCase();
+    if (!normalized.startsWith('SELECT') && !normalized.startsWith('PRAGMA')) {
+        return JSON.stringify({ erro: 'Apenas consultas SELECT sao permitidas.' });
+    }
+    const blocked = ['INSERT', 'UPDATE', 'DELETE', 'DROP', 'ALTER', 'CREATE', 'REPLACE', 'ATTACH', 'DETACH'];
+    for (const kw of blocked) {
+        if (new RegExp(`\\b${kw}\\b`, 'i').test(sql)) {
+            return JSON.stringify({ erro: `Comando ${kw} nao permitido.` });
+        }
+    }
+    if (/\bsenha\b|\btotp_secret\b|\bsession_token\b|\bapi_key\b|\bsenha_hash\b/i.test(sql)) {
+        return JSON.stringify({ erro: 'Acesso a colunas sensiveis nao permitido.' });
+    }
+    const restricted = getSherlockRestrictedTables(usuario.perfil);
+    for (const tabela of restricted) {
+        if (new RegExp(`\\b${tabela}\\b`, 'i').test(sql)) {
+            return JSON.stringify({ erro: `Seu perfil nao tem acesso a tabela ${tabela}.` });
+        }
+    }
+    const maxRows = config.max_linhas_sql || 100;
+    if (!/\bLIMIT\b/i.test(sql)) {
+        sql = sql.replace(/;?\s*$/, '') + ` LIMIT ${maxRows}`;
+    }
+    try {
+        const results = db.queryAll(sql);
+        const truncated = results.slice(0, maxRows);
+        return JSON.stringify({
+            colunas: truncated.length > 0 ? Object.keys(truncated[0]) : [],
+            dados: truncated,
+            total_linhas: truncated.length,
+            nota: truncated.length >= maxRows ? `Resultado limitado a ${maxRows} linhas.` : undefined
+        });
+    } catch (err) {
+        return JSON.stringify({ erro: 'Erro SQL: ' + err.message });
+    }
+}
+
+function obterSherlockResumoGeral(usuario, db) {
+    const restricted = getSherlockRestrictedTables(usuario.perfil);
+    const resumo = {};
+    resumo.total_clientes = db.queryGet('SELECT COUNT(*) as total FROM provedores')?.total || 0;
+    resumo.chamados_abertos = db.queryGet("SELECT COUNT(*) as total FROM chamados WHERE status IN ('pendente','em_andamento')")?.total || 0;
+    resumo.chamados_resolvidos_mes = db.queryGet("SELECT COUNT(*) as total FROM chamados WHERE status IN ('resolvido','fechado') AND data_resolucao >= date('now','start of month','localtime')")?.total || 0;
+    if (!restricted.includes('vendas_negocios')) {
+        resumo.negocios_pipeline = db.queryGet("SELECT COUNT(*) as total FROM vendas_negocios WHERE estagio NOT IN ('ativado','perdido')")?.total || 0;
+        resumo.valor_pipeline = db.queryGet("SELECT COALESCE(SUM(valor_estimado),0) as total FROM vendas_negocios WHERE estagio NOT IN ('ativado','perdido')")?.total || 0;
+        resumo.contratos_ativos = db.queryGet("SELECT COUNT(*) as total FROM vendas_contratos WHERE status = 'ativo'")?.total || 0;
+    }
+    if (!restricted.includes('financeiro_faturas')) {
+        resumo.faturas_pendentes = db.queryGet("SELECT COUNT(*) as total FROM financeiro_faturas WHERE status = 'pendente'")?.total || 0;
+        resumo.valor_faturas_pendentes = db.queryGet("SELECT COALESCE(SUM(valor),0) as total FROM financeiro_faturas WHERE status = 'pendente'")?.total || 0;
+        resumo.faturas_atrasadas = db.queryGet("SELECT COUNT(*) as total FROM financeiro_faturas WHERE status = 'atrasado'")?.total || 0;
+    }
+    resumo.projetos_andamento = db.queryGet("SELECT COUNT(*) as total FROM projetos WHERE status = 'em_andamento'")?.total || 0;
+    resumo.treinamentos_agendados = db.queryGet("SELECT COUNT(*) as total FROM treinamentos WHERE status = 'agendado'")?.total || 0;
+    const nps = db.queryGet("SELECT AVG(nota) as media, COUNT(*) as total FROM nps_pesquisas WHERE respondido = 1 AND respondido_em >= date('now','-30 days','localtime')");
+    resumo.nps_media_30d = nps?.media ? Number(nps.media).toFixed(1) : null;
+    resumo.nps_respostas_30d = nps?.total || 0;
+    resumo.erp_contratos_sync = db.queryGet('SELECT COUNT(*) as total FROM erp_contratos')?.total || 0;
+    return JSON.stringify(resumo);
+}
+
+function executeSherlockTool(toolCall, usuario, config, db) {
+    let args;
+    try { args = JSON.parse(toolCall.function.arguments); } catch { return JSON.stringify({ erro: 'Argumentos invalidos' }); }
+    if (toolCall.function.name === 'executar_consulta_sql') {
+        return executarConsultaSherlockSQL(args.sql, usuario, config, db);
+    }
+    if (toolCall.function.name === 'obter_resumo_geral') {
+        return obterSherlockResumoGeral(usuario, db);
+    }
+    return JSON.stringify({ erro: 'Funcao desconhecida: ' + toolCall.function.name });
+}
+
+async function callSherlockAI(apiKey, config, messages, tools) {
+    const provedor = config.provedor || 'gemini';
+    let url, headers;
+
+    if (provedor === 'gemini') {
+        url = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+        headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+    } else {
+        url = 'https://api.openai.com/v1/chat/completions';
+        headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+    }
+
+    const modelo = config.modelo || (provedor === 'gemini' ? 'gemini-2.5-flash' : 'gpt-4o');
+    const resp = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+            model: modelo,
+            messages,
+            tools,
+            tool_choice: 'auto',
+            max_tokens: Number(config.max_tokens) || 4000,
+            temperature: Number(config.temperatura) || 0.3
+        })
+    });
+    if (!resp.ok) {
+        const errText = await resp.text();
+        const nomeProvedor = provedor === 'gemini' ? 'Google Gemini' : 'OpenAI';
+        let msgAmigavel = `Erro na API ${nomeProvedor} (${resp.status})`;
+        if (resp.status === 429) {
+            msgAmigavel = provedor === 'gemini'
+                ? 'Limite de requisicoes do Gemini excedido. Aguarde alguns minutos e tente novamente.'
+                : 'Limite de uso da OpenAI excedido. Verifique seu saldo em platform.openai.com/settings/organization/billing';
+        } else if (resp.status === 401 || resp.status === 403) {
+            msgAmigavel = `API Key do ${nomeProvedor} invalida ou expirada. Verifique em Configuracoes > Sherlock`;
+        } else if (resp.status === 503 || resp.status === 500) {
+            msgAmigavel = `Servico do ${nomeProvedor} temporariamente indisponivel. Tente novamente em alguns instantes`;
+        }
+        throw new Error(msgAmigavel);
+    }
+    return resp.json();
+}
+
+// --- Sherlock: Chat endpoint ---
+app.post('/api/sherlock/chat', sherlockLimiter, requireAuth, requireModuleAccess('sherlock'), async (req, res) => {
+    const db = getDB();
+    const usuario = req.session.usuario;
+    const { mensagem, conversa_id } = req.body;
+
+    if (!mensagem || typeof mensagem !== 'string' || mensagem.trim().length === 0) {
+        return res.status(400).json({ erro: 'Mensagem obrigatoria' });
+    }
+    if (mensagem.length > 2000) {
+        return res.status(400).json({ erro: 'Mensagem muito longa (max 2000 caracteres)' });
+    }
+
+    const sherlockConfig = db.queryGet('SELECT * FROM sherlock_config ORDER BY id DESC LIMIT 1');
+    if (!sherlockConfig || !sherlockConfig.ativo) {
+        return res.status(400).json({ erro: 'Sherlock esta desativado.' });
+    }
+
+    // Buscar API key: primeiro do sherlock_config, fallback para whatsapp_ia_config
+    let sherlockApiKey = sherlockConfig.api_key;
+    if (!sherlockApiKey) {
+        const iaConfig = db.queryGet('SELECT api_key FROM whatsapp_ia_config ORDER BY id DESC LIMIT 1');
+        sherlockApiKey = iaConfig?.api_key || '';
+    }
+    if (!sherlockApiKey) {
+        const provNome = sherlockConfig.provedor === 'gemini' ? 'Google Gemini' : 'OpenAI';
+        return res.status(400).json({ erro: `API Key do ${provNome} nao configurada. Va em Configuracoes > Sherlock e adicione sua chave.` });
+    }
+
+    let convId = conversa_id ? Number(conversa_id) : null;
+    if (convId) {
+        const conv = db.queryGet('SELECT id FROM sherlock_conversas WHERE id = ? AND usuario_id = ?', [convId, usuario.id]);
+        if (!conv) return res.status(404).json({ erro: 'Conversa nao encontrada' });
+    } else {
+        const r = db.queryRun('INSERT INTO sherlock_conversas (usuario_id, titulo) VALUES (?, ?)', [usuario.id, mensagem.substring(0, 60)]);
+        convId = r.lastInsertRowid;
+    }
+
+    db.queryRun('INSERT INTO sherlock_mensagens (conversa_id, role, conteudo) VALUES (?, ?, ?)', [convId, 'user', mensagem.trim()]);
+
+    const historico = db.queryAll('SELECT role, conteudo FROM sherlock_mensagens WHERE conversa_id = ? ORDER BY criado_em ASC LIMIT 40', [convId]);
+
+    const systemPrompt = buildSherlockSystemPrompt(usuario, sherlockConfig);
+    const messages = [{ role: 'system', content: systemPrompt }, ...historico.map(h => ({ role: h.role, content: h.conteudo }))];
+    const tools = getSherlockTools();
+    const startTime = Date.now();
+    let totalTokens = 0;
+    let allSqlExecuted = [];
+
+    try {
+        let response = await callSherlockAI(sherlockApiKey, sherlockConfig, messages, tools);
+        totalTokens += response.usage?.total_tokens || 0;
+
+        let iterations = 0;
+        while (response.choices[0].message.tool_calls && iterations < 5) {
+            const toolCalls = response.choices[0].message.tool_calls;
+            messages.push(response.choices[0].message);
+
+            for (const tc of toolCalls) {
+                const result = executeSherlockTool(tc, usuario, sherlockConfig, db);
+                allSqlExecuted.push({ fn: tc.function.name, args: tc.function.arguments, resultado: result.substring(0, 500) });
+                messages.push({ role: 'tool', tool_call_id: tc.id, content: result });
+            }
+
+            response = await callSherlockAI(sherlockApiKey, sherlockConfig, messages, tools);
+            totalTokens += response.usage?.total_tokens || 0;
+            iterations++;
+        }
+
+        const assistantContent = response.choices[0].message.content || 'Desculpe, nao consegui gerar uma resposta.';
+        const tempoResposta = Date.now() - startTime;
+
+        db.queryRun(
+            'INSERT INTO sherlock_mensagens (conversa_id, role, conteudo, tokens_usados, sql_executado, tempo_resposta_ms) VALUES (?, ?, ?, ?, ?, ?)',
+            [convId, 'assistant', assistantContent, totalTokens, JSON.stringify(allSqlExecuted), tempoResposta]
+        );
+
+        db.queryRun("UPDATE sherlock_conversas SET atualizado_em = datetime('now','localtime') WHERE id = ?", [convId]);
+        registrarAtividade(req, 'consultar', 'sherlock', convId, `Pergunta: ${mensagem.substring(0, 100)}`);
+
+        res.json({ mensagem: assistantContent, conversa_id: convId, tokens_usados: totalTokens, tempo_ms: tempoResposta });
+    } catch (err) {
+        console.error('Sherlock error:', err.message);
+        res.status(500).json({ erro: 'Erro ao processar sua pergunta: ' + err.message });
+    }
+});
+
+// --- Sherlock: Listar conversas ---
+app.get('/api/sherlock/conversas', requireAuth, requireModuleAccess('sherlock'), (req, res) => {
+    const db = getDB();
+    const conversas = db.queryAll(
+        'SELECT id, titulo, criado_em, atualizado_em FROM sherlock_conversas WHERE usuario_id = ? ORDER BY atualizado_em DESC LIMIT 50',
+        [req.session.usuario.id]
+    );
+    res.json(conversas);
+});
+
+// --- Sherlock: Mensagens de uma conversa ---
+app.get('/api/sherlock/conversas/:id/mensagens', requireAuth, requireModuleAccess('sherlock'), (req, res) => {
+    const db = getDB();
+    const conv = db.queryGet('SELECT id FROM sherlock_conversas WHERE id = ? AND usuario_id = ?', [Number(req.params.id), req.session.usuario.id]);
+    if (!conv) return res.status(404).json({ erro: 'Conversa nao encontrada' });
+    const msgs = db.queryAll(
+        'SELECT id, role, conteudo, tokens_usados, tempo_resposta_ms, criado_em FROM sherlock_mensagens WHERE conversa_id = ? ORDER BY criado_em ASC',
+        [conv.id]
+    );
+    res.json(msgs);
+});
+
+// --- Sherlock: Excluir conversa ---
+app.delete('/api/sherlock/conversas/:id', requireAuth, requireModuleAccess('sherlock'), (req, res) => {
+    const db = getDB();
+    const conv = db.queryGet('SELECT id FROM sherlock_conversas WHERE id = ? AND usuario_id = ?', [Number(req.params.id), req.session.usuario.id]);
+    if (!conv) return res.status(404).json({ erro: 'Conversa nao encontrada' });
+    db.queryRun('DELETE FROM sherlock_mensagens WHERE conversa_id = ?', [conv.id]);
+    db.queryRun('DELETE FROM sherlock_conversas WHERE id = ?', [conv.id]);
+    res.json({ ok: true });
+});
+
+// --- Sherlock: Config (admin) ---
+app.get('/api/sherlock/config', requireAdmin, (req, res) => {
+    const db = getDB();
+    let config = db.queryGet('SELECT * FROM sherlock_config ORDER BY id DESC LIMIT 1');
+    if (!config) {
+        db.queryRun("INSERT INTO sherlock_config (ativo) VALUES (1)");
+        config = db.queryGet('SELECT * FROM sherlock_config ORDER BY id DESC LIMIT 1');
+    }
+    // Mascarar API key por seguranca
+    if (config.api_key) {
+        config.api_key_masked = config.api_key.substring(0, 8) + '...' + config.api_key.slice(-4);
+    }
+    delete config.api_key;
+    res.json(config);
+});
+
+app.put('/api/sherlock/config', requireAdmin, (req, res) => {
+    const db = getDB();
+    const { ativo, provedor, api_key, modelo, max_tokens, temperatura, max_linhas_sql, prompt_sistema_extra } = req.body;
+    const existing = db.queryGet('SELECT * FROM sherlock_config ORDER BY id DESC LIMIT 1');
+    const defaultModelo = (provedor || 'gemini') === 'gemini' ? 'gemini-2.5-flash' : 'gpt-4o';
+    if (existing) {
+        // Se api_key nao foi enviada, manter a existente
+        const finalKey = (api_key !== undefined && api_key !== '') ? api_key : (existing.api_key || '');
+        db.queryRun(
+            'UPDATE sherlock_config SET ativo=?, provedor=?, api_key=?, modelo=?, max_tokens=?, temperatura=?, max_linhas_sql=?, prompt_sistema_extra=? WHERE id=?',
+            [ativo ? 1 : 0, provedor || 'gemini', finalKey, modelo || defaultModelo, Number(max_tokens) || 4000, Number(temperatura) || 0.3, Number(max_linhas_sql) || 100, prompt_sistema_extra || '', existing.id]
+        );
+    }
+    registrarAtividade(req, 'editar', 'sherlock', null, 'Config Sherlock atualizada');
+    res.json({ sucesso: true });
+});
+
+// ==================== ORDENS DE SERVICO ====================
+
+app.get('/ordens-servico', requireModuleAccess('ordens_servico'), (req, res) =>
+    res.sendFile(path.join(__dirname, 'views', 'ordens-servico.html'))
+);
+
+function gerarNumeroOS() {
+    const db = getDB();
+    const ano = new Date().getFullYear();
+    const last = db.queryGet("SELECT numero FROM ordens_servico WHERE numero LIKE ? ORDER BY id DESC LIMIT 1", [`OS-${ano}-%`]);
+    let seq = 1;
+    if (last) { const parts = last.numero.split('-'); seq = parseInt(parts[2], 10) + 1; }
+    return `OS-${ano}-${String(seq).padStart(4, '0')}`;
+}
+
+// Listar OS
+app.get('/api/ordens-servico', requireAuth, requireModuleAccess('ordens_servico'), (req, res) => {
+    try {
+        const db = getDB();
+        const { status, tecnico_id, prioridade, tipo_servico, data_inicio, data_fim } = req.query;
+        let sql = `SELECT os.*, u1.nome as criador_nome, u2.nome as tecnico_nome
+                   FROM ordens_servico os
+                   LEFT JOIN usuarios u1 ON os.criador_id = u1.id
+                   LEFT JOIN usuarios u2 ON os.tecnico_id = u2.id WHERE 1=1`;
+        const params = [];
+        if (status) { sql += ' AND os.status = ?'; params.push(status); }
+        if (tecnico_id) { sql += ' AND os.tecnico_id = ?'; params.push(tecnico_id); }
+        if (prioridade) { sql += ' AND os.prioridade = ?'; params.push(prioridade); }
+        if (tipo_servico) { sql += ' AND os.tipo_servico = ?'; params.push(tipo_servico); }
+        if (data_inicio) { sql += ' AND os.data_agendamento >= ?'; params.push(data_inicio); }
+        if (data_fim) { sql += ' AND os.data_agendamento <= ?'; params.push(data_fim); }
+        if (req.session.usuario.perfil === 'tecnico_campo') {
+            sql += ' AND os.tecnico_id = ?'; params.push(req.session.usuario.id);
+        }
+        sql += ' ORDER BY os.criado_em DESC';
+        res.json(db.queryAll(sql, params));
+    } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
+// Resumo (contadores)
+app.get('/api/ordens-servico/resumo', requireAuth, requireModuleAccess('ordens_servico'), (req, res) => {
+    try {
+        const db = getDB();
+        let filtro = '';
+        const params = [];
+        if (req.session.usuario.perfil === 'tecnico_campo') {
+            filtro = ' WHERE tecnico_id = ?'; params.push(req.session.usuario.id);
+        }
+        const rows = db.queryAll(`SELECT status, COUNT(*) as total FROM ordens_servico${filtro} GROUP BY status`, params);
+        const resumo = { rascunho: 0, enviada: 0, aceita: 0, em_deslocamento: 0, em_execucao: 0, concluida: 0, recusada: 0, cancelada: 0 };
+        rows.forEach(r => { resumo[r.status] = r.total; });
+        res.json(resumo);
+    } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
+// Minhas OS (tecnico logado)
+app.get('/api/ordens-servico/minhas', requireAuth, (req, res) => {
+    const db = getDB();
+    const os = db.queryAll(
+        `SELECT os.*, u1.nome as criador_nome FROM ordens_servico os
+         LEFT JOIN usuarios u1 ON os.criador_id = u1.id
+         WHERE os.tecnico_id = ? AND os.status NOT IN ('concluida','cancelada')
+         ORDER BY CASE os.prioridade WHEN 'urgente' THEN 1 WHEN 'alta' THEN 2 WHEN 'normal' THEN 3 ELSE 4 END, os.criado_em DESC`,
+        [req.session.usuario.id]
+    );
+    res.json(os);
+});
+
+// Detalhe OS
+app.get('/api/ordens-servico/:id', requireAuth, requireModuleAccess('ordens_servico'), (req, res) => {
+    try {
+        const db = getDB();
+        let sql = `SELECT os.*, u1.nome as criador_nome, u2.nome as tecnico_nome
+                   FROM ordens_servico os
+                   LEFT JOIN usuarios u1 ON os.criador_id = u1.id
+                   LEFT JOIN usuarios u2 ON os.tecnico_id = u2.id
+                   WHERE os.id = ?`;
+        const params = [req.params.id];
+        if (req.session.usuario.perfil === 'tecnico_campo') {
+            sql += ' AND os.tecnico_id = ?'; params.push(req.session.usuario.id);
+        }
+        const os = db.queryGet(sql, params);
+        if (!os) return res.status(404).json({ erro: 'OS não encontrada' });
+        os.checklist = db.queryAll('SELECT * FROM os_checklist WHERE os_id = ? ORDER BY id', [os.id]);
+        os.fotos = db.queryAll('SELECT * FROM os_fotos WHERE os_id = ? ORDER BY criado_em', [os.id]);
+        os.historico = db.queryAll('SELECT * FROM os_historico WHERE os_id = ? ORDER BY criado_em DESC', [os.id]);
+        res.json(os);
+    } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
+// Criar OS
+app.post('/api/ordens-servico', requireAuth, requireModuleAccess('ordens_servico'), (req, res) => {
+    try {
+        const db = getDB();
+        const { chamado_id, tecnico_id, cliente_nome, cliente_telefone, cliente_documento, endereco, endereco_complemento, latitude, longitude, tipo_servico, descricao, equipamentos, prioridade, data_agendamento, checklist } = req.body;
+        if (!cliente_nome || !endereco || !tipo_servico) return res.status(400).json({ erro: 'cliente_nome, endereco e tipo_servico são obrigatórios' });
+        const numero = gerarNumeroOS();
+        const result = db.queryRun(
+            `INSERT INTO ordens_servico (numero, chamado_id, criador_id, tecnico_id, cliente_nome, cliente_telefone, cliente_documento, endereco, endereco_complemento, latitude, longitude, tipo_servico, descricao, equipamentos, prioridade, data_agendamento)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [numero, chamado_id || null, req.session.usuario.id, tecnico_id || null, cliente_nome, cliente_telefone || null, cliente_documento || null, endereco, endereco_complemento || null, latitude || null, longitude || null, tipo_servico, descricao || null, equipamentos ? JSON.stringify(equipamentos) : null, prioridade || 'normal', data_agendamento || null]
+        );
+        const osId = result.lastInsertRowid;
+        if (checklist && Array.isArray(checklist)) {
+            for (const item of checklist) {
+                if (item.descricao) db.queryRun('INSERT INTO os_checklist (os_id, descricao) VALUES (?, ?)', [osId, item.descricao]);
+            }
+        }
+        db.queryRun('INSERT INTO os_historico (os_id, usuario_id, usuario_nome, acao, para_status, detalhes) VALUES (?, ?, ?, ?, ?, ?)',
+            [osId, req.session.usuario.id, req.session.usuario.nome, 'criacao', 'rascunho', `OS ${numero} criada`]);
+        registrarAtividade(req, 'criar', 'ordens_servico', osId, `OS ${numero} criada`);
+        res.json({ id: osId, numero });
+    } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
+// Editar OS
+app.put('/api/ordens-servico/:id', requireAuth, requireModuleAccess('ordens_servico'), (req, res) => {
+    const db = getDB();
+    const os = db.queryGet('SELECT * FROM ordens_servico WHERE id = ?', [req.params.id]);
+    if (!os) return res.status(404).json({ erro: 'OS não encontrada' });
+    if (os.status !== 'rascunho' && req.session.usuario.perfil !== 'admin') return res.status(400).json({ erro: 'Só é possível editar OS em rascunho' });
+    const { tecnico_id, cliente_nome, cliente_telefone, cliente_documento, endereco, endereco_complemento, latitude, longitude, tipo_servico, descricao, equipamentos, prioridade, data_agendamento, checklist } = req.body;
+    db.queryRun(
+        `UPDATE ordens_servico SET tecnico_id=?, cliente_nome=?, cliente_telefone=?, cliente_documento=?, endereco=?, endereco_complemento=?, latitude=?, longitude=?, tipo_servico=?, descricao=?, equipamentos=?, prioridade=?, data_agendamento=?, atualizado_em=datetime('now','localtime') WHERE id=?`,
+        [tecnico_id || os.tecnico_id, cliente_nome || os.cliente_nome, cliente_telefone ?? os.cliente_telefone, cliente_documento ?? os.cliente_documento, endereco || os.endereco, endereco_complemento ?? os.endereco_complemento, latitude ?? os.latitude, longitude ?? os.longitude, tipo_servico || os.tipo_servico, descricao ?? os.descricao, equipamentos ? JSON.stringify(equipamentos) : os.equipamentos, prioridade || os.prioridade, data_agendamento ?? os.data_agendamento, req.params.id]
+    );
+    // Atualizar checklist se enviado
+    if (checklist && Array.isArray(checklist)) {
+        db.queryRun('DELETE FROM os_checklist WHERE os_id = ?', [req.params.id]);
+        for (const item of checklist) {
+            if (item.descricao) db.queryRun('INSERT INTO os_checklist (os_id, descricao, concluido) VALUES (?, ?, ?)', [req.params.id, item.descricao, item.concluido ? 1 : 0]);
+        }
+    }
+    registrarAtividade(req, 'editar', 'ordens_servico', req.params.id, `OS ${os.numero} editada`);
+    res.json({ sucesso: true });
+});
+
+// Excluir OS (apenas rascunho)
+app.delete('/api/ordens-servico/:id', requireAuth, requireModuleAccess('ordens_servico'), (req, res) => {
+    const db = getDB();
+    const os = db.queryGet('SELECT * FROM ordens_servico WHERE id = ?', [req.params.id]);
+    if (!os) return res.status(404).json({ erro: 'OS não encontrada' });
+    if (os.status !== 'rascunho' && req.session.usuario.perfil !== 'admin') return res.status(400).json({ erro: 'Só é possível excluir OS em rascunho' });
+    db.queryRun('DELETE FROM ordens_servico WHERE id = ?', [req.params.id]);
+    registrarAtividade(req, 'excluir', 'ordens_servico', req.params.id, `OS ${os.numero} excluída`);
+    res.json({ sucesso: true });
+});
+
+// Helper para transicao de status
+function transicaoOS(req, res, statusDe, statusPara, extraFields = {}) {
+    const db = getDB();
+    const os = db.queryGet('SELECT * FROM ordens_servico WHERE id = ?', [req.params.id]);
+    if (!os) return res.status(404).json({ erro: 'OS não encontrada' });
+    const statusDeArr = Array.isArray(statusDe) ? statusDe : [statusDe];
+    if (!statusDeArr.includes(os.status)) return res.status(400).json({ erro: `OS precisa estar em status ${statusDeArr.join('/')} (atual: ${os.status})` });
+    const sets = [`status='${statusPara}'`, "atualizado_em=datetime('now','localtime')"];
+    const params = [];
+    for (const [key, val] of Object.entries(extraFields)) { sets.push(`${key}=?`); params.push(val); }
+    params.push(req.params.id);
+    db.queryRun(`UPDATE ordens_servico SET ${sets.join(', ')} WHERE id=?`, params);
+    // Historico
+    db.queryRun('INSERT INTO os_historico (os_id, usuario_id, usuario_nome, acao, de_status, para_status, detalhes) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [os.id, req.session.usuario.id, req.session.usuario.nome, 'status_change', os.status, statusPara, req.body.motivo || req.body.observacoes || null]);
+    // Notificacao + SSE
+    const destinatario = statusPara === 'enviada' ? os.tecnico_id : os.criador_id;
+    if (destinatario) {
+        criarNotificacao(destinatario, 'ordens_servico', `OS ${os.numero} - ${statusPara.replace('_', ' ')}`,
+            `A OS ${os.numero} foi atualizada para ${statusPara.replace('_', ' ')}`, `/ordens-servico`);
+        broadcastSSE({ event: 'os.status', payload: { os_id: os.id, numero: os.numero, status: statusPara, tecnico_id: os.tecnico_id, criador_id: os.criador_id } });
+    }
+    registrarAtividade(req, 'status', 'ordens_servico', os.id, `OS ${os.numero}: ${os.status} → ${statusPara}`);
+    res.json({ sucesso: true, status: statusPara });
+}
+
+// Enviar para tecnico
+app.patch('/api/ordens-servico/:id/enviar', requireAuth, requireModuleAccess('ordens_servico'), (req, res) => {
+    const db = getDB();
+    const os = db.queryGet('SELECT * FROM ordens_servico WHERE id = ?', [req.params.id]);
+    if (!os || !os.tecnico_id) return res.status(400).json({ erro: 'Atribua um técnico antes de enviar' });
+    transicaoOS(req, res, 'rascunho', 'enviada', { data_envio: new Date().toISOString().slice(0, 19).replace('T', ' ') });
+    // SSE nova OS para tecnico
+    broadcastSSE({ event: 'os.nova', payload: { os_id: os.id, numero: os.numero, tecnico_id: os.tecnico_id } });
+});
+
+// Aceitar
+app.patch('/api/ordens-servico/:id/aceitar', requireAuth, (req, res) => {
+    transicaoOS(req, res, 'enviada', 'aceita', { data_aceite: new Date().toISOString().slice(0, 19).replace('T', ' ') });
+});
+
+// Recusar
+app.patch('/api/ordens-servico/:id/recusar', requireAuth, (req, res) => {
+    transicaoOS(req, res, 'enviada', 'recusada');
+});
+
+// Em deslocamento
+app.patch('/api/ordens-servico/:id/deslocamento', requireAuth, (req, res) => {
+    transicaoOS(req, res, 'aceita', 'em_deslocamento', { data_inicio_deslocamento: new Date().toISOString().slice(0, 19).replace('T', ' ') });
+});
+
+// Iniciar execucao
+app.patch('/api/ordens-servico/:id/iniciar', requireAuth, (req, res) => {
+    transicaoOS(req, res, 'em_deslocamento', 'em_execucao', { data_inicio_execucao: new Date().toISOString().slice(0, 19).replace('T', ' ') });
+});
+
+// Concluir
+app.patch('/api/ordens-servico/:id/concluir', requireAuth, (req, res) => {
+    const extras = { data_conclusao: new Date().toISOString().slice(0, 19).replace('T', ' ') };
+    if (req.body.assinatura_base64) extras.assinatura_base64 = req.body.assinatura_base64;
+    if (req.body.observacoes_tecnico) extras.observacoes_tecnico = req.body.observacoes_tecnico;
+    transicaoOS(req, res, 'em_execucao', 'concluida', extras);
+});
+
+// Cancelar
+app.patch('/api/ordens-servico/:id/cancelar', requireAuth, requireModuleAccess('ordens_servico'), (req, res) => {
+    transicaoOS(req, res, ['rascunho', 'enviada', 'aceita', 'em_deslocamento', 'em_execucao'], 'cancelada');
+});
+
+// ---- Chat da OS ----
+app.get('/api/ordens-servico/:id/mensagens', requireAuth, (req, res) => {
+    const db = getDB();
+    const msgs = db.queryAll(
+        `SELECT m.*, u.nome as usuario_nome FROM os_mensagens m LEFT JOIN usuarios u ON m.usuario_id = u.id WHERE m.os_id = ? ORDER BY m.criado_em ASC`,
+        [req.params.id]
+    );
+    // Marcar como lidas
+    db.queryRun('UPDATE os_mensagens SET lido = 1 WHERE os_id = ? AND usuario_id != ? AND lido = 0', [req.params.id, req.session.usuario.id]);
+    res.json(msgs);
+});
+
+app.post('/api/ordens-servico/:id/mensagens', requireAuth, (req, res) => {
+    const db = getDB();
+    const { texto } = req.body;
+    if (!texto || !texto.trim()) return res.status(400).json({ erro: 'Texto obrigatório' });
+    const os = db.queryGet('SELECT * FROM ordens_servico WHERE id = ?', [req.params.id]);
+    if (!os) return res.status(404).json({ erro: 'OS não encontrada' });
+    const result = db.queryRun(
+        'INSERT INTO os_mensagens (os_id, usuario_id, texto) VALUES (?, ?, ?)',
+        [req.params.id, req.session.usuario.id, texto.trim()]
+    );
+    const msg = { id: result.lastInsertRowid, os_id: parseInt(req.params.id), usuario_id: req.session.usuario.id, usuario_nome: req.session.usuario.nome, texto: texto.trim(), lido: 0, criado_em: new Date().toISOString().slice(0, 19).replace('T', ' ') };
+    // SSE: notificar apenas criador e tecnico
+    broadcastSSE({ event: 'os.mensagem', payload: { ...msg, tecnico_id: os.tecnico_id, criador_id: os.criador_id } });
+    res.json(msg);
+});
+
+// ---- Fotos da OS ----
+app.post('/api/ordens-servico/:id/fotos', requireAuth, upload.single('foto'), (req, res) => {
+    const db = getDB();
+    if (!req.file) return res.status(400).json({ erro: 'Nenhuma foto enviada' });
+    const { tipo, legenda } = req.body;
+    const result = db.queryRun(
+        'INSERT INTO os_fotos (os_id, tipo, caminho, legenda) VALUES (?, ?, ?, ?)',
+        [req.params.id, tipo || 'evidencia', `/uploads/${req.file.filename}`, legenda || null]
+    );
+    db.queryRun('INSERT INTO os_historico (os_id, usuario_id, usuario_nome, acao, detalhes) VALUES (?, ?, ?, ?, ?)',
+        [req.params.id, req.session.usuario.id, req.session.usuario.nome, 'foto_adicionada', `Foto ${tipo || 'evidencia'} adicionada`]);
+    res.json({ id: result.lastInsertRowid, caminho: `/uploads/${req.file.filename}`, tipo: tipo || 'evidencia' });
+});
+
+app.delete('/api/ordens-servico/fotos/:fotoId', requireAuth, (req, res) => {
+    const db = getDB();
+    const foto = db.queryGet('SELECT * FROM os_fotos WHERE id = ?', [req.params.fotoId]);
+    if (!foto) return res.status(404).json({ erro: 'Foto não encontrada' });
+    db.queryRun('DELETE FROM os_fotos WHERE id = ?', [req.params.fotoId]);
+    res.json({ sucesso: true });
+});
+
+// ---- Checklist da OS ----
+app.patch('/api/ordens-servico/checklist/:itemId', requireAuth, (req, res) => {
+    const db = getDB();
+    const item = db.queryGet('SELECT * FROM os_checklist WHERE id = ?', [req.params.itemId]);
+    if (!item) return res.status(404).json({ erro: 'Item não encontrado' });
+    const novoConcluido = item.concluido ? 0 : 1;
+    db.queryRun('UPDATE os_checklist SET concluido = ?, concluido_em = ? WHERE id = ?',
+        [novoConcluido, novoConcluido ? new Date().toISOString().slice(0, 19).replace('T', ' ') : null, req.params.itemId]);
+    // Historico
+    db.queryRun('INSERT INTO os_historico (os_id, usuario_id, usuario_nome, acao, detalhes) VALUES (?, ?, ?, ?, ?)',
+        [item.os_id, req.session.usuario.id, req.session.usuario.nome, 'checklist_atualizado', `"${item.descricao}" ${novoConcluido ? 'concluído' : 'reaberto'}`]);
+    res.json({ sucesso: true, concluido: novoConcluido });
+});
+
+// Lista de tecnicos (para select no frontend)
+app.get('/api/tecnicos', requireAuth, (req, res) => {
+    const db = getDB();
+    const tecnicos = db.queryAll("SELECT id, nome, usuario FROM usuarios WHERE perfil = 'tecnico_campo' AND ativo = 1 ORDER BY nome");
+    res.json(tecnicos);
+});
 
 async function start() {
     await initDB();

@@ -546,3 +546,355 @@ async function toggleFlowAtivo() {
         document.getElementById('flowAtivo').checked = !ativo;
     }
 }
+
+// ==================== TEMPLATES INTELIGENTES ====================
+
+let _templateSelecionado = null;
+
+// Helper: Construir JSON Drawflow a partir de nos e conexoes
+function buildDrawflowJson(nodes, connections) {
+    const data = {};
+    for (const n of nodes) {
+        const cfg = NODE_CONFIGS[n.name] || {};
+        const numInputs = n.name === 'inicio' ? 0 : 1;
+        const numOutputs = n.name === 'menu' ? Math.max((n.data.opcoes || []).length, 3) : (cfg.outputs || 0);
+
+        const inputs = {};
+        for (let i = 1; i <= numInputs; i++) inputs[`input_${i}`] = { connections: [] };
+        const outputs = {};
+        for (let i = 1; i <= numOutputs; i++) outputs[`output_${i}`] = { connections: [] };
+
+        data[String(n.id)] = {
+            id: n.id,
+            name: n.name,
+            data: n.data || {},
+            class: n.name,
+            html: buildNodeHtml(n.name, n.data || {}),
+            typenode: 'default',
+            inputs,
+            outputs,
+            pos_x: n.x,
+            pos_y: n.y
+        };
+    }
+    for (const c of connections) {
+        const from = data[String(c.from)];
+        const to = data[String(c.to)];
+        if (from && to) {
+            const outKey = c.output || 'output_1';
+            const inKey = c.input || 'input_1';
+            if (from.outputs[outKey]) from.outputs[outKey].connections.push({ node: String(c.to), input: inKey });
+            if (to.inputs[inKey]) to.inputs[inKey].connections.push({ node: String(c.from), output: outKey });
+        }
+    }
+    return { drawflow: { Home: { data } } };
+}
+
+// ==================== DEFINICAO DOS 6 TEMPLATES ====================
+
+const FLOW_TEMPLATES = [
+    {
+        id: 'sac',
+        nome: 'SAC / Atendimento',
+        descricao: 'Menu de atendimento com opcoes de departamento e transferencia para atendente.',
+        icon: 'bi-headset',
+        cor: '#0d6efd',
+        campos: [
+            { id: 'empresa', label: 'Nome da empresa', tipo: 'text', default: 'nossa empresa' },
+            { id: 'saudacao', label: 'Mensagem de boas-vindas', tipo: 'textarea', default: 'Ola! Bem-vindo ao atendimento. Como posso ajudar?' },
+            { id: 'opcoes', label: 'Departamentos (1 por linha)', tipo: 'textarea', default: 'Suporte Tecnico\nFinanceiro\nComercial\nOutros' },
+            { id: 'msg_transferencia', label: 'Mensagem ao transferir', tipo: 'text', default: 'Voce sera transferido para um atendente. Aguarde um momento.' }
+        ],
+        gerar(cfg) {
+            const opcoes = cfg.opcoes.split('\n').map(s => s.trim()).filter(Boolean);
+            const nodes = [
+                { id: 1, name: 'inicio', data: {}, x: 50, y: 50 },
+                { id: 2, name: 'mensagem', data: { texto: cfg.saudacao }, x: 50, y: 220 },
+                { id: 3, name: 'menu', data: { titulo: 'Selecione o departamento:', opcoes: opcoes.map(t => ({ texto: t })), tentativas: 3, msg_erro: 'Opcao invalida. Tente novamente.' }, x: 50, y: 420 }
+            ];
+            const connections = [
+                { from: 1, to: 2 },
+                { from: 2, to: 3 }
+            ];
+            opcoes.forEach((op, i) => {
+                const msgId = 10 + i * 2;
+                const trfId = 11 + i * 2;
+                const xPos = i * 280;
+                nodes.push({ id: msgId, name: 'mensagem', data: { texto: 'Conectando ao setor de ' + op + '...' }, x: xPos, y: 650 });
+                nodes.push({ id: trfId, name: 'transferir', data: { mensagem: cfg.msg_transferencia }, x: xPos, y: 850 });
+                connections.push({ from: 3, output: `output_${i + 1}`, to: msgId });
+                connections.push({ from: msgId, to: trfId });
+            });
+            return buildDrawflowJson(nodes, connections);
+        }
+    },
+    {
+        id: 'boleto',
+        nome: '2a Via de Boleto',
+        descricao: 'Coleta CPF do cliente, consulta API e envia link do boleto ou mensagem de erro.',
+        icon: 'bi-receipt',
+        cor: '#198754',
+        campos: [
+            { id: 'saudacao', label: 'Mensagem inicial', tipo: 'textarea', default: 'Ola! Vou te ajudar a gerar a 2a via do seu boleto.' },
+            { id: 'url_api', label: 'URL da API de boleto', tipo: 'text', default: 'https://api.exemplo.com/boleto?cpf={cpf}' },
+            { id: 'msg_sucesso', label: 'Mensagem de sucesso', tipo: 'textarea', default: 'Aqui esta seu boleto: {link_boleto}' },
+            { id: 'msg_erro', label: 'Mensagem de erro', tipo: 'textarea', default: 'Nao encontramos boletos pendentes para este CPF. Verifique e tente novamente.' }
+        ],
+        gerar(cfg) {
+            const nodes = [
+                { id: 1, name: 'inicio', data: {}, x: 50, y: 50 },
+                { id: 2, name: 'mensagem', data: { texto: cfg.saudacao }, x: 50, y: 220 },
+                { id: 3, name: 'entrada', data: { prompt: 'Por favor, informe seu CPF (somente numeros):', variavel: 'cpf' }, x: 50, y: 400 },
+                { id: 4, name: 'integracao', data: { url: cfg.url_api, metodo: 'GET', body: '', variavel_resultado: 'link_boleto' }, x: 50, y: 590 },
+                { id: 5, name: 'mensagem', data: { texto: cfg.msg_sucesso }, x: -150, y: 800 },
+                { id: 6, name: 'mensagem', data: { texto: cfg.msg_erro }, x: 280, y: 800 },
+                { id: 7, name: 'fim', data: { mensagem: 'Obrigado! Ate mais.' }, x: -150, y: 980 },
+                { id: 8, name: 'fim', data: { mensagem: '' }, x: 280, y: 980 }
+            ];
+            const connections = [
+                { from: 1, to: 2 },
+                { from: 2, to: 3 },
+                { from: 3, to: 4 },
+                { from: 4, output: 'output_1', to: 5 },
+                { from: 4, output: 'output_2', to: 6 },
+                { from: 5, to: 7 },
+                { from: 6, to: 8 }
+            ];
+            return buildDrawflowJson(nodes, connections);
+        }
+    },
+    {
+        id: 'nps',
+        nome: 'Pesquisa NPS',
+        descricao: 'Pesquisa de satisfacao: coleta nota (0-10), comentario e agradece.',
+        icon: 'bi-star-half',
+        cor: '#ffc107',
+        campos: [
+            { id: 'saudacao', label: 'Mensagem inicial', tipo: 'textarea', default: 'Ola! Gostaríamos de saber sua opiniao sobre nosso atendimento.' },
+            { id: 'pergunta_nota', label: 'Pergunta da nota', tipo: 'text', default: 'De 0 a 10, qual nota voce da para nosso servico?' },
+            { id: 'pergunta_comentario', label: 'Pergunta do comentario', tipo: 'text', default: 'Deixe um comentario sobre sua experiencia (opcional):' },
+            { id: 'agradecimento', label: 'Mensagem de agradecimento', tipo: 'textarea', default: 'Obrigado pelo seu feedback! Sua opiniao e muito importante para nos.' }
+        ],
+        gerar(cfg) {
+            const nodes = [
+                { id: 1, name: 'inicio', data: {}, x: 50, y: 50 },
+                { id: 2, name: 'mensagem', data: { texto: cfg.saudacao }, x: 50, y: 220 },
+                { id: 3, name: 'entrada', data: { prompt: cfg.pergunta_nota, variavel: 'nota' }, x: 50, y: 400 },
+                { id: 4, name: 'entrada', data: { prompt: cfg.pergunta_comentario, variavel: 'comentario' }, x: 50, y: 590 },
+                { id: 5, name: 'mensagem', data: { texto: cfg.agradecimento + '\n\nNota: {nota}\nComentario: {comentario}' }, x: 50, y: 780 },
+                { id: 6, name: 'fim', data: { mensagem: '' }, x: 50, y: 960 }
+            ];
+            const connections = [
+                { from: 1, to: 2 },
+                { from: 2, to: 3 },
+                { from: 3, to: 4 },
+                { from: 4, to: 5 },
+                { from: 5, to: 6 }
+            ];
+            return buildDrawflowJson(nodes, connections);
+        }
+    },
+    {
+        id: 'status',
+        nome: 'Verificar Conexao',
+        descricao: 'Consulta status da conexao do cliente via CPF e retorna informacoes.',
+        icon: 'bi-wifi',
+        cor: '#0dcaf0',
+        campos: [
+            { id: 'saudacao', label: 'Mensagem inicial', tipo: 'textarea', default: 'Ola! Vou verificar o status da sua conexao.' },
+            { id: 'url_api', label: 'URL da API de status', tipo: 'text', default: 'https://api.exemplo.com/status?cpf={cpf}' },
+            { id: 'msg_sucesso', label: 'Mensagem com status', tipo: 'textarea', default: 'Status da sua conexao:\n\n{resultado_status}\n\nSe precisar de mais ajuda, digite "atendente".' },
+            { id: 'msg_erro', label: 'Mensagem de erro', tipo: 'textarea', default: 'Nao foi possivel consultar o status. Vamos transferir voce para um atendente.' }
+        ],
+        gerar(cfg) {
+            const nodes = [
+                { id: 1, name: 'inicio', data: {}, x: 50, y: 50 },
+                { id: 2, name: 'mensagem', data: { texto: cfg.saudacao }, x: 50, y: 220 },
+                { id: 3, name: 'entrada', data: { prompt: 'Informe seu CPF:', variavel: 'cpf' }, x: 50, y: 400 },
+                { id: 4, name: 'integracao', data: { url: cfg.url_api, metodo: 'GET', body: '', variavel_resultado: 'resultado_status' }, x: 50, y: 590 },
+                { id: 5, name: 'mensagem', data: { texto: cfg.msg_sucesso }, x: -150, y: 800 },
+                { id: 6, name: 'mensagem', data: { texto: cfg.msg_erro }, x: 280, y: 800 },
+                { id: 7, name: 'fim', data: { mensagem: 'Obrigado! Ate mais.' }, x: -150, y: 980 },
+                { id: 8, name: 'transferir', data: { mensagem: 'Transferindo para um atendente...' }, x: 280, y: 980 }
+            ];
+            const connections = [
+                { from: 1, to: 2 },
+                { from: 2, to: 3 },
+                { from: 3, to: 4 },
+                { from: 4, output: 'output_1', to: 5 },
+                { from: 4, output: 'output_2', to: 6 },
+                { from: 5, to: 7 },
+                { from: 6, to: 8 }
+            ];
+            return buildDrawflowJson(nodes, connections);
+        }
+    },
+    {
+        id: 'agendamento',
+        nome: 'Agendamento de Visita',
+        descricao: 'Coleta nome, endereco e horario preferido, confirma e transfere para agente.',
+        icon: 'bi-calendar-check',
+        cor: '#6f42c1',
+        campos: [
+            { id: 'saudacao', label: 'Mensagem inicial', tipo: 'textarea', default: 'Ola! Vamos agendar uma visita tecnica para voce.' },
+            { id: 'msg_confirmacao', label: 'Mensagem de confirmacao', tipo: 'textarea', default: 'Confirme os dados da visita:\n\nNome: {nome}\nEndereco: {endereco}\nHorario: {horario}\n\nEsta correto?' },
+            { id: 'msg_agendado', label: 'Mensagem ao confirmar', tipo: 'text', default: 'Visita agendada com sucesso! Um tecnico ira ate voce.' }
+        ],
+        gerar(cfg) {
+            const nodes = [
+                { id: 1, name: 'inicio', data: {}, x: 50, y: 50 },
+                { id: 2, name: 'mensagem', data: { texto: cfg.saudacao }, x: 50, y: 200 },
+                { id: 3, name: 'entrada', data: { prompt: 'Qual seu nome completo?', variavel: 'nome' }, x: 50, y: 370 },
+                { id: 4, name: 'entrada', data: { prompt: 'Qual o endereco da visita?', variavel: 'endereco' }, x: 50, y: 540 },
+                { id: 5, name: 'entrada', data: { prompt: 'Qual horario preferido? (ex: Manha, Tarde, Noite)', variavel: 'horario' }, x: 50, y: 710 },
+                { id: 6, name: 'menu', data: { titulo: cfg.msg_confirmacao, opcoes: [{ texto: 'Sim, confirmar' }, { texto: 'Nao, cancelar' }], tentativas: 3, msg_erro: 'Responda 1 para Sim ou 2 para Nao.' }, x: 50, y: 900 },
+                { id: 7, name: 'mensagem', data: { texto: cfg.msg_agendado }, x: -150, y: 1120 },
+                { id: 8, name: 'transferir', data: { mensagem: 'Transferindo para confirmar horario disponivel...' }, x: -150, y: 1300 },
+                { id: 9, name: 'mensagem', data: { texto: 'Agendamento cancelado. Se precisar, estamos a disposicao!' }, x: 280, y: 1120 },
+                { id: 10, name: 'fim', data: { mensagem: '' }, x: 280, y: 1300 }
+            ];
+            const connections = [
+                { from: 1, to: 2 },
+                { from: 2, to: 3 },
+                { from: 3, to: 4 },
+                { from: 4, to: 5 },
+                { from: 5, to: 6 },
+                { from: 6, output: 'output_1', to: 7 },
+                { from: 6, output: 'output_2', to: 9 },
+                { from: 7, to: 8 },
+                { from: 9, to: 10 }
+            ];
+            return buildDrawflowJson(nodes, connections);
+        }
+    },
+    {
+        id: 'financeiro',
+        nome: 'Cobranca / Financeiro',
+        descricao: 'Menu financeiro: 2a via, negociacao, contestacao. Cada opcao com sub-fluxo.',
+        icon: 'bi-cash-coin',
+        cor: '#dc3545',
+        campos: [
+            { id: 'saudacao', label: 'Mensagem inicial', tipo: 'textarea', default: 'Ola! Bem-vindo ao setor financeiro. Como posso ajudar?' },
+            { id: 'opcoes', label: 'Opcoes do menu (1 por linha)', tipo: 'textarea', default: '2a Via de Boleto\nNegociar Divida\nContestar Cobranca\nFalar com Atendente' }
+        ],
+        gerar(cfg) {
+            const opcoes = cfg.opcoes.split('\n').map(s => s.trim()).filter(Boolean);
+            const nodes = [
+                { id: 1, name: 'inicio', data: {}, x: 50, y: 50 },
+                { id: 2, name: 'mensagem', data: { texto: cfg.saudacao }, x: 50, y: 220 },
+                { id: 3, name: 'entrada', data: { prompt: 'Primeiro, informe seu CPF:', variavel: 'cpf' }, x: 50, y: 400 },
+                { id: 4, name: 'menu', data: { titulo: 'O que voce precisa?', opcoes: opcoes.map(t => ({ texto: t })), tentativas: 3, msg_erro: 'Opcao invalida.' }, x: 50, y: 590 }
+            ];
+            const connections = [
+                { from: 1, to: 2 },
+                { from: 2, to: 3 },
+                { from: 3, to: 4 }
+            ];
+            opcoes.forEach((op, i) => {
+                const msgId = 10 + i * 2;
+                const endId = 11 + i * 2;
+                const xPos = i * 280;
+                const isLast = op.toLowerCase().includes('atendente');
+                nodes.push({ id: msgId, name: 'mensagem', data: { texto: isLast ? 'Transferindo para um atendente...' : 'Processando sua solicitacao de "' + op + '" para o CPF {cpf}...' }, x: xPos, y: 830 });
+                if (isLast) {
+                    nodes.push({ id: endId, name: 'transferir', data: { mensagem: 'Aguarde enquanto conectamos voce a um atendente.' }, x: xPos, y: 1020 });
+                } else {
+                    nodes.push({ id: endId, name: 'transferir', data: { mensagem: 'Um atendente vai finalizar sua solicitacao de ' + op + '.' }, x: xPos, y: 1020 });
+                }
+                connections.push({ from: 4, output: `output_${i + 1}`, to: msgId });
+                connections.push({ from: msgId, to: endId });
+            });
+            return buildDrawflowJson(nodes, connections);
+        }
+    }
+];
+
+// ==================== GALERIA DE TEMPLATES ====================
+
+function abrirGaleriaTemplates() {
+    const container = document.getElementById('galeriaTemplates');
+    container.innerHTML = FLOW_TEMPLATES.map(t => `
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm" style="cursor:pointer;transition:transform .15s"
+                 onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''"
+                 onclick="selecionarTemplate('${t.id}')">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div style="width:40px;height:40px;border-radius:10px;background:${t.cor}15;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <i class="bi ${t.icon}" style="font-size:1.2rem;color:${t.cor}"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="mb-0 fw-bold">${t.nome}</h6>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">${t.descricao}</p>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    new bootstrap.Modal(document.getElementById('modalTemplates')).show();
+}
+
+function selecionarTemplate(templateId) {
+    const t = FLOW_TEMPLATES.find(tp => tp.id === templateId);
+    if (!t) return;
+    _templateSelecionado = t;
+
+    // Fechar galeria
+    bootstrap.Modal.getInstance(document.getElementById('modalTemplates'))?.hide();
+
+    // Preencher modal de customizacao
+    document.getElementById('customTemplateTitle').innerHTML = '<i class="bi ' + t.icon + ' me-2" style="color:' + t.cor + '"></i>' + t.nome;
+    const body = document.getElementById('customTemplateBody');
+    body.innerHTML = t.campos.map(c => {
+        if (c.tipo === 'textarea') {
+            return `<div class="mb-3">
+                <label class="form-label small fw-semibold">${c.label}</label>
+                <textarea class="form-control form-control-sm" id="tplCampo_${c.id}" rows="3">${c.default || ''}</textarea>
+            </div>`;
+        }
+        return `<div class="mb-3">
+            <label class="form-label small fw-semibold">${c.label}</label>
+            <input type="text" class="form-control form-control-sm" id="tplCampo_${c.id}" value="${c.default || ''}">
+        </div>`;
+    }).join('');
+
+    // Abrir com delay para animacao
+    setTimeout(() => {
+        new bootstrap.Modal(document.getElementById('modalCustomTemplate')).show();
+    }, 300);
+}
+
+async function gerarFluxoDoTemplate() {
+    if (!_templateSelecionado) return;
+    const t = _templateSelecionado;
+
+    // Coletar valores do formulario
+    const cfg = {};
+    for (const c of t.campos) {
+        const el = document.getElementById('tplCampo_' + c.id);
+        cfg[c.id] = el ? el.value : (c.default || '');
+    }
+
+    // Gerar JSON do fluxo
+    const flowJson = t.gerar(cfg);
+
+    // Fechar modal
+    bootstrap.Modal.getInstance(document.getElementById('modalCustomTemplate'))?.hide();
+
+    try {
+        // Criar fluxo via API
+        const flow = await api('/api/whatsapp/flows', {
+            method: 'POST',
+            body: { nome: t.nome, descricao: t.descricao, dados_flow: JSON.stringify(flowJson) }
+        });
+        mostrarToast('Fluxo "' + t.nome + '" gerado com sucesso!');
+
+        // Abrir no editor
+        await editarFluxo(flow.id);
+    } catch (err) {
+        mostrarToast('Erro ao gerar fluxo: ' + err.message, 'error');
+    }
+
+    _templateSelecionado = null;
+}

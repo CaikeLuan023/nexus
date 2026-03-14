@@ -10,6 +10,7 @@
     <link href="/css/style.css" rel="stylesheet">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#007bff">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="/icons/icon-192.svg">
 </head>
@@ -25,9 +26,14 @@
         <div id="viewLista">
             <div class="page-header">
                 <h2><i class="bi bi-diagram-3 me-2"></i>Fluxos WhatsApp</h2>
-                <button class="btn btn-primary" onclick="novoFluxo()">
-                    <i class="bi bi-plus-lg me-1"></i> Novo Fluxo
-                </button>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="abrirGaleriaTemplates()">
+                        <i class="bi bi-grid-3x2-gap me-1"></i> Usar Template
+                    </button>
+                    <button class="btn btn-primary" onclick="novoFluxo()">
+                        <i class="bi bi-plus-lg me-1"></i> Novo Fluxo
+                    </button>
+                </div>
             </div>
             <div class="alert alert-info mb-3">
                 <i class="bi bi-info-circle me-1"></i>
@@ -131,6 +137,41 @@
             </div>
         </div>
     </main>
+
+    <!-- Modal: Galeria de Templates -->
+    <div class="modal fade" id="modalTemplates" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-grid-3x2-gap me-2"></i>Templates de Fluxo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Selecione um template para gerar um fluxo completo. Voce pode editar tudo depois.</p>
+                    <div class="row g-3" id="galeriaTemplates"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Customizacao do Template -->
+    <div class="modal fade" id="modalCustomTemplate" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customTemplateTitle">Customizar Template</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="customTemplateBody"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary" onclick="gerarFluxoDoTemplate()">
+                        <i class="bi bi-magic me-1"></i>Gerar Fluxo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="toast-container"></div>
 

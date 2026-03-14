@@ -9,6 +9,7 @@
     <link href="/css/style.css" rel="stylesheet">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#007bff">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="/icons/icon-192.svg">
 </head>
@@ -80,11 +81,12 @@
                             <th>Telefone</th>
                             <th>Endereco</th>
                             <th>ERP</th>
+                            <th>Plano</th>
                             <th>Acoes</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaClientes">
-                        <tr><td colspan="7" class="text-center text-muted py-4">Carregando...</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-4">Carregando...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -147,6 +149,23 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="salvarCliente()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Planos do Cliente -->
+    <div class="modal fade" id="modalPlanosCliente" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-wifi me-2"></i>Planos - <span id="planosClienteNome"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="planosClienteConteudo">
+                        <div class="text-center text-muted py-4">Carregando...</div>
+                    </div>
                 </div>
             </div>
         </div>

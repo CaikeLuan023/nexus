@@ -83,7 +83,7 @@ function renderTabela(clientes) {
     const tbody = document.getElementById('tabelaClientes');
     if (clientes.length === 0) {
         tbody.innerHTML =
-            '<tr><td colspan="7" class="text-center text-muted py-4">Nenhum cliente encontrado</td></tr>';
+            '<tr><td colspan="8" class="text-center text-muted py-4">Nenhum cliente encontrado</td></tr>';
         return;
     }
 
@@ -93,6 +93,15 @@ function renderTabela(clientes) {
                 ? `<a href="https://wa.me/${c.contato}" target="_blank" class="text-decoration-none text-success ms-1" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>`
                 : '';
 
+            let planoCell;
+            if (c.plano) {
+                planoCell = `<span class="badge bg-info text-dark">${c.plano}</span>`;
+            } else if (c.erp && c.id_externo) {
+                planoCell = `<button class="btn btn-sm btn-outline-info" onclick="verPlanosCliente(${c.id}, '${(c.nome || '').replace(/'/g, "\\'")}')" title="Ver planos"><i class="bi bi-wifi me-1"></i>Ver</button>`;
+            } else {
+                planoCell = '<span class="text-muted">-</span>';
+            }
+
             return `
             <tr>
                 <td class="fw-bold">${c.nome || '-'}</td>
@@ -101,8 +110,10 @@ function renderTabela(clientes) {
                 <td>${c.telefone || c.contato || '<span class="text-muted">-</span>'}${whatsLink}</td>
                 <td><small>${c.endereco || '<span class="text-muted">-</span>'}</small></td>
                 <td>${c.erp ? `<span class="badge bg-secondary">${LABELS_ERP_CLI[c.erp] || c.erp}</span>` : '<span class="text-muted">Manual</span>'}</td>
+                <td>${planoCell}</td>
                 <td>
                     <div class="d-flex gap-1">
+                        ${c.erp && c.id_externo ? `<button class="btn btn-sm btn-outline-info btn-action" onclick="verPlanosCliente(${c.id}, '${(c.nome || '').replace(/'/g, "\\'")}')" title="Ver Planos"><i class="bi bi-wifi"></i></button>` : ''}
                         ${vinculosWhatsApp[c.id] ? `<button class="btn btn-sm btn-success btn-action" onclick="abrirChatCliente('${vinculosWhatsApp[c.id]}')" title="Chat WhatsApp"><i class="bi bi-whatsapp"></i></button>` : ''}
                         <button class="btn btn-sm btn-outline-primary btn-action" onclick="editarCliente(${c.id})" title="Editar"><i class="bi bi-pencil"></i></button>
                         <button class="btn btn-sm btn-outline-danger btn-action" onclick="excluirCliente(${c.id})" title="Excluir"><i class="bi bi-trash"></i></button>
@@ -250,6 +261,56 @@ async function carregarVinculosWhatsApp() {
 
 function abrirChatCliente(chatId) {
     window.location.href = `/whatsapp#chat=${encodeURIComponent(chatId)}`;
+}
+
+// ==================== PLANOS DO CLIENTE (ERP) ====================
+
+const STATUS_PLANO_BADGES = {
+    'A': 'bg-success',
+    'Ativo': 'bg-success',
+    'ativo': 'bg-success',
+    'Ativado': 'bg-success',
+    'CA': 'bg-danger',
+    'Cancelado': 'bg-danger',
+    'cancelado': 'bg-danger',
+    'D': 'bg-warning text-dark',
+    'Desativado': 'bg-warning text-dark',
+    'I': 'bg-secondary',
+    'Inativo': 'bg-secondary'
+};
+
+async function verPlanosCliente(id, nome) {
+    document.getElementById('planosClienteNome').textContent = nome || '';
+    const conteudo = document.getElementById('planosClienteConteudo');
+    conteudo.innerHTML = '<div class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Carregando planos...</div>';
+    new bootstrap.Modal(document.getElementById('modalPlanosCliente')).show();
+
+    try {
+        const planos = await api(`/api/provedores/${id}/planos`);
+        if (!planos || planos.length === 0) {
+            conteudo.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Nenhum plano/contrato encontrado para este cliente.<br><small>Sincronize os dados do ERP em Configuracoes.</small></div>';
+            return;
+        }
+
+        let html = '<div class="table-responsive"><table class="table table-hover mb-0">';
+        html += '<thead><tr><th>Plano</th><th>Status</th><th>Valor</th><th>Contrato</th></tr></thead><tbody>';
+
+        for (const p of planos) {
+            const badgeClass = STATUS_PLANO_BADGES[p.status] || 'bg-secondary';
+            const valor = p.valor ? `R$ ${Number(p.valor).toFixed(2)}` : '-';
+            html += `<tr>
+                <td class="fw-bold"><i class="bi bi-wifi me-1 text-info"></i>${p.plano}</td>
+                <td><span class="badge ${badgeClass}">${p.status}</span></td>
+                <td>${valor}</td>
+                <td><small class="text-muted">#${p.id_contrato}</small></td>
+            </tr>`;
+        }
+
+        html += '</tbody></table></div>';
+        conteudo.innerHTML = html;
+    } catch (err) {
+        conteudo.innerHTML = `<div class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle fs-1 d-block mb-2"></i>${err.message}</div>`;
+    }
 }
 
 // ==================== EXPORTACAO ====================
